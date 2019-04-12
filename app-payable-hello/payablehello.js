@@ -15,10 +15,12 @@ function connection() {
 }
 
 function refresh() {
+	document.getElementById("web3-version").innerHTML = web3.version.api;
+	document.getElementById("node").innerHTML = web3.version.node;
     document.getElementById("block-number").innerHTML = web3.eth.blockNumber;
     document.getElementById("coinbase").innerHTML = web3.eth.coinbase;
-    document.getElementById("balance").innerHTML = web3.fromWei(web3.eth.getBalance(web3.eth.coinbase).toNumber(), 'ether') ;
-    document.getElementById("contract-balance").innerHTML = web3.fromWei(web3.eth.getBalance(payableHelloContractAddress).toNumber(), 'ether') ;
+    document.getElementById("balance").innerHTML = web3.fromWei(web3.eth.getBalance(web3.eth.coinbase).toNumber(), 'ether');
+    document.getElementById("contract-balance").innerHTML = web3.fromWei(web3.eth.getBalance(payableHelloContractAddress).toNumber(), 'ether');
 }
 
 /**
@@ -82,20 +84,41 @@ function updateName(newName, price) {
 * Update name using smart contract, using account different from default one
 */
 function sendRawTransaction(newName, price, address, privateKey) {
-	var tx = {
-	  // this could be provider.addresses[0] if it exists
-	  from: address,
-	  // target address, this could be a smart contract address
-	  to: payableHelloContractAddress,
-	  // optional if you want to specify the gas limit
-	  gas: 4000000,
-	  // optional if you are invoking say a payable function
-	  value: web3.toWei(price, "ether"),
-	  // this encodes the ABI of the method and the arguements
-	  data: payableHello.setName(newName).encodeABI()
-	};
+	console.log("Start creating raw tx from "+address);
+	// create raw tx
+	var tx = new ethereumjs.Tx({
+	  nonce: "0x01",//web3.toHex(web3.eth.getTransactionCount(web3.eth.defaultAccount)),
+      gasPrice: web3.toHex(web3.toWei('20', 'gwei')),
+      gasLimit: web3.toHex(4000000),
+      to: payableHelloContractAddress,
+      value: web3.toHex(web3.toWei(price, "ether")),
+      data: web3.toHex(payableHello.setName.getData(newName))
+    });
+	console.log("tx : "+tx);
+    // sign raw tx
+    tx.sign(ethereumjs.Buffer.Buffer.from(privateKey, 'hex'));
 
-	var signPromise = web3.eth.accounts.signTransaction(tx, privateKey);
+	// send raw tx
+    var raw = '0x' + tx.serialize().toString('hex');
+    console.log("Raw : "+raw);
+   	var txHash = web3.eth.sendRawTransaction(raw);
+   	console.log("tx hash" + txHash)
+	document.getElementById("status").innerHTML = "Waiting for tx "+txHash;
+
+   	// wait for result
+	var updateNameEvent = payableHello.NameChanged();
+	updateNameEvent.watch(function(error, result) {
+		if(error){
+			console.log("Error");
+			document.getElementById("content").innerHTML = "Error "+error;
+			return;
+		}
+		document.getElementById("status").innerHTML = "Tx "+txHash+" validated !";
+		readName();
+		updateNameEvent.stopWatching();
+		return;
+	});
+
 }
 
 /**

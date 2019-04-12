@@ -13,7 +13,7 @@ Goals, how to :
 
 ## PayableHello
 Same as Hello. But changing the name costs 1 ETH.
-User can pay more than 1 ETH, and gets a deposit (event) for any payement.
+User can pay more than 1 ETH, and gets a deposit (event) for any payment.
 Contract owner can get ethers owned by its contract.
 We can't send Ether to the contract without changing the name
 
