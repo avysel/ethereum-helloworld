@@ -21,23 +21,35 @@ contract owned {
 
 }
 
-contract Hello is owned {
+contract PayingHello is owned {
 
     string private name;
 
 	event NameChanged(string newName);
+	event PaymentReceipt(address userAddress, uint value);
 
     constructor() public {
         name = "nobody";
     }
 
-    function setName(string memory newName) public {
+    function setName(string memory newName) public payable {
+    	if(msg.value < 1)
+    		return;
         name = newName;
         emit NameChanged(newName);
+        emit PaymentReceipt(msg.sender, msg.value);
     }
 
     function getName() public view returns (string memory) {
         return name;
+    }
+
+    function getEthers() public onlyOwner {
+		msg.sender.transfer(this.balance);
+    }
+
+    function() external payable {
+        revert();
     }
 
 }
