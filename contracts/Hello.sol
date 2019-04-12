@@ -4,16 +4,20 @@ contract Hello {
 
     string private name;
 
+	event NameChanged(string newName);
+
     constructor() public {
         name = "nobody";
     }
 
-    function set(string memory newName) public {
+    function setName(string memory newName) public {
         name = newName;
+        emit NameChanged(newName);
     }
 
-    function hello() public view returns (string memory) {
+    function getName() public view returns (string memory) {
         return name;
     }
 
 }
+
