@@ -87,7 +87,7 @@ function sendRawTransaction(newName, price, address, privateKey) {
 	console.log("Start creating raw tx from "+address);
 	// create raw tx
 	var tx = new ethereumjs.Tx({
-	  nonce: "0x01",//web3.toHex(web3.eth.getTransactionCount(web3.eth.defaultAccount)),
+	  nonce: web3.toHex(web3.eth.getTransactionCount(address)),
       gasPrice: web3.toHex(web3.toWei('20', 'gwei')),
       gasLimit: web3.toHex(4000000),
       to: payableHelloContractAddress,
