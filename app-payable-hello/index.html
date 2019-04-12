@@ -6,17 +6,29 @@
 </head>
 <body>
 <p>
+<h2>Admin</h2>
 <div id="info">
 	<b>Blockchain info : </b><br/>
 	<div><b>Block number : </b><span id="block-number"></span></div>
 	<div><b>Coinbase : </b><span id="coinbase"></span></div>
+	<div><b>Balance : </b><span id="balance"></span></div>
+	<div><b>Contract balance : </b><span id="contract-balance"></span></div>
+	<div>
+		<span><input type="button" onclick="javascript:withdraw()" value="Withdraw"></span>
+		<span id="withdraw-status"></span>
+	</div>
+
 </div>
 </p>
 <p>
+<h2>Use</h2>
 <div id="form">
 
-		Name : <input type="text" name="newName" id="newName"/>
-		<input type="submit" value="Envoyer" onclick="javascript:changeName()">
+	<div>Name : <input type="text" name="newName" id="newName"/></div>
+	<div>Price (Eth) : <input type="text" name="price" id="price"/></div>
+	<div>Address : <input type="text" name="address" id="address"/></div>
+	<div>Private key : <input type="text" name="pk" id="pk"/></div>
+	<div><input type="submit" value="Envoyer" onclick="javascript:changeName()"></div>
 
 </div>
 </p>
@@ -24,6 +36,7 @@
 <div>Status : <span id="status"></span></div>
 </p>
 <p>
+<h2>Result</h2>
 <div id="content"></div>
 </p>
 

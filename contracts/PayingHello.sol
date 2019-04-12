@@ -27,14 +27,14 @@ contract PayingHello is owned {
 
 	event NameChanged(string newName);
 	event PaymentReceipt(address userAddress, uint value);
+	event Withdraw(address ownerAddress, uint balance);
 
     constructor() public {
         name = "nobody";
     }
 
     function setName(string memory newName) public payable {
-    	if(msg.value < 1)
-    		return;
+    	require(msg.value >= 2 ether, "Pay 2 ETH or more");
         name = newName;
         emit NameChanged(newName);
         emit PaymentReceipt(msg.sender, msg.value);
@@ -44,8 +44,10 @@ contract PayingHello is owned {
         return name;
     }
 
-    function getEthers() public onlyOwner {
-		msg.sender.transfer(this.balance);
+    function withdraw() public onlyOwner {
+    	uint balance = address(this).balance;
+		msg.sender.transfer(balance);
+		emit Withdraw(msg.sender, balance);
     }
 
     function() external payable {
