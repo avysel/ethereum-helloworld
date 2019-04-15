@@ -1,1 +1,51 @@
-<html>
+<!doctype html>
+<html lang="fr">
+<head>
+	<meta charset="utf-8">
+	<title>Ethereum Hello world</title>
+</head>
+<body>
+<p>
+<h2>Admin</h2>
+<div id="info">
+	<b>Blockchain info : </b><br/>
+	<div><b>Web3 version : </b><span id="web3-version"></span></div>
+	<div><b>Node : </b><span id="node"></span></div>
+	<div><b>Block number : </b><span id="block-number"></span></div>
+	<div><b>Coinbase : </b><span id="coinbase"></span></div>
+	<div><b>Balance : </b><span id="balance"></span></div>
+	<div><b>Contract balance : </b><span id="contract-balance"></span></div>
+	<div>
+		<span><input type="button" onclick="javascript:withdraw()" value="Withdraw"></span>
+		<span id="withdraw-status"></span>
+	</div>
+
+</div>
+</p>
+<p>
+<h2>Use</h2>
+<div id="form">
+
+	<div>Name : <input type="text" name="newName" id="newName"/></div>
+	<div>Price (Eth) : <input type="text" name="price" id="price"/></div>
+	<div>Address : <input type="text" name="address" id="address" value="0x4a4817F49F7f31a2c639C5C723D4BAA194AD0f77"/></div>
+	<div>Private key : <input type="text" name="pk" id="pk" value="12cc2f60b68a8fefb85e93fed0a2ae4680a465f714e4ea42f4a73cf27f317257"/></div>
+	<div><input type="submit" value="Envoyer" onclick="javascript:changeName()"></div>
+
+</div>
+</p>
+<p>
+<div>Status : <span id="status"></span></div>
+</p>
+<p>
+<h2>Result</h2>
+<div id="content"></div>
+</p>
+
+<script type="text/javascript" src="../web3.min.js"></script>
+<script type="text/javascript" src="../ethereumjs-tx-1.3.3.min.js"></script>
+<script type="text/javascript" src="payablehelloworld-abi.js"></script>
+<script type="text/javascript" src="payablehello.js"></script>
+</body>
+</html>
+
