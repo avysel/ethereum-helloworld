@@ -12,6 +12,13 @@ var exports = module.exports = {};
 var payableHelloContractAddress = "0xdF3979E65b44dd336A9d9fC2F0825f76dB94345c"; // contract address
 var payableHello = null; // contract methods
 
+function RequestResult(txHash, gas, data, errorMessage) {
+	this.txHash = txHash;
+	this.gas = gas;
+	this.data = data;
+	this.errorMessage = errorMessage;
+}
+
 /*
 * Connect to blockchain
 */
@@ -43,29 +50,36 @@ exports.loadContract = function() {
 */
 exports.updateName = function(newName, price) {
 
+	var result = new RequestResult();
+	
 	try {
 		var gas = payableHello.setName.estimateGas(newName, { from: web3.eth.coinbase, gas: 4000000, value: web3.toWei(price, "ether") }	);
-		console.log("Update name gas : "+gas)
+		console.log("Update name gas : "+gas);
+		result.gas = gas;
 		var txHash = payableHello.setName.sendTransaction(newName, { from: web3.eth.coinbase, gas: gas, value: web3.toWei(price, "ether") });
 		console.log("Update name tx hash : "+txHash);
-		document.getElementById("status").innerHTML = "Waiting for tx "+txHash;
+		result.txHash = txHash;
+		//document.getElementById("status").innerHTML = "Waiting for tx "+txHash;
 	}
 	catch(error) {
 		console.log(error);
-		document.getElementById("status").innerHTML = error;
+		//document.getElementById("status").innerHTML = error;
+		result.errorMessage = error;
+		return result;
 	}
 
 	var updateNameEvent = payableHello.NameChanged();
 	updateNameEvent.watch(function(error, result) {
 		if(error){
 			console.log("Error");
-			document.getElementById("content").innerHTML = "Error "+error;
-			return;
+			//document.getElementById("content").innerHTML = "Error "+error;
+			result.errorMessage = error;
+			return result;
 		}
-		document.getElementById("status").innerHTML = "Tx "+txHash+" validated !";
-		readName();
+		//document.getElementById("status").innerHTML = "Tx "+txHash+" validated !";
+		result.data = readName();
 		updateNameEvent.stopWatching();
-		return;
+		return result;
 	});
 }
 
@@ -73,6 +87,9 @@ exports.updateName = function(newName, price) {
 * Update name using smart contract, using account different from default one
 */
 exports.sendRawTransaction = function(newName, price, address, privateKey) {
+	
+	var result = new RequestResult();
+	
 	console.log("Start creating raw tx from "+address);
 	// create raw tx
 	var tx = new ethereumjs.Tx({
@@ -91,21 +108,23 @@ exports.sendRawTransaction = function(newName, price, address, privateKey) {
     var raw = '0x' + tx.serialize().toString('hex');
     console.log("Raw : "+raw);
    	var txHash = web3.eth.sendRawTransaction(raw);
-   	console.log("tx hash" + txHash)
-	document.getElementById("status").innerHTML = "Waiting for tx "+txHash;
+   	console.log("tx hash" + txHash);
+	result.txHash = txHash;
+	//document.getElementById("status").innerHTML = "Waiting for tx "+txHash;
 
    	// wait for result
 	var updateNameEvent = payableHello.NameChanged();
 	updateNameEvent.watch(function(error, result) {
 		if(error){
 			console.log("Error");
-			document.getElementById("content").innerHTML = "Error "+error;
-			return;
+			//document.getElementById("content").innerHTML = "Error "+error;
+			result.errorMessage = error;
+			return result;
 		}
-		document.getElementById("status").innerHTML = "Tx "+txHash+" validated !";
-		readName();
+		//document.getElementById("status").innerHTML = "Tx "+txHash+" validated !";
+		result.data = readName();
 		updateNameEvent.stopWatching();
-		return;
+		return result;
 	});
 
 }
@@ -147,10 +166,12 @@ exports.withdraw = function() {
 * Get connection info
 */
 exports.refresh = function() {
-	document.getElementById("web3-version").innerHTML = web3.version.api;
-	document.getElementById("node").innerHTML = web3.version.node;
-    document.getElementById("block-number").innerHTML = web3.eth.blockNumber;
-    document.getElementById("coinbase").innerHTML = web3.eth.coinbase;
-    document.getElementById("balance").innerHTML = web3.fromWei(web3.eth.getBalance(web3.eth.coinbase).toNumber(), 'ether');
-    document.getElementById("contract-balance").innerHTML = web3.fromWei(web3.eth.getBalance(payableHelloContractAddress).toNumber(), 'ether');
+	var nodeInfo = {"web3-version":  web3.version.api
+			, "node": web3.version.node
+			, "block-number": web3.eth.blockNumber
+			, "coinbase": web3.eth.coinbase
+			, "balance":  web3.fromWei(web3.eth.getBalance(web3.eth.coinbase).toNumber(), 'ether')
+			, "contract-balance": web3.fromWei(web3.eth.getBalance(payableHelloContractAddress).toNumber(), 'ether')
+		       };
+	return nodeInfo;
 }
