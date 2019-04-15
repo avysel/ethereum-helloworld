@@ -12,7 +12,7 @@ app.use(bodyParser.urlencoded({ extended: false }))
 * Display home page
 */
 app.get('/', function(req, res) {
-	var parameters = getParameters(null);
+	var parameters = null;//getParameters(null);
 	res.render('index', parameters);
 });
 
@@ -20,7 +20,7 @@ app.get('/', function(req, res) {
 * Get name
 */
 app.get('/name', function(req, res) {
-	var parameters = getParameters(null);
+	var parameters = null;//getParameters(null);
 	res.render('index', parameters);
 });
 
