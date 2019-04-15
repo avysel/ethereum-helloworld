@@ -7,10 +7,15 @@
 * - Rename refresh to getInfo and create json return object
 */
 
+var Web3 = require("web3");
+var abi = require("./payablehelloworld-abi");
+
 var exports = module.exports = {};
 
 var payableHelloContractAddress = "0xdF3979E65b44dd336A9d9fC2F0825f76dB94345c"; // contract address
+var nodeUrl = "";
 var payableHello = null; // contract methods
+var web3 = null;
 
 function RequestResult(txHash, gas, data, errorMessage) {
 	this.txHash = txHash;
@@ -27,21 +32,30 @@ exports.connection = function() {
 	console.log("");
 	console.log("--- Connection ---");
 
-	// use provider to connect to blockchain node
-	if (typeof web3 !== 'undefined') {
-		console.log('Use current provider');
-		web3 = new Web3(web3.currentProvider);
-	} else {
-		console.log('Use http provider');
-		web3 = new Web3(new Web3.providers.HttpProvider(nodeUrl));
+	const options = {
+		defaultAccount: '0xdF3979E65b44dd336A9d9fC2F0825f76dB94345c',
+		defaultBlock: 'latest',
+		defaultGas: 1,
+		defaultGasPrice: 0,
+		transactionBlockTimeout: 50,
+		transactionConfirmationBlocks: 24,
+		transactionPollingTimeout: 480,
+		transactionSigner: null
 	}
+
+	web3 = new Web3(Web3.givenProvider || 'http://localhost:7545', null, options);
+
 }
 
 /*
 * Load contract's methods with ABI
 */
-exports.loadContract = function() {
-	payableHello = web3.eth.contract(payableHelloWorldABI).at(payableHelloContractAddress);
+exports.initContracts = function() {
+	var payableHelloWorldABI = abi.payableHelloWorldABI;
+		const options = {
+
+    	};
+	payableHello = web3.eth.Contract(payableHelloWorldABI, payableHelloContractAddress, options);
 	console.log("Contract loaded at "+payableHelloContractAddress);
 }
 

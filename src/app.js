@@ -60,7 +60,7 @@ app.get('/status', function(req, res) {
 // init blockchain connection
 payablehello.connection();
 payablehello.initContracts();
-payablehello.connectionInfo();
+//payablehello.connectionInfo();
 
 // start server
 app.listen(3000);
