@@ -8,19 +8,24 @@ var app = express();
 app.set('view engine', 'pug');
 app.use(bodyParser.urlencoded({ extended: false }))
 
+function getStatusInfo() {
+	return payableHello.refresh();	
+}
+
 /**
 * Display home page
 */
 app.get('/', function(req, res) {
-	var parameters = null;//getParameters(null);
-	res.render('index', parameters);
+	var statusInfo = getStatusInfo();
+	res.render('index', statusInfo);
 });
 
 /**
 * Get name
 */
 app.get('/name', function(req, res) {
-	var parameters = null;//getParameters(null);
+	var statusInfo = getStatusInfo();
+	res.render('index', statusInfo);
 	res.render('index', parameters);
 });
 
@@ -28,7 +33,9 @@ app.get('/name', function(req, res) {
 * Update name
 */
 app.post('/name', function(req, res) {
-	var parameters = getParameters(null);
+	var statusInfo = getStatusInfo();
+	res.render('index', statusInfo);
+	var result = payablehello.updateName(req.body.name);
 	res.render('index', parameters);
 });
 
@@ -37,24 +44,24 @@ app.post('/name', function(req, res) {
 * Update name with raw transaction
 */
 app.post('/name/raw', function(req, res) {
-	var parameters = getParameters(null);
-	res.render('index', parameters);
+	var statusInfo = getStatusInfo();
+	res.render('index', statusInfo);
 });
 
 /**
 * Withdraw contract balance
 */
 app.get('/withdraw', function(req, res) {
-	var parameters = getParameters(null);
-	res.render('index', parameters);
+	var statusInfo = getStatusInfo();
+	res.render('index', statusInfo);
 });
 
 /**
 * Get server status
 */
 app.get('/status', function(req, res) {
-	var parameters = getParameters(null);
-	res.render('index', parameters);
+	var statusInfo = getStatusInfo();
+	res.render('index', statusInfo);
 });
 
 // init blockchain connection
