@@ -29,5 +29,5 @@ To learn how to :
 - contracts : smart contracts code
 - migrations : Truffle migration file
 - src : Nodejs applications, using Web3.js 1.0
-- vanilla : Vanilla JS applications, using Web3.js 0.20, browser-only.
+- vanilla : standalone Vanilla Js Hello and PayableHello applications, using Web3.js 0.20, browser-only.
  
