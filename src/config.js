@@ -5,6 +5,6 @@ config.nodePort = 7545;
 
 config.account = "0xdB4524A58c78f0945338fe7fF7c3E5988d413032";
 config.abiFile = "../build/contracts/PayableHello.json";
-config.payableHelloContractAddress = "0xE211ACf24031395256cE895d8E9Fa535E3F8ED36";
+config.payableHelloContractAddress = "0x63a83151502c4913fe13525D97Ec8c76407d9c2b";
 
 module.exports = config;

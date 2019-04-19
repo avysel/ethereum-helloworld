@@ -30,7 +30,7 @@ html(lang='fr')
       div
         span
           input(type='button', onclick='javascript:withdraw()', value='Withdraw')
-        span#withdraw-status #{web3-version}
+        span#withdraw-status #{withdrawStatus}
     p
     p
     h2 Use
@@ -53,13 +53,9 @@ html(lang='fr')
     p
     div
       | Status : 
-      span#status
+      span#status #{txStatus}
     p
     p
     h2 Result
-    #content
+    #content #{name}
     p
-    script(type='text/javascript', src='../web3.min.js')
-    script(type='text/javascript', src='../ethereumjs-tx-1.3.3.min.js')
-    script(type='text/javascript', src='payablehelloworld-abi.js')
-    script(type='text/javascript', src='payablehello.js')

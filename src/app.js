@@ -13,8 +13,13 @@ app.use(bodyParser.urlencoded({ extended: false }))
 * Display home page
 */
 app.get('/', async function(req, res) {
-	payableHello.getNodeInfo().then( (result, error) => {
-    	res.render('index', result);
+	payableHello.getNodeInfo().then( (nodeInfo, error) => {
+		var result = nodeInfo;
+
+		payableHello.readName().then(
+            		(name) => { console.log("Name : "+name); result.name = name; res.render('index', result);}
+            		, (error) => { console.log("Error : "+error); res.render('index', result); }
+                );
 	});
 });
 
@@ -65,7 +70,6 @@ app.get('/status', function(req, res) {
 // init blockchain connection
 payableHello.connection();
 payableHello.initContracts();
-//payablehello.connectionInfo();
 
 // start server
 app.listen(3000);

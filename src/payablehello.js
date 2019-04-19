@@ -32,13 +32,13 @@ exports.connection = function() {
 
 	const options = {
 		defaultAccount: config.account,
-		defaultBlock: 'latest',
+	/*	defaultBlock: 'latest',
 		defaultGas: 1,
 		defaultGasPrice: 0,
 		transactionBlockTimeout: 50,
 		transactionConfirmationBlocks: 24,
 		transactionPollingTimeout: 480,
-		transactionSigner: null
+		transactionSigner: null*/
 	}
 
 	web3 = new Web3(Web3.givenProvider || config.nodeURL+':'+config.nodePort, null, options);
@@ -52,11 +52,8 @@ exports.initContracts = function() {
 
 	var parsed = JSON.parse(fs.readFileSync(config.abiFile));
 	var payableHelloWorldABI = parsed.abi;
-	const options = {
+	payableHello = new web3.eth.Contract(payableHelloWorldABI, config.payableHelloContractAddress);
 
-    };
-	payableHello = web3.eth.Contract(payableHelloWorldABI, config.payableHelloContractAddress, options);
-	console.log("Contract loaded at "+config.payableHelloContractAddress);
 }
 
 /*
@@ -147,8 +144,9 @@ exports.sendRawTransaction = function(newName, price, address, privateKey) {
 * Read the name from smart contract
 */
 exports.readName = function() {
-	var name = payableHello.getName.call();
-	return name;
+
+	return payableHello.methods.getName().call({from: config.account});
+
 }
 
 /**
@@ -180,7 +178,7 @@ exports.withdraw = function() {
 * Get connection info
 * Return Promise<Object{web3Version, blockNumber, nodeInfo, balance, contractBalance}>
 */
-exports.getNodeInfo = async function() {
+exports.getNodeInfo = function() {
 
 	var nodeInfo = {
 			web3Version:  web3.version
