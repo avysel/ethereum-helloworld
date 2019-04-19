@@ -3,19 +3,15 @@
 * - remove DOM function, replace by callback
 * - move to web3 1.0
 * - create provider from metamask
-* - export parameters in properties file
-* - Rename refresh to getInfo and create json return object
 */
 
 var Web3 = require("web3");
-var abi = require("./payablehelloworld-abi");
 var fs = require('fs');
 var config = require("./config.js");
+var stringify = require('json-stringify-safe');
 
 var exports = module.exports = {};
 
-var payableHelloContractAddress = config.contractAddress; // contract address
-var nodeUrl = "";
 var payableHello = null; // contract methods
 var web3 = null;
 
@@ -59,8 +55,8 @@ exports.initContracts = function() {
 	const options = {
 
     };
-	payableHello = web3.eth.Contract(payableHelloWorldABI, payableHelloContractAddress, options);
-	console.log("Contract loaded at "+payableHelloContractAddress);
+	payableHello = web3.eth.Contract(payableHelloWorldABI, config.payableHelloContractAddress, options);
+	console.log("Contract loaded at "+config.payableHelloContractAddress);
 }
 
 /*
@@ -114,7 +110,7 @@ exports.sendRawTransaction = function(newName, price, address, privateKey) {
 	  nonce: web3.toHex(web3.eth.getTransactionCount(address)),
       gasPrice: web3.toHex(web3.toWei('20', 'gwei')),
       gasLimit: web3.toHex(4000000),
-      to: payableHelloContractAddress,
+      to: config.payableHelloContractAddress,
       value: web3.toHex(web3.toWei(price, "ether")),
       data: web3.toHex(payableHello.setName.getData(newName))
     });
@@ -182,14 +178,54 @@ exports.withdraw = function() {
 
 /*
 * Get connection info
+* Return Promise<Object{web3Version, blockNumber, nodeInfo, balance, contractBalance}>
 */
-exports.refresh = function() {
-	var nodeInfo = {"web3-version":  web3.version.api
-			, "node": web3.version.node
-			, "block-number": web3.eth.blockNumber
-			, "coinbase": web3.eth.coinbase
-			, "balance":  web3.fromWei(web3.eth.getBalance(web3.eth.coinbase).toNumber(), 'ether')
-			, "contract-balance": web3.fromWei(web3.eth.getBalance(payableHelloContractAddress).toNumber(), 'ether')
-		       };
-	return nodeInfo;
+exports.getNodeInfo = async function() {
+
+	var nodeInfo = {
+			web3Version:  web3.version
+		    };
+
+	var promiseBlockNumber = web3.eth.getBlockNumber()
+	.then(
+		(blockNumber) => {nodeInfo.blockNumber = blockNumber; }
+		, console.log
+	);
+
+	var promiseCoinbase = web3.eth.getCoinbase()
+	.then(
+		(coinbase) => {nodeInfo.coinbase = coinbase; }
+		, console.log
+	);
+
+	var promiseNodeInfo = web3.eth.getNodeInfo()
+	.then(
+		(node) => { console.log("node : "+nodeInfo); nodeInfo.node = node; }
+		, console.log
+	);
+
+	var promiseBalanceAccount = web3.eth.getBalance(config.account)
+	.then(
+		(balance) => {nodeInfo.balance = web3.utils.fromWei(balance, 'ether'); }
+		, console.log
+	);
+
+	var promiseBalanceContract = web3.eth.getBalance(config.payableHelloContractAddress)
+	.then(
+		(balance) => {nodeInfo.contractBalance = web3.utils.fromWei(balance, 'ether'); }
+		, console.log
+	);
+
+
+	return new Promise(function(resolve, reject) {
+
+		Promise.all([promiseBlockNumber, promiseCoinbase, promiseNodeInfo, promiseBalanceAccount, promiseBalanceContract]).then(
+			(values) => {
+				console.log("All promises resolved");
+				console.log(stringify(nodeInfo));
+				resolve(nodeInfo);
+			}
+			,(error) => { console.log(error); reject(error);}
+			);
+	});
 }

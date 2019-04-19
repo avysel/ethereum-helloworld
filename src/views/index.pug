@@ -11,26 +11,26 @@ html(lang='fr')
       br
       div
         b Web3 version : 
-        span#web3-version
+        span#web3-version #{web3Version}
       div
         b Node : 
-        span#node
+        span#node #{node}
       div
         b Block number : 
-        span#block-number
+        span#block-number #{blockNumber}
       div
         b Coinbase : 
-        span#coinbase
+        span#coinbase #{coinbase}
       div
         b Balance : 
-        span#balance
+        span#balance #{balance}
       div
         b Contract balance : 
-        span#contract-balance
+        span#contract-balance #{contractBalance}
       div
         span
           input(type='button', onclick='javascript:withdraw()', value='Withdraw')
-        span#withdraw-status
+        span#withdraw-status #{web3-version}
     p
     p
     h2 Use
