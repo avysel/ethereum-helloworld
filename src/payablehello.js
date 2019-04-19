@@ -9,10 +9,12 @@
 
 var Web3 = require("web3");
 var abi = require("./payablehelloworld-abi");
+var fs = require('fs');
+var config = require("./config.js");
 
 var exports = module.exports = {};
 
-var payableHelloContractAddress = "0xdF3979E65b44dd336A9d9fC2F0825f76dB94345c"; // contract address
+var payableHelloContractAddress = config.contractAddress; // contract address
 var nodeUrl = "";
 var payableHello = null; // contract methods
 var web3 = null;
@@ -33,7 +35,7 @@ exports.connection = function() {
 	console.log("--- Connection ---");
 
 	const options = {
-		defaultAccount: '0xdF3979E65b44dd336A9d9fC2F0825f76dB94345c',
+		defaultAccount: config.account,
 		defaultBlock: 'latest',
 		defaultGas: 1,
 		defaultGasPrice: 0,
@@ -43,7 +45,7 @@ exports.connection = function() {
 		transactionSigner: null
 	}
 
-	web3 = new Web3(Web3.givenProvider || 'http://localhost:7545', null, options);
+	web3 = new Web3(Web3.givenProvider || config.nodeURL+':'+config.nodePort, null, options);
 
 }
 
@@ -51,10 +53,12 @@ exports.connection = function() {
 * Load contract's methods with ABI
 */
 exports.initContracts = function() {
-	var payableHelloWorldABI = abi.payableHelloWorldABI;
-		const options = {
 
-    	};
+	var parsed = JSON.parse(fs.readFileSync(config.abiFile));
+	var payableHelloWorldABI = parsed.abi;
+	const options = {
+
+    };
 	payableHello = web3.eth.Contract(payableHelloWorldABI, payableHelloContractAddress, options);
 	console.log("Contract loaded at "+payableHelloContractAddress);
 }

@@ -21,7 +21,7 @@ contract owned {
 
 }
 
-contract PayingHello is owned {
+contract PayableHello is owned {
 
     string private name;
 
