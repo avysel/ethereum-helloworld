@@ -15,8 +15,9 @@ var exports = module.exports = {};
 var payableHello = null; // contract methods
 var web3 = null;
 
-function RequestResult(txHash, gas, data, errorMessage) {
+function RequestResult(txHash, blockNumber, gas, data, errorMessage) {
 	this.txHash = txHash;
+	this.blockNumber = blockNumber
 	this.gas = gas;
 	this.data = data;
 	this.errorMessage = errorMessage;
@@ -104,25 +105,7 @@ exports.updateName = function(newName, price) {
 
 	});
 
-
 	return promiseSetName;
-
-
-
-/*
-	var updateNameEvent = payableHello.NameChanged();
-	updateNameEvent.watch(function(error, result) {
-		if(error){
-			console.log("Error");
-			//document.getElementById("content").innerHTML = "Error "+error;
-			result.errorMessage = error;
-			return result;
-		}
-		//document.getElementById("status").innerHTML = "Tx "+txHash+" validated !";
-		result.data = readName();
-		updateNameEvent.stopWatching();
-		return result;
-	});*/
 }
 
 /**
@@ -179,27 +162,6 @@ exports.withdraw = function() {
 	console.log("> call withdraw");
 
 	var result = new RequestResult();
-/*
-	var gas = payableHello.withdraw.estimateGas({ from: web3.eth.coinbase, gas: 4000000 }	);
-	console.log("withdraw gas : "+gas)
-	var txHash = payableHello.withdraw.sendTransaction( { from: web3.eth.coinbase, gas: gas*2 });
-	console.log("withdraw tx hash : "+txHash);
-	document.getElementById("withdraw-status").innerHTML = "Waiting ...";
-
-	var withdrawEvent = payableHello.Withdraw();
-	withdrawEvent.watch(function(error, result) {
-		if(error){
-			console.log("Error");
-			document.getElementById("withdraw-status").innerHTML = "Error "+error;
-			return;
-		}
-		document.getElementById("withdraw-status").innerHTML = "Completed";
-		refresh();
-		withdrawEvent.stopWatching();
-		return;
-	});
-*/
-
 
 	var promiseWithdraw = new Promise( function (resolve, reject){
 
@@ -219,6 +181,7 @@ exports.withdraw = function() {
 			   })
 			   .on('confirmation', (confirmationNumber, receipt) => {
 				   console.log("confirmation");
+				   console.log(stringify(receipt));
 				   resolve(result);
 			   })
 			   .on('error',(error) => {
@@ -244,75 +207,37 @@ exports.withdraw = function() {
 exports.getNodeInfo = function() {
 
 	var nodeInfo = {
-			web3Version:  web3.version
-		    };
-/*
-	web3.eth.getBlockNumber()
-	.then(function(blockNumber) {
-		nodeInfo.blockNumber = blockNumber;
-		console.log("blockNumber : "+blockNumber);
-		return web3.eth.getCoinbase();
-	})
-	.then(function(coinbase) {
-		nodeInfo.coinbase = coinbase;
-		console.log("coinbase : "+coinbase);
-		return web3.eth.getNodeInfo();
-	})
-	.then(function(node) {
-		nodeInfo.node = node;
-		console.log("node : "+node);
-		return web3.eth.getBalance(config.account);
-	})
-	.then(function(balance) {
-		nodeInfo.balance = web3.utils.fromWei(balance, 'ether');
-		console.log("balance : "+balance);
-		return web3.eth.getBalance(config.payableHelloContractAddress);
-	})
-	.then(function(balance) {
-		nodeInfo.contractBalance = web3.utils.fromWei(balance, 'ether');
-		console.log("balance : "+balance);
-		console.log(stringify(nodeInfo));
-		return nodeInfo;
-	});
-
-	console.log("return");
-
-return new Promise(function(resolve, reject) {
-
-
-					resolve(nodeInfo);
-					}
-				);
-*/
+		web3Version:  web3.version
+	};
 
 	var promiseBlockNumber = web3.eth.getBlockNumber()
 	.then(
 		(blockNumber) => { nodeInfo.blockNumber = blockNumber; }
-		, console.log
+		, console.error
 	);
 
 	var promiseCoinbase = web3.eth.getCoinbase()
 	.then(
 		(coinbase) => { nodeInfo.coinbase = coinbase; }
-		, console.log
+		, console.error
 	);
 
 	var promiseNodeInfo = web3.eth.getNodeInfo()
 	.then(
 		(node) => { nodeInfo.node = node; }
-		, console.log
+		, console.error
 	);
 
 	var promiseBalanceAccount = web3.eth.getBalance(config.account)
 	.then(
 		(balance) => { nodeInfo.balance = web3.utils.fromWei(balance, 'ether'); }
-		, console.log
+		, console.error
 	);
 
 	var promiseBalanceContract = web3.eth.getBalance(config.payableHelloContractAddress)
 	.then(
 		(balance) => { nodeInfo.contractBalance = web3.utils.fromWei(balance, 'ether'); }
-		, console.log
+		, console.error
 	);
 
 
@@ -328,3 +253,65 @@ return new Promise(function(resolve, reject) {
 			);
 	});
 }
+
+exports.getNameChangedHistory = function() {
+
+	var eventsList = new Array();
+
+	return new Promise(function(resolve, reject) {
+
+		payableHello.getPastEvents("NameChanged", { fromBlock: 0, toBlock: 'latest' })
+			.then((events, error) => {
+				//console.log(events);
+				events.forEach(function(item, index, array) {
+				  //console.log(item, index);
+				  eventsList.push({ block:item.blockNumber, name:item.returnValues.newName});
+				});
+
+				console.log(eventsList);
+				resolve(eventsList);
+
+			});
+	});
+
+}
+
+exports.getPaymentReceiptHistory = function() {
+	var eventsList = new Array();
+
+	return new Promise(function(resolve, reject) {
+
+		payableHello.getPastEvents("PaymentReceipt", { fromBlock: 0, toBlock: 'latest' })
+			.then((events, error) => {
+				//console.log(events);
+				events.forEach(function(item, index, array) {
+				  //console.log(item, index);
+				  eventsList.push({ block:item.blockNumber, name:item.returnValues.newName});
+				});
+
+				//console.log(eventsList);
+				resolve(eventsList);
+
+			});
+	});
+}
+
+exports.getWithdrawHistory = function() {
+	var eventsList = new Array();
+
+	return new Promise(function(resolve, reject) {
+
+		payableHello.getPastEvents("Withdraw", { fromBlock: 0, toBlock: 'latest' })
+			.then((events, error) => {
+				events.forEach(function(item, index, array) {
+				  eventsList.push({ block:item.userAddress, name:item.returnValues.value});
+				});
+
+				//console.log(eventsList);
+				resolve(eventsList);
+
+			});
+	});
+}
+
+

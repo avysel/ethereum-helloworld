@@ -10,22 +10,22 @@ html(lang='fr')
       b Blockchain info : 
       br
       div
-        b Web3 version : 
+        b Web3 version :&nbsp;
         span#web3-version #{nodeInfo.web3Version}
       div
-        b Node :
+        b Node :&nbsp;
         span#node #{nodeInfo.node}
       div
-        b Block number :
+        b Block number :&nbsp;
         span#block-number #{nodeInfo.blockNumber}
       div
-        b Coinbase :
+        b Coinbase :&nbsp;
         span#coinbase #{nodeInfo.coinbase}
       div
-        b Balance :
+        b Balance :&nbsp;
         span#balance #{nodeInfo.balance}
       div
-        b Contract balance : 
+        b Contract balance :&nbsp;
         span#contract-balance #{nodeInfo.contractBalance}
       div
         form(method='get', action='/withdraw')
@@ -61,3 +61,7 @@ html(lang='fr')
     h2 Result
     #content #{name}
     p
+    h2 Names history
+    ul
+    each item in nameHistory
+        li= 'Block '+item.block +' -> '+item.name

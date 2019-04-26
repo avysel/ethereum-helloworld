@@ -14,24 +14,40 @@ displayData.nodeInfo = null;
 displayData.name = null;
 displayData.txStatus = null;
 displayData.withdrawStatus = null;
+displayData.nameHistory = null;
+displayData.paymentHistory = null;
+displayData.withdrawHistory = null;
 
 
 function renderIndex(res) {
-	payableHello.getNodeInfo().then( (nodeInfo, error) => {
-		displayData.nodeInfo = nodeInfo;
-		return payableHello.readName();
-	})
+	payableHello.getNodeInfo()
 	.then(
+		(nodeInfo) => {
+			displayData.nodeInfo = nodeInfo;
+			return payableHello.readName();
+		},
+		(error) => {
+			console.error
+		}
+	).then(
 		(name) => {
 			console.log("Name : "+name);
-			console.log("Render index with : "+stringify(displayData));
 			displayData.name = name;
-			res.render('index', displayData);
+			return payableHello.getNameChangedHistory();
 		},
         (error) => {
         	console.log("Error : "+error);
         	res.render('index', displayData);
         }
+    ).then(
+		(history) => {
+			console.log("history : "+history);
+			displayData.nameHistory = history;
+
+			console.log("Render index with : "+stringify(displayData));
+			res.render('index', displayData);
+		},
+		(error) => console.error
     );
 }
 
@@ -54,7 +70,7 @@ app.post('/name', function(req, res) {
 			renderIndex(res);
 		},
 		(error) => {
-			renderIndex(res);
+			res.redirect("/");
 		}
 	);
 });
@@ -81,7 +97,7 @@ app.get('/withdraw', function(req, res) {
 			renderIndex(res);
 		},
 		(error) => {
-			renderIndex(res);
+			res.redirect("/");
 		}
 	);
 });
