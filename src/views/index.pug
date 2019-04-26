@@ -11,22 +11,22 @@ html(lang='fr')
       br
       div
         b Web3 version : 
-        span#web3-version #{web3Version}
+        span#web3-version #{nodeInfo.web3Version}
       div
         b Node : 
-        span#node #{node}
+        span#node #{nodeInfo.node}
       div
         b Block number : 
-        span#block-number #{blockNumber}
+        span#block-number #{nodeInfo.blockNumber}
       div
         b Coinbase : 
-        span#coinbase #{coinbase}
+        span#coinbase #{nodeInfo.coinbase}
       div
         b Balance : 
-        span#balance #{balance}
+        span#balance #{nodeInfo.balance}
       div
         b Contract balance : 
-        span#contract-balance #{contractBalance}
+        span#contract-balance #{nodeInfo.contractBalance}
       div
         span
           input(type='button', onclick='javascript:withdraw()', value='Withdraw')
@@ -35,20 +35,21 @@ html(lang='fr')
     p
     h2 Use
     #form
-      div
-        | Name : 
-        input#newName(type='text', name='newName')
-      div
-        | Price (Eth) : 
-        input#price(type='text', name='price')
-      div
-        | Address : 
-        input#address(type='text', name='address', value='0x4a4817F49F7f31a2c639C5C723D4BAA194AD0f77')
-      div
-        | Private key : 
-        input#pk(type='text', name='pk', value='12cc2f60b68a8fefb85e93fed0a2ae4680a465f714e4ea42f4a73cf27f317257')
-      div
-        input(type='submit', value='Envoyer', onclick='javascript:changeName()')
+      form(method='post', action='/name')
+        div
+          | Name :
+          input#newName(type='text', name='newName')
+        div
+          | Price (Eth) :
+          input#price(type='text', name='price')
+        div
+          | Address :
+          input#address(type='text', name='address', value='0x4a4817F49F7f31a2c639C5C723D4BAA194AD0f77')
+        div
+          | Private key :
+          input#pk(type='text', name='pk', value='12cc2f60b68a8fefb85e93fed0a2ae4680a465f714e4ea42f4a73cf27f317257')
+        div
+          input(type='submit', value='Envoyer')
     p
     p
     div

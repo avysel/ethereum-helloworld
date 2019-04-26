@@ -27,9 +27,6 @@ function RequestResult(txHash, gas, data, errorMessage) {
 */
 exports.connection = function() {
 
-	console.log("");
-	console.log("--- Connection ---");
-
 	const options = {
 		defaultAccount: config.account,
 	/*	defaultBlock: 'latest',
@@ -42,6 +39,7 @@ exports.connection = function() {
 	}
 
 	web3 = new Web3(Web3.givenProvider || config.nodeURL+':'+config.nodePort, null, options);
+	console.log("Connected to "+config.nodeURL+':'+config.nodePort);
 
 }
 
@@ -53,7 +51,7 @@ exports.initContracts = function() {
 	var parsed = JSON.parse(fs.readFileSync(config.abiFile));
 	var payableHelloWorldABI = parsed.abi;
 	payableHello = new web3.eth.Contract(payableHelloWorldABI, config.payableHelloContractAddress);
-
+	console.log("Load contract at : "+config.payableHelloContractAddress);
 }
 
 /*
@@ -64,12 +62,28 @@ exports.updateName = function(newName, price) {
 	var result = new RequestResult();
 	
 	try {
-		var gas = payableHello.setName.estimateGas(newName, { from: web3.eth.coinbase, gas: 4000000, value: web3.toWei(price, "ether") }	);
+
+
+		/*payableHello.setName(newName).estimateGas({gas: 5000000}, function(error, gasAmount){
+			if(gasAmount == 5000000)
+				console.log('Method ran out of gas');
+		});*/
+
+		payableHello.setName(newName).estimateGas({from: config.account, gas: 5000000, value: web3.toWei(price, "ether")})
+		.then(function(gasAmount){
+			console.log("gas amount : "+gasAmount);
+		})
+		.catch(function(error){
+			console.log("Error : "+error);
+		});
+
+
+		/*var gas = payableHello.setName.estimateGas(newName, { from: web3.eth.coinbase, gas: 4000000, value: web3.toWei(price, "ether") }	);
 		console.log("Update name gas : "+gas);
 		result.gas = gas;
 		var txHash = payableHello.setName.sendTransaction(newName, { from: web3.eth.coinbase, gas: gas, value: web3.toWei(price, "ether") });
 		console.log("Update name tx hash : "+txHash);
-		result.txHash = txHash;
+		result.txHash = txHash;*/
 		//document.getElementById("status").innerHTML = "Waiting for tx "+txHash;
 	}
 	catch(error) {
@@ -78,7 +92,7 @@ exports.updateName = function(newName, price) {
 		result.errorMessage = error;
 		return result;
 	}
-
+/*
 	var updateNameEvent = payableHello.NameChanged();
 	updateNameEvent.watch(function(error, result) {
 		if(error){
@@ -91,7 +105,7 @@ exports.updateName = function(newName, price) {
 		result.data = readName();
 		updateNameEvent.stopWatching();
 		return result;
-	});
+	});*/
 }
 
 /**
@@ -183,34 +197,72 @@ exports.getNodeInfo = function() {
 	var nodeInfo = {
 			web3Version:  web3.version
 		    };
+/*
+	web3.eth.getBlockNumber()
+	.then(function(blockNumber) {
+		nodeInfo.blockNumber = blockNumber;
+		console.log("blockNumber : "+blockNumber);
+		return web3.eth.getCoinbase();
+	})
+	.then(function(coinbase) {
+		nodeInfo.coinbase = coinbase;
+		console.log("coinbase : "+coinbase);
+		return web3.eth.getNodeInfo();
+	})
+	.then(function(node) {
+		nodeInfo.node = node;
+		console.log("node : "+node);
+		return web3.eth.getBalance(config.account);
+	})
+	.then(function(balance) {
+		nodeInfo.balance = web3.utils.fromWei(balance, 'ether');
+		console.log("balance : "+balance);
+		return web3.eth.getBalance(config.payableHelloContractAddress);
+	})
+	.then(function(balance) {
+		nodeInfo.contractBalance = web3.utils.fromWei(balance, 'ether');
+		console.log("balance : "+balance);
+		console.log(stringify(nodeInfo));
+		return nodeInfo;
+	});
+
+	console.log("return");
+
+return new Promise(function(resolve, reject) {
+
+
+					resolve(nodeInfo);
+					}
+				);
+*/
 
 	var promiseBlockNumber = web3.eth.getBlockNumber()
 	.then(
-		(blockNumber) => {nodeInfo.blockNumber = blockNumber; }
+		(blockNumber) => { nodeInfo.blockNumber = blockNumber; }
 		, console.log
 	);
 
 	var promiseCoinbase = web3.eth.getCoinbase()
 	.then(
-		(coinbase) => {nodeInfo.coinbase = coinbase; }
+		(coinbase) => { nodeInfo.coinbase = coinbase; }
 		, console.log
 	);
 
 	var promiseNodeInfo = web3.eth.getNodeInfo()
 	.then(
-		(node) => { console.log("node : "+nodeInfo); nodeInfo.node = node; }
+		(node) => { nodeInfo.node = node; }
 		, console.log
 	);
 
 	var promiseBalanceAccount = web3.eth.getBalance(config.account)
 	.then(
-		(balance) => {nodeInfo.balance = web3.utils.fromWei(balance, 'ether'); }
+		(balance) => { nodeInfo.balance = web3.utils.fromWei(balance, 'ether'); }
 		, console.log
 	);
 
 	var promiseBalanceContract = web3.eth.getBalance(config.payableHelloContractAddress)
 	.then(
-		(balance) => {nodeInfo.contractBalance = web3.utils.fromWei(balance, 'ether'); }
+		(balance) => { nodeInfo.contractBalance = web3.utils.fromWei(balance, 'ether'); }
 		, console.log
 	);
 
@@ -219,8 +271,8 @@ exports.getNodeInfo = function() {
 
 		Promise.all([promiseBlockNumber, promiseCoinbase, promiseNodeInfo, promiseBalanceAccount, promiseBalanceContract]).then(
 			(values) => {
-				console.log("All promises resolved");
-				console.log(stringify(nodeInfo));
+				/*console.log("All promises resolved");
+				console.log(stringify(nodeInfo));*/
 				resolve(nodeInfo);
 			}
 			,(error) => { console.log(error); reject(error);}

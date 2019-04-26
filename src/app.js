@@ -9,37 +9,45 @@ app.set('view engine', 'pug');
 app.use(bodyParser.urlencoded({ extended: false }))
 
 
+var displayData = {};
+displayData.nodeInfo = null;
+displayData.name = null;
+displayData.txStatus = null;
+displayData.withdrawStatus = null;
+
+
+function renderIndex(res) {
+	payableHello.getNodeInfo().then( (nodeInfo, error) => {
+		displayData.nodeInfo = nodeInfo;
+		return payableHello.readName();
+	})
+	.then(
+		(name) => {
+			console.log("Name : "+name);
+			console.log("Render index with : "+stringify(displayData));
+			displayData.name = name;
+			res.render('index', displayData);
+		},
+        (error) => {
+        	console.log("Error : "+error);
+        	res.render('index', displayData);
+        }
+    );
+}
+
 /**
 * Display home page
 */
 app.get('/', async function(req, res) {
-	payableHello.getNodeInfo().then( (nodeInfo, error) => {
-		var result = nodeInfo;
-
-		payableHello.readName().then(
-            		(name) => { console.log("Name : "+name); result.name = name; res.render('index', result);}
-            		, (error) => { console.log("Error : "+error); res.render('index', result); }
-                );
-	});
-});
-
-/**
-* Get name
-*/
-app.get('/name', function(req, res) {
-	var statusInfo = getStatusInfo();
-	res.render('index', statusInfo);
-	res.render('index', parameters);
+	renderIndex(res);
 });
 
 /**
 * Update name
 */
 app.post('/name', function(req, res) {
-	var statusInfo = getStatusInfo();
-	res.render('index', statusInfo);
-	var result = payableHello.updateName(req.body.name);
-	res.render('index', parameters);
+	var result = payableHello.updateName(req.body.name, req.body.price);
+	renderIndex(res);
 });
 
 
@@ -47,24 +55,16 @@ app.post('/name', function(req, res) {
 * Update name with raw transaction
 */
 app.post('/name/raw', function(req, res) {
-	var statusInfo = getStatusInfo();
-	res.render('index', statusInfo);
+
+	renderIndex(res);
 });
 
 /**
 * Withdraw contract balance
 */
 app.get('/withdraw', function(req, res) {
-	var statusInfo = getStatusInfo();
-	res.render('index', statusInfo);
-});
 
-/**
-* Get server status
-*/
-app.get('/status', function(req, res) {
-	var statusInfo = getStatusInfo();
-	res.render('index', statusInfo);
+	renderIndex(res);
 });
 
 // init blockchain connection
