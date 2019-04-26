@@ -54,44 +54,61 @@ exports.initContracts = function() {
 	console.log("Load contract at : "+config.payableHelloContractAddress);
 }
 
+/**
+* Read the name from smart contract
+*/
+exports.readName = function() {
+
+	return payableHello.methods.getName().call({from: config.account});
+
+}
+
 /*
 * Call change name function and wait for event
 */
 exports.updateName = function(newName, price) {
 
+	console.log("> call updateName");
+
 	var result = new RequestResult();
-	
-	try {
 
+	var promiseSetName = new Promise( function (resolve, reject){
 
-		/*payableHello.setName(newName).estimateGas({gas: 5000000}, function(error, gasAmount){
-			if(gasAmount == 5000000)
-				console.log('Method ran out of gas');
-		});*/
-
-		payableHello.setName(newName).estimateGas({from: config.account, gas: 5000000, value: web3.toWei(price, "ether")})
+		payableHello.methods.setName(newName).estimateGas({from: config.account, gas: 5000000, value: web3.utils.toWei(price, "ether")})
 		.then(function(gasAmount){
+
 			console.log("gas amount : "+gasAmount);
+			result.gas = gasAmount;
+
+			payableHello.methods.setName(newName).send({from: config.account, gas: gasAmount, value: web3.utils.toWei(price, "ether")})
+			.on('transactionHash', (hash) => {
+				   console.log("tx hash : "+hash);
+				   result.txHash = hash;
+			   })
+			   .on('receipt', (receipt) => {
+				   console.log("receipt");
+			   })
+			   .on('confirmation', (confirmationNumber, receipt) => {
+				   console.log("confirmation");
+				   resolve(result);
+			   })
+			   .on('error',(error) => {
+			   		console.error(error);
+			   		result.errorMessage = error;
+			   		reject(result);
+			   });
 		})
 		.catch(function(error){
-			console.log("Error : "+error);
+			console.error("Error : "+error);
 		});
 
+	});
 
-		/*var gas = payableHello.setName.estimateGas(newName, { from: web3.eth.coinbase, gas: 4000000, value: web3.toWei(price, "ether") }	);
-		console.log("Update name gas : "+gas);
-		result.gas = gas;
-		var txHash = payableHello.setName.sendTransaction(newName, { from: web3.eth.coinbase, gas: gas, value: web3.toWei(price, "ether") });
-		console.log("Update name tx hash : "+txHash);
-		result.txHash = txHash;*/
-		//document.getElementById("status").innerHTML = "Waiting for tx "+txHash;
-	}
-	catch(error) {
-		console.log(error);
-		//document.getElementById("status").innerHTML = error;
-		result.errorMessage = error;
-		return result;
-	}
+
+	return promiseSetName;
+
+
+
 /*
 	var updateNameEvent = payableHello.NameChanged();
 	updateNameEvent.watch(function(error, result) {
@@ -155,19 +172,14 @@ exports.sendRawTransaction = function(newName, price, address, privateKey) {
 }
 
 /**
-* Read the name from smart contract
-*/
-exports.readName = function() {
-
-	return payableHello.methods.getName().call({from: config.account});
-
-}
-
-/**
 * Retreive contract balance. Only works for contract owner
 */
 exports.withdraw = function() {
 
+	console.log("> call withdraw");
+
+	var result = new RequestResult();
+/*
 	var gas = payableHello.withdraw.estimateGas({ from: web3.eth.coinbase, gas: 4000000 }	);
 	console.log("withdraw gas : "+gas)
 	var txHash = payableHello.withdraw.sendTransaction( { from: web3.eth.coinbase, gas: gas*2 });
@@ -186,6 +198,43 @@ exports.withdraw = function() {
 		withdrawEvent.stopWatching();
 		return;
 	});
+*/
+
+
+	var promiseWithdraw = new Promise( function (resolve, reject){
+
+		payableHello.methods.withdraw().estimateGas({from: config.account, gas: 5000000})
+		.then(function(gasAmount){
+
+			console.log("gas amount : "+gasAmount);
+			result.gas = gasAmount;
+
+			payableHello.methods.withdraw().send({from: config.account, gas: gasAmount*2})
+			.on('transactionHash', (hash) => {
+				   console.log("tx hash : "+hash);
+				   result.txHash = hash;
+			   })
+			   .on('receipt', (receipt) => {
+				   console.log("receipt");
+			   })
+			   .on('confirmation', (confirmationNumber, receipt) => {
+				   console.log("confirmation");
+				   resolve(result);
+			   })
+			   .on('error',(error) => {
+			   		console.error(error);
+			   		result.errorMessage = error;
+			   		reject(result);
+			   });
+		})
+		.catch(function(error){
+			console.error("Error : "+error);
+		});
+
+	});
+
+	return promiseWithdraw;
+
 }
 
 /*

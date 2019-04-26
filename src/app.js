@@ -46,8 +46,17 @@ app.get('/', async function(req, res) {
 * Update name
 */
 app.post('/name', function(req, res) {
-	var result = payableHello.updateName(req.body.name, req.body.price);
-	renderIndex(res);
+	console.log("POST name : "+stringify(req.body));
+	payableHello.updateName(req.body.newName, req.body.price)
+	.then(
+		(result) => {
+			displayData.txStatus = result.txHash;
+			renderIndex(res);
+		},
+		(error) => {
+			renderIndex(res);
+		}
+	);
 });
 
 
@@ -64,7 +73,17 @@ app.post('/name/raw', function(req, res) {
 */
 app.get('/withdraw', function(req, res) {
 
-	renderIndex(res);
+	console.log("GET withdraw");
+	payableHello.withdraw()
+	.then(
+		(result) => {
+			displayData.txStatus = result.txHash;
+			renderIndex(res);
+		},
+		(error) => {
+			renderIndex(res);
+		}
+	);
 });
 
 // init blockchain connection

@@ -13,24 +13,25 @@ html(lang='fr')
         b Web3 version : 
         span#web3-version #{nodeInfo.web3Version}
       div
-        b Node : 
+        b Node :
         span#node #{nodeInfo.node}
       div
-        b Block number : 
+        b Block number :
         span#block-number #{nodeInfo.blockNumber}
       div
-        b Coinbase : 
+        b Coinbase :
         span#coinbase #{nodeInfo.coinbase}
       div
-        b Balance : 
+        b Balance :
         span#balance #{nodeInfo.balance}
       div
         b Contract balance : 
         span#contract-balance #{nodeInfo.contractBalance}
       div
-        span
-          input(type='button', onclick='javascript:withdraw()', value='Withdraw')
-        span#withdraw-status #{withdrawStatus}
+        form(method='get', action='/withdraw')
+          div
+            input(type='submit', value='Withdraw')
+        span#withdraw-status
     p
     p
     h2 Use
@@ -53,7 +54,7 @@ html(lang='fr')
     p
     p
     div
-      | Status : 
+      | Status :
       span#status #{txStatus}
     p
     p
