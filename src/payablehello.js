@@ -1,7 +1,5 @@
 /**
 * TODO
-* - remove DOM function, replace by callback
-* - move to web3 1.0
 * - create provider from metamask
 */
 
@@ -113,9 +111,10 @@ exports.updateName = function(newName, price) {
 */
 exports.sendRawTransaction = function(newName, price, address, privateKey) {
 	
+	console.log("> call raw updateName from "+address);
+
 	var result = new RequestResult();
-	
-	console.log("Start creating raw tx from "+address);
+
 	// create raw tx
 	var tx = new ethereumjs.Tx({
 	  nonce: web3.toHex(web3.eth.getTransactionCount(address)),
@@ -255,43 +254,29 @@ exports.getNodeInfo = function() {
 }
 
 exports.getNameChangedHistory = function() {
-
 	var eventsList = new Array();
 
 	return new Promise(function(resolve, reject) {
-
 		payableHello.getPastEvents("NameChanged", { fromBlock: 0, toBlock: 'latest' })
 			.then((events, error) => {
-				//console.log(events);
 				events.forEach(function(item, index, array) {
-				  //console.log(item, index);
 				  eventsList.push({ block:item.blockNumber, name:item.returnValues.newName});
 				});
-
-				console.log(eventsList);
 				resolve(eventsList);
-
 			});
 	});
-
 }
 
 exports.getPaymentReceiptHistory = function() {
 	var eventsList = new Array();
 
 	return new Promise(function(resolve, reject) {
-
 		payableHello.getPastEvents("PaymentReceipt", { fromBlock: 0, toBlock: 'latest' })
 			.then((events, error) => {
-				//console.log(events);
 				events.forEach(function(item, index, array) {
-				  //console.log(item, index);
-				  eventsList.push({ block:item.blockNumber, name:item.returnValues.newName});
+				  eventsList.push({ userAddress:item.userAddress, value:item.returnValues.value});
 				});
-
-				//console.log(eventsList);
 				resolve(eventsList);
-
 			});
 	});
 }
@@ -300,16 +285,12 @@ exports.getWithdrawHistory = function() {
 	var eventsList = new Array();
 
 	return new Promise(function(resolve, reject) {
-
 		payableHello.getPastEvents("Withdraw", { fromBlock: 0, toBlock: 'latest' })
 			.then((events, error) => {
 				events.forEach(function(item, index, array) {
-				  eventsList.push({ block:item.userAddress, name:item.returnValues.value});
+				  eventsList.push({ ownerAddress:item.ownerAddress, balance:item.returnValues.balance});
 				});
-
-				//console.log(eventsList);
 				resolve(eventsList);
-
 			});
 	});
 }
