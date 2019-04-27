@@ -41,25 +41,24 @@ html(lang='fr')
 								input(type='submit', value='Withdraw')
 								span#withdraw-status
 		.row
-			.col-md-6.alert.alert-secondary
+			.col-md-6.alert.alert-warning
 				h3 Change name
 				#form
 					form(method='post', action='/name')
 						.form-group
 							label(for='newName') Name :
-							input#newName(type='text', name='newName')
+							input#newName(type='text', name='newName').form-control
 						.form-group
 							label(for='price') Price (Eth) :
-							input#price(type='text', name='price')
+							input#price(type='text', name='price').form-control
 						.form-group
-							label(for='address') Address :
-							input#address(type='text', name='address', value='0x4a4817F49F7f31a2c639C5C723D4BAA194AD0f77')
-						.form-group
-							label(for='pk') Private key :
-							input#pk(type='text', name='pk', value='12cc2f60b68a8fefb85e93fed0a2ae4680a465f714e4ea42f4a73cf27f317257')
+							label(for='account') Account :
+							select#account(name='account').form-control
+								each account in accounts
+									option(value=account.address) #{account.address}
 						div
-							input(type='submit', value='Envoyer')
-			.col-md-6.alert.alert-secondary
+							input(type='submit', value='Send').btn.btn-primary
+			.col-md-6.alert.alert-info
 				h3 Status
 				div#status Transaction : #{txStatus}
 				div#blockNumber Block : #{blockNumber}

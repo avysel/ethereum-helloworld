@@ -5,8 +5,8 @@
 
 var Web3 = require("web3");
 var fs = require('fs');
-var config = require("./config.js");
 var stringify = require('json-stringify-safe');
+var config = require("./config.js");
 
 var exports = module.exports = {};
 
@@ -94,9 +94,7 @@ exports.updateName = function(newName, price) {
 				   resolve(result);
 			   })
 			   .on('error',(error) => {
-			   		console.error(error);
-			   		result.errorMessage = error.message;
-			   		resolve(result);
+			   		throw error;
 			   });
 		})
 		.catch(function(error){

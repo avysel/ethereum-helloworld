@@ -2,6 +2,7 @@ var http = require('http');
 var express = require('express');
 var bodyParser = require('body-parser');
 var stringify = require('json-stringify-safe');
+var config = require("./config.js");
 var payableHello = require('./payablehello'); // app services
 
 var app = express();
@@ -19,6 +20,7 @@ displayData.nameHistory = null;
 displayData.paymentHistory = null;
 displayData.withdrawHistory = null;
 displayData.errorMessage = null;
+displayData.accounts = config.accounts;
 
 
 function renderIndex(res) {
@@ -65,28 +67,29 @@ app.get('/', async function(req, res) {
 */
 app.post('/name', function(req, res) {
 	console.log("POST name : "+stringify(req.body));
-	payableHello.updateName(req.body.newName, req.body.price)
-	.then(
-		(result) => {
-			displayData.txStatus = result.txHash;
-			displayData.blockNumber = result.blockNumber;
-			displayData.errorMessage = result.errorMessage;
-			res.redirect("/");
-		},
-		(error) => {
-			res.redirect("/");
-		}
-	);
+
+	if(req.body.account === config.account) {
+
+		console.log("Use default account, create regular tx.");
+		payableHello.updateName(req.body.newName, req.body.price)
+		.then(
+			(result) => {
+				displayData.txStatus = result.txHash;
+				displayData.blockNumber = result.blockNumber;
+				displayData.errorMessage = result.errorMessage;
+				res.redirect("/");
+			},
+			(error) => {
+				res.redirect("/");
+			}
+		);
+
+	}
+	else {
+		console.log("Use other account, create raw tx.");
+	}
 });
 
-
-/**
-* Update name with raw transaction
-*/
-app.post('/name/raw', function(req, res) {
-
-	renderIndex(res);
-});
 
 /**
 * Withdraw contract balance
