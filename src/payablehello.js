@@ -67,7 +67,7 @@ exports.readName = function() {
 */
 exports.updateName = function(newName, price) {
 
-	console.log("> call updateName");
+	console.log("> call updateName : "+newName+", "+price);
 
 	var result = new RequestResult();
 
@@ -89,16 +89,20 @@ exports.updateName = function(newName, price) {
 			   })
 			   .on('confirmation', (confirmationNumber, receipt) => {
 				   console.log("confirmation");
+				   console.log(receipt);
+				   result.blockNumber = receipt.blockNumber;
 				   resolve(result);
 			   })
 			   .on('error',(error) => {
 			   		console.error(error);
-			   		result.errorMessage = error;
-			   		reject(result);
+			   		result.errorMessage = error.message;
+			   		resolve(result);
 			   });
 		})
 		.catch(function(error){
-			console.error("Error : "+error);
+			console.error(error.message);
+			result.errorMessage = error.message;
+            resolve(result);
 		});
 
 	});
@@ -181,6 +185,7 @@ exports.withdraw = function() {
 			   .on('confirmation', (confirmationNumber, receipt) => {
 				   console.log("confirmation");
 				   console.log(stringify(receipt));
+				   result.blockNumber = receipt.blockNumber;
 				   resolve(result);
 			   })
 			   .on('error',(error) => {

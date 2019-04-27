@@ -13,10 +13,12 @@ var displayData = {};
 displayData.nodeInfo = null;
 displayData.name = null;
 displayData.txStatus = null;
+displayData.blockNumber = null;
 displayData.withdrawStatus = null;
 displayData.nameHistory = null;
 displayData.paymentHistory = null;
 displayData.withdrawHistory = null;
+displayData.errorMessage = null;
 
 
 function renderIndex(res) {
@@ -67,7 +69,9 @@ app.post('/name', function(req, res) {
 	.then(
 		(result) => {
 			displayData.txStatus = result.txHash;
-			renderIndex(res);
+			displayData.blockNumber = result.blockNumber;
+			displayData.errorMessage = result.errorMessage;
+			res.redirect("/");
 		},
 		(error) => {
 			res.redirect("/");
@@ -94,7 +98,9 @@ app.get('/withdraw', function(req, res) {
 	.then(
 		(result) => {
 			displayData.txStatus = result.txHash;
-			renderIndex(res);
+			displayData.blockNumber = result.blockNumber;
+			displayData.errorMessage = result.errorMessage;
+			res.redirect("/");
 		},
 		(error) => {
 			res.redirect("/");
