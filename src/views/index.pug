@@ -10,63 +10,73 @@ html(lang='fr')
 	body
 	.container-fluid
 		.row
-			.col-md-6.alert.alert-primary
-				h5 Hello who ?
-					h2 Hello #{name}
-			.col-md-6.alert.alert-secondary
-				h3 Blockchain info
-				#info
-					br
-					div
-						b Web3 version :&nbsp;
-						span#web3-version #{nodeInfo.web3Version}
-					div
-						b Node :&nbsp;
-						span#node #{nodeInfo.node}
-					div
-						b Last block :&nbsp;
-						span#block-number #{nodeInfo.blockNumber}
-					div
-						b Coinbase :&nbsp;
-						span#coinbase #{nodeInfo.coinbase}
-					div
-						b Balance :&nbsp;
-						span#balance #{nodeInfo.balance}
-					div
-						b Contract balance :&nbsp;
-						span#contract-balance #{nodeInfo.contractBalance}
-					div
-						form(method='get', action='/withdraw')
+			.col-md-6
+				div.card
+					h5.card-header Hello who ?
+					div.card-body
+						h2 Hello #{name}
+			.col-md-6
+				div.card
+					h3.card-header Blockchain info
+					div.card-body
+						#info
+							br
 							div
-								input(type='submit', value='Withdraw')
-								span#withdraw-status
+								b Web3 version :&nbsp;
+								span#web3-version #{nodeInfo.web3Version}
+							div
+								b Node :&nbsp;
+								span#node #{nodeInfo.node}
+							div
+								b Last block :&nbsp;
+								span#block-number #{nodeInfo.blockNumber}
+							div
+								b Coinbase :&nbsp;
+								span#coinbase #{nodeInfo.coinbase}
+							div
+								b Balance :&nbsp;
+								span#balance #{nodeInfo.balance}
+							div
+								b Contract balance :&nbsp;
+								span#contract-balance #{nodeInfo.contractBalance}
+							div
+								form(method='get', action='/withdraw')
+									div
+										input(type='submit', value='Withdraw').btn.btn-primary
+										span#withdraw-status
 		.row
-			.col-md-6.alert.alert-warning
-				h3 Change name
-				#form
-					form(method='post', action='/name')
-						.form-group
-							label(for='newName') Name :
-							input#newName(type='text', name='newName').form-control
-						.form-group
-							label(for='price') Price (Eth) :
-							input#price(type='text', name='price').form-control
-						.form-group
-							label(for='account') Account :
-							select#account(name='account').form-control
-								each account in accounts
-									option(value=account.address) #{account.address}
-						div
-							input(type='submit', value='Send').btn.btn-primary
-			.col-md-6.alert.alert-info
-				h3 Status
-				div#status Transaction : #{txStatus}
-				div#blockNumber Block : #{blockNumber}
-				div#errorMessage #{errorMessage}
+			.col-md-6
+				div.card
+					h3.card-header Change name
+					div.card-body
+						#form
+							form(method='post', action='/name')
+								.form-group
+									label(for='newName') Name :
+									input#newName(type='text', name='newName').form-control
+								.form-group
+									label(for='price') Price (Eth) :
+									input#price(type='text', name='price').form-control
+								.form-group
+									label(for='account') Account :
+									select#account(name='account').form-control
+										each account in accounts
+											option(value=account.address) #{account.address}
+								div
+									input(type='submit', value='Send').btn.btn-primary
+			.col-md-6
+				div.card
+					h3.card-header Status
+					div.card-body
+						div#status Transaction : #{txStatus}
+						div#blockNumber Block : #{blockNumber}
+						div#errorMessage #{errorMessage}
 
 		.row
-			.col-md-12.alert.alert-secondary
-				h3 Names history
-				ul
-				each item in nameHistory
-					li= 'Block '+item.block +' -> '+item.name
+			.col-md-12
+				div.card
+					h3.card-header Names history
+					div.card-body
+						ul
+						each item in nameHistory
+							li= 'Block '+item.block +' -> '+item.name
