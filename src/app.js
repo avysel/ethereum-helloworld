@@ -23,42 +23,18 @@ displayData.errorMessage = null;
 displayData.accounts = config.accounts;
 
 
-function renderIndex(res) {
+async function renderIndex(res) {
 
-	// chain promises to get all data to display
+	try {
+		displayData.nodeInfo = await payableHello.getNodeInfo();
+		displayData.name = await payableHello.readName();
+		displayData.nameHistory = await payableHello.getNameChangedHistory();
+	}
+	catch(error) {
+		console.error(error);
+	}
 
-	payableHello.getNodeInfo() // first, get node info
-	.then(
-		(nodeInfo) => {
-			displayData.nodeInfo = nodeInfo;
-			return payableHello.readName();
-		},
-		(error) => {
-			console.error
-		}
-	).then( // then, get stored name
-		(name) => {
-			console.log("Name : "+name);
-			displayData.name = name;
-			return payableHello.getNameChangedHistory();
-		},
-        (error) => {
-        	console.log("Error : "+error);
-        	res.render('index', displayData);
-        }
-    ).then( // then, get names history
-		(history) => {
-			console.log("history : "+history);
-			displayData.nameHistory = history;
-
-			console.log("Render index with : "+stringify(displayData));
-			res.render('index', displayData);
-		},
-		(error) => {
-			console.error("renderIndex error : ");
-			console.error(error);
-		}
-    );
+	res.render('index', displayData);
 }
 
 /**
@@ -107,7 +83,7 @@ app.post('/name', function(req, res) {
 	}
 	catch(error){
 		console.error("POST /name Catch error : ");
-		console.error(error.message);
+		console.error(error);
 		displayData.errorMessage = error;
 		res.redirect("/");
 	}
@@ -117,21 +93,33 @@ app.post('/name', function(req, res) {
 /**
 * Withdraw contract balance
 */
-app.get('/withdraw', function(req, res) {
+app.post('/withdraw', function(req, res) {
 
-	console.log("GET withdraw");
-	payableHello.withdraw()
-	.then(
-		(result) => {
-			displayData.txStatus = result.txHash;
-			displayData.blockNumber = result.blockNumber;
-			displayData.errorMessage = result.errorMessage;
-			res.redirect("/");
-		},
-		(error) => {
-			res.redirect("/");
-		}
-	);
+	console.log("POST withdraw : "+req.body.withdrawAccount);
+
+	try {
+		payableHello.withdraw(req.body.withdrawAccount)
+		.then(
+			(result) => {
+				displayData.txStatus = result.txHash;
+				displayData.blockNumber = result.blockNumber;
+				displayData.errorMessage = result.errorMessage;
+				res.redirect("/");
+			},
+			(error) => {
+				console.error("promise withdraw error : ");
+				console.error(error);
+				displayData.errorMessage = error;
+				res.redirect("/");
+			}
+		);
+	}
+	catch(error) {
+		console.error("POST /withdraw Catch error : ");
+		console.error(error);
+		displayData.errorMessage = error;
+		res.redirect("/");
+	}
 });
 
 // init blockchain connection

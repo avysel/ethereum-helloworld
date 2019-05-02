@@ -34,8 +34,14 @@ html(lang='fr')
 							div
 								b Contract balance :&nbsp;
 								span#contract-balance #{nodeInfo.contractBalance}
+							hr
 							div
-								form(method='get', action='/withdraw')
+								form(method='post', action='/withdraw')
+									.form-group
+										label(for='withdrawAccount') Account :
+										select#withdrawAccount(name='withdrawAccount').form-control
+											each account in accounts
+												option(value=account.address) #{account.address}
 									div
 										input(type='submit', value='Withdraw').btn.btn-primary
 										span#withdraw-status
