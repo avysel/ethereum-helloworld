@@ -31,12 +31,27 @@ To learn how to :
 - src : Nodejs applications, using Web3.js 1.0
 - vanilla : standalone Vanilla Js Hello and PayableHello applications, using Web3.js 0.20, browser-only.
 
+## Requirements
+1. Blockchain available (Ganache, local node, etc ...)
+2. Contract deployement tool (Truffle, Remix ...)
+3. Node.js
+
 ## Run
-1. Start blockchain
-2. Deploy contract on blockchain
-``truffle deploy``
-3. Update ``src/config.js`` with blockchain URL/port, default account address and contract address
-4. Start application 
+**Start blockchain**
+
+**Deploy contract on blockchain**
+- ``truffle deploy`` 
+- or with Remix IDE
+
+**Update ``src/config.js`` with**
+ - blockchain URL/port
+ - default account address
+ - available accounts with their private keys
+ - contract address
+ 
+**Start application** 
+
 ``cd src``
+
 ``node app.js``
  
