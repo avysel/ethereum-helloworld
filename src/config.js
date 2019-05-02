@@ -1,17 +1,32 @@
-var config = {};
+const config = {
 
-// blockchain node IPC IP and port
-config.nodeURL = "http://127.0.0.1";
-config.nodePort = 7545;
+	// blockchain node IPC IP and port
+	nodeURL: "http://127.0.0.1",
+	nodePort: 7545,
 
-// default account address
-config.account = "0xdB4524A58c78f0945338fe7fF7c3E5988d413032";
+	// default account address
+	account:"0xdB4524A58c78f0945338fe7fF7c3E5988d413032",
+	//account:"0x4a4817F49F7f31a2c639C5C723D4BAA194AD0f77",
 
-// ABI file of smart contract
-config.abiFile = "../build/contracts/PayableHello.json";
+	// ABI file of smart contract
+	abiFile:"../build/contracts/PayableHello.json",
 
-// address of deployed contract on blockchain
-config.payableHelloContractAddress = "0xA559eDe868A7f8235f530f2F76DD95Cbea7a6406";
+	// address of deployed contract on blockchain
+	payableHelloContractAddress:"0x63a83151502c4913fe13525D97Ec8c76407d9c2b",
+
+	accounts: [
+		{
+			address: "0xdB4524A58c78f0945338fe7fF7c3E5988d413032",
+			pk: null
+		},
+		{
+			address: "0x4a4817F49F7f31a2c639C5C723D4BAA194AD0f77",
+        	pk: "12cc2f60b68a8fefb85e93fed0a2ae4680a465f714e4ea42f4a73cf27f317257"
+		}
+	]
+
+};
+
 
 // list of accounts to use
 config.accounts = new Array();

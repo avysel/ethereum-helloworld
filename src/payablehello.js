@@ -4,6 +4,7 @@
 */
 
 var Web3 = require("web3");
+var EthereumTx = require("ethereumjs-tx");
 var fs = require('fs');
 var stringify = require('json-stringify-safe');
 var config = require("./config.js");
@@ -94,7 +95,7 @@ exports.updateName = function(newName, price) {
 				   resolve(result);
 			   })
 			   .on('error',(error) => {
-			   		throw error;
+			   		reject(error);
 			   });
 		})
 		.catch(function(error){
@@ -111,11 +112,118 @@ exports.updateName = function(newName, price) {
 /**
 * Update name using smart contract, using account different from default one
 */
-exports.sendRawTransaction = function(newName, price, address, privateKey) {
+exports.sendRawTransaction = function(newName, price, address) {
+
+	console.log("> call raw updateName from "+address);
+
+	var result = new RequestResult();
+	var plainPrivateKey = null;
+
+	// get privake key from config according for sender address
+	config.accounts.forEach(function(element) {
+		if(element.address === address){
+			plainPrivateKey = element.pk;
+		}
+	});
+
+	// create result promise that will be resolved when tx is confirmed
+	var promiseSendRawTx = new Promise( function (resolve, reject){
+
+		// need a promise to get tx nonce for given account
+		web3.eth.getTransactionCount(address).then(txCount => {
+
+			// create tx parameters
+			const txParams = {
+				from: address,
+				nonce: web3.utils.toHex(txCount),
+				gasPrice: web3.utils.toHex(web3.utils.toWei('20', 'gwei')),
+				gasLimit: web3.utils.toHex(4000000),
+				to: config.payableHelloContractAddress,
+				value: web3.utils.toHex(web3.utils.toWei(price, "ether")),
+				data: web3.utils.toHex(payableHello.methods.setName(newName).encodeABI())
+			}
+
+			console.log("tx params : "+stringify(txParams));
+
+			// create raw tx
+			const tx = new EthereumTx(txParams);
+
+			// encode pk in hex
+			const privateKey = Buffer.from(plainPrivateKey, 'hex');
+
+			// sign tx with private key
+			tx.sign(privateKey)
+
+			// serialize tx
+			const serializedTx = tx.serialize();
+
+			// send raw tx
+			web3.eth.sendSignedTransaction('0x' + serializedTx.toString('hex'))
+			.on('transactionHash', (hash) => {
+				   console.log("tx hash : "+hash);
+				   result.txHash = hash;
+			   })
+			   .on('receipt', (receipt) => {
+				   console.log("receipt");
+			   })
+			   .on('confirmation', (confirmationNumber, receipt) => {
+				   console.log("confirmation");
+				   console.log(receipt);
+				   result.blockNumber = receipt.blockNumber;
+				   resolve(result);
+			   })
+			   .on('error',(error) => {
+			   		reject(error);
+			   });
+		});
+
+	});
+
+	return promiseSendRawTx;
+
+/*
+	// send raw tx
+    var raw = '0x' + tx.serialize().toString('hex');
+    console.log("Raw : "+raw);
+   	var txHash = web3.eth.sendRawTransaction(raw);
+   	console.log("tx hash" + txHash);
+	result.txHash = txHash;
+	//document.getElementById("status").innerHTML = "Waiting for tx "+txHash;*/
+
+/*
+   	// wait for result
+	var updateNameEvent = payableHello.NameChanged();
+	updateNameEvent.watch(function(error, result) {
+		if(error){
+			console.log("Error");
+			//document.getElementById("content").innerHTML = "Error "+error;
+			result.errorMessage = error;
+			return result;
+		}
+		//document.getElementById("status").innerHTML = "Tx "+txHash+" validated !";
+		result.data = readName();
+		updateNameEvent.stopWatching();
+		return result;
+	});
+*/
+}
+
+/**
+* Update name using smart contract, using account different from default one
+*/
+/*
+exports.sendRawTransaction = function(newName, price, address) {
 	
 	console.log("> call raw updateName from "+address);
 
 	var result = new RequestResult();
+	var privateKey = null;
+	console.log("get pk : "+privateKey);
+
+	config.accounts.forEach(function(element) {
+		if(element[0] === address)
+			privateKey == element[1];
+	});
 
 	// create raw tx
 	var tx = new ethereumjs.Tx({
@@ -153,7 +261,7 @@ exports.sendRawTransaction = function(newName, price, address, privateKey) {
 		return result;
 	});
 
-}
+}*/
 
 /**
 * Retreive contract balance. Only works for contract owner
@@ -193,7 +301,9 @@ exports.withdraw = function() {
 			   });
 		})
 		.catch(function(error){
-			console.error("Error : "+error);
+			console.error(error.message);
+			result.errorMessage = error.message;
+            resolve(result);
 		});
 
 	});
@@ -241,7 +351,6 @@ exports.getNodeInfo = function() {
 		(balance) => { nodeInfo.contractBalance = web3.utils.fromWei(balance, 'ether'); }
 		, console.error
 	);
-
 
 	return new Promise(function(resolve, reject) {
 
