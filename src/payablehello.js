@@ -8,6 +8,7 @@ var EthereumTx = require("ethereumjs-tx");
 var fs = require('fs');
 var stringify = require('json-stringify-safe');
 var config = require("./config.js");
+var BigNumber = require('bignumber.js');
 
 var exports = module.exports = {};
 
@@ -241,28 +242,15 @@ exports.getNodeInfo = async function() {
 
 }
 
-exports.getNameChangedHistory = function() {
+exports.getNameChangedHistory = async function() {
 	var eventsList = new Array();
 
 	return new Promise(function(resolve, reject) {
 		payableHello.getPastEvents("NameChanged", { fromBlock: 0, toBlock: 'latest' })
 			.then((events, error) => {
 				events.forEach(function(item, index, array) {
-				  eventsList.push({ block:item.blockNumber, name:item.returnValues.newName});
-				});
-				resolve(eventsList);
-			});
-	});
-}
-
-exports.getPaymentReceiptHistory = function() {
-	var eventsList = new Array();
-
-	return new Promise(function(resolve, reject) {
-		payableHello.getPastEvents("PaymentReceipt", { fromBlock: 0, toBlock: 'latest' })
-			.then((events, error) => {
-				events.forEach(function(item, index, array) {
-				  eventsList.push({ userAddress:item.userAddress, value:item.returnValues.value});
+					var valueInEth = web3.utils.fromWei(item.returnValues.value.toString(), 'ether');
+				  	eventsList.push({ block:item.blockNumber, name:item.returnValues.newName, userAddress:item.returnValues.userAddress, value:valueInEth});
 				});
 				resolve(eventsList);
 			});
@@ -276,7 +264,7 @@ exports.getWithdrawHistory = function() {
 		payableHello.getPastEvents("Withdraw", { fromBlock: 0, toBlock: 'latest' })
 			.then((events, error) => {
 				events.forEach(function(item, index, array) {
-				  eventsList.push({ ownerAddress:item.ownerAddress, balance:item.returnValues.balance});
+				  eventsList.push({ ownerAddress:item.returnValues.ownerAddress, balance:item.returnValues.balance});
 				});
 				resolve(eventsList);
 			});

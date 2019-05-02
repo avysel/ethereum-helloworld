@@ -25,7 +25,7 @@ contract PayableHello is owned {
 
     string private name;
 
-	event NameChanged(string newName);
+	event NameChanged(string newName, address userAddress, uint value);
 	event PaymentReceipt(address userAddress, uint value);
 	event Withdraw(address ownerAddress, uint balance);
 
@@ -36,8 +36,7 @@ contract PayableHello is owned {
     function setName(string memory newName) public payable {
     	require(msg.value >= 2 ether, "Pay 2 ETH or more");
         name = newName;
-        emit NameChanged(newName);
-        emit PaymentReceipt(msg.sender, msg.value);
+        emit NameChanged(newName, msg.sender, msg.value);
     }
 
     function getName() public view returns (string memory) {
