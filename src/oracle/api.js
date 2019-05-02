@@ -1,10 +1,10 @@
 /**
-* Simple API that returns a new string every minute
+* Simple API that can returns a new string every second
 */
 
 var express = require('express');
 var stringify = require('json-stringify-safe');
-var config = require("./config.js");
+var config = require("../config.js");
 
 var app = express();
 
