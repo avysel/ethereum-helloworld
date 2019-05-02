@@ -1,6 +1,7 @@
 # ethereum-helloworld
 Hello World smart contract & Dapp for Ethereum
 
+
 ## Hello
 (VanillaJS in browser, Web3.js 0.20)
 
@@ -12,6 +13,7 @@ To learn how to :
 - Create and deploy a smart contract
 - Make a web application communicate with a smart contract (read/write data)
 - Wait for transaction to be validated using events
+
 
 ## PayableHello
 (Node.js, Web3.js 1.0)
@@ -27,18 +29,28 @@ To learn how to :
 - Manager requirements in a smart contract
 - Use fallback function
 - Sign and send raw transaction
+- Create oracle
+
 
 ## Files
-- build/contracts : compiles contracts and ABIs
-- contracts : smart contracts code
-- migrations : Truffle migration file
-- src : Nodejs applications, using Web3.js 1.0
-- vanilla : standalone Vanilla Js Hello and PayableHello applications, using Web3.js 0.20, browser-only.
+_**- build/contracts**_ : compiles contracts and ABIs
+
+**_- contracts_** : smart contracts code
+
+**_- migrations_** : Truffle migration file
+
+**_- src_** : Nodejs application, using Web3.js 1.0
+
+**_- src/oracle.js & api.js_** : simple API and Ethereum oracle
+
+**_- vanilla_** : standalone Vanilla Js Hello and PayableHello applications, using Web3.js 0.20, browser-only.
+
 
 ## Requirements
 1. Blockchain available (Ganache, local node, etc ...)
 2. Contract deployement tool (Truffle, Remix ...)
 3. Node.js
+
 
 ## Run
 **Start blockchain**
