@@ -2,6 +2,8 @@
 Hello World smart contract & Dapp for Ethereum
 
 ## Hello
+(VanillaJS in browser, Web3.js 0.20)
+
 Simple smart contract containing a field "name", a getter and a setter.
 The HTML/javascript page displays the name, and provides a form field to change it.
 
@@ -12,6 +14,8 @@ To learn how to :
 - Wait for transaction to be validated using events
 
 ## PayableHello
+(Node.js, Web3.js 1.0)
+
 Same as Hello. But changing the name costs 2 ETH.
 User can pay more than 2 ETH, and gets a deposit (event) for any payment.
 Contract owner can get ethers owned by its contract.
