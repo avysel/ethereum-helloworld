@@ -26,7 +26,6 @@ contract PayableHello is owned {
     string private name;
 
 	event NameChanged(string newName, address userAddress, uint value);
-	event PaymentReceipt(address userAddress, uint value);
 	event Withdraw(address ownerAddress, uint balance);
 
     constructor() public {
