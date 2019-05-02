@@ -58,9 +58,7 @@ exports.initContracts = function() {
 * Read the name from smart contract
 */
 exports.readName = function() {
-
 	return payableHello.methods.getName().call({from: config.account});
-
 }
 
 /*
@@ -95,10 +93,13 @@ exports.updateName = function(newName, price) {
 				   resolve(result);
 			   })
 			   .on('error',(error) => {
+			   		console.error("promiseSetName on error");
+			   		console.error(error);
 			   		reject(error);
 			   });
 		})
 		.catch(function(error){
+			console.error("promiseSetName estimate gas catch");
 			console.error(error.message);
 			result.errorMessage = error.message;
             resolve(result);
@@ -143,125 +144,59 @@ exports.sendRawTransaction = function(newName, price, address) {
 				data: web3.utils.toHex(payableHello.methods.setName(newName).encodeABI())
 			}
 
-			console.log("tx params : "+stringify(txParams));
+			web3.eth.estimateGas(txParams).then(function(gasAmount) {
 
-			// create raw tx
-			const tx = new EthereumTx(txParams);
+				txParams.gasLimit = web3.utils.toHex(gasAmount); // update gas limit according to estimate
 
-			// encode pk in hex
-			const privateKey = Buffer.from(plainPrivateKey, 'hex');
+				console.log("tx params : "+stringify(txParams));
 
-			// sign tx with private key
-			tx.sign(privateKey)
+				// create raw tx
+				const tx = new EthereumTx(txParams);
 
-			// serialize tx
-			const serializedTx = tx.serialize();
+				// encode pk in hex
+				const privateKey = Buffer.from(plainPrivateKey, 'hex');
 
-			// send raw tx
-			web3.eth.sendSignedTransaction('0x' + serializedTx.toString('hex'))
-			.on('transactionHash', (hash) => {
-				   console.log("tx hash : "+hash);
-				   result.txHash = hash;
-			   })
-			   .on('receipt', (receipt) => {
-				   console.log("receipt");
-			   })
-			   .on('confirmation', (confirmationNumber, receipt) => {
-				   console.log("confirmation");
-				   console.log(receipt);
-				   result.blockNumber = receipt.blockNumber;
-				   resolve(result);
-			   })
-			   .on('error',(error) => {
-			   		reject(error);
-			   });
-		});
+				// sign tx with private key
+				tx.sign(privateKey)
 
-	});
+				// serialize tx
+				const serializedTx = tx.serialize();
+
+				// send raw tx
+				web3.eth.sendSignedTransaction('0x' + serializedTx.toString('hex'))
+				.on('transactionHash', (hash) => {
+					   console.log("tx hash : "+hash);
+					   result.txHash = hash;
+				   })
+				   .on('receipt', (receipt) => {
+					   console.log("receipt");
+				   })
+				   .on('confirmation', (confirmationNumber, receipt) => {
+					   console.log("confirmation");
+					   console.log(receipt);
+					   result.blockNumber = receipt.blockNumber;
+					   resolve(result);
+				   })
+				   .on('error',(error) => {
+						console.error("promiseSendRawTx on error : ");
+						console.error(error);
+						reject(error);
+				   });
+
+			})
+			.catch(function(error){
+				console.error("raw tx estimateGas catch");
+				console.error(error.message);
+				result.errorMessage = error.message;
+				resolve(result);
+			}); // end of promise estimateGas
+
+		}); // end of promise getTransactionCount
+
+	}); // end of promiseSendRawTx
 
 	return promiseSendRawTx;
-
-/*
-	// send raw tx
-    var raw = '0x' + tx.serialize().toString('hex');
-    console.log("Raw : "+raw);
-   	var txHash = web3.eth.sendRawTransaction(raw);
-   	console.log("tx hash" + txHash);
-	result.txHash = txHash;
-	//document.getElementById("status").innerHTML = "Waiting for tx "+txHash;*/
-
-/*
-   	// wait for result
-	var updateNameEvent = payableHello.NameChanged();
-	updateNameEvent.watch(function(error, result) {
-		if(error){
-			console.log("Error");
-			//document.getElementById("content").innerHTML = "Error "+error;
-			result.errorMessage = error;
-			return result;
-		}
-		//document.getElementById("status").innerHTML = "Tx "+txHash+" validated !";
-		result.data = readName();
-		updateNameEvent.stopWatching();
-		return result;
-	});
-*/
 }
-
-/**
-* Update name using smart contract, using account different from default one
-*/
-/*
-exports.sendRawTransaction = function(newName, price, address) {
-	
-	console.log("> call raw updateName from "+address);
-
-	var result = new RequestResult();
-	var privateKey = null;
-	console.log("get pk : "+privateKey);
-
-	config.accounts.forEach(function(element) {
-		if(element[0] === address)
-			privateKey == element[1];
-	});
-
-	// create raw tx
-	var tx = new ethereumjs.Tx({
-	  nonce: web3.toHex(web3.eth.getTransactionCount(address)),
-      gasPrice: web3.toHex(web3.toWei('20', 'gwei')),
-      gasLimit: web3.toHex(4000000),
-      to: config.payableHelloContractAddress,
-      value: web3.toHex(web3.toWei(price, "ether")),
-      data: web3.toHex(payableHello.setName.getData(newName))
-    });
-	console.log("tx : "+tx);
-    // sign raw tx
-    tx.sign(ethereumjs.Buffer.Buffer.from(privateKey, 'hex'));
-
-	// send raw tx
-    var raw = '0x' + tx.serialize().toString('hex');
-    console.log("Raw : "+raw);
-   	var txHash = web3.eth.sendRawTransaction(raw);
-   	console.log("tx hash" + txHash);
-	result.txHash = txHash;
-	//document.getElementById("status").innerHTML = "Waiting for tx "+txHash;
-
-   	// wait for result
-	var updateNameEvent = payableHello.NameChanged();
-	updateNameEvent.watch(function(error, result) {
-		if(error){
-			console.log("Error");
-			//document.getElementById("content").innerHTML = "Error "+error;
-			result.errorMessage = error;
-			return result;
-		}
-		//document.getElementById("status").innerHTML = "Tx "+txHash+" validated !";
-		result.data = readName();
-		updateNameEvent.stopWatching();
-		return result;
-	});
-
-}*/
 
 /**
 * Retreive contract balance. Only works for contract owner
