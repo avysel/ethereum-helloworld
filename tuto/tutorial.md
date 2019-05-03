@@ -78,6 +78,7 @@ Après une courte phase de téléchargement et d'initialisation, nous voyons app
 
 ```truffle-config.js``` : fichier de configuration de Truffle
 
+Dans certains de ces répertoires, des fichiers ```*migration*``` on été créés. Ils sont nécessaires à Truffle pour les déploiements de contrats, il ne faut pas les supprimer.
 
 ## 2. Premier smart contract
 
