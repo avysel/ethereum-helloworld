@@ -2,13 +2,6 @@
 
 Dans ce tutoriel, nous allons voir comment développer une application couplée à la blockchain Ethereum.
 
-Nous allons dans un premier temps installer un certain nombre d'outils :
-
-- NodeJS
-- Truffle
-- Ganache
-- Web3.js
-
 
 ## Introduction
 
@@ -35,3 +28,39 @@ Une mise à jour de smart contract équivaut au déploiement d'un nouveau smart 
 Une DApp, ou Decentralized Application, application décentralisée, est une application déployée sur un réseau de façon uniforme et partagée, qui ne possède aucun élément central et nécessaire à son fonctionnement.
 
 Une application reposant uniquement sur des smart contracts déployés sur une blockchain est donc une DApp. La coupler à une application NodeJS ou autre, déployée sur un serveur, hors de la blockchain, revient à créer un Single Point Of Failure. De ce fait, il ne s'agit plus réellement d'une DApp.
+
+
+## Description du projet
+
+Dans ce projet, nous allons créer un simple HelloWorld.
+
+Dans un premier temps, il se composera d'un simple smart contract, contenant une propriété, le nom de la personne à saluer, aisni que deux fonctions permettant de mettre à jour ce nom et de le récupérer.
+Ensuite, nous créerons une applications Node.js qui affichera ce nom et proposera un formulaire pour le mettre à jour. Ces deux éléments seront liés aux fonctions du smart contract.
+
+Dans un seconds temps, nous transformerons notre HelloWorld en service payant. La mise à jour du nom impliquera le paiement d'un certain tarif.
+Le propriétaire du smart contract pourra alors récupérer quand il le souhaite l'intégralité des sommes que les utilisateurs auront payées.
+
+Techniquement, nous aborderons la création, le test et le déploiement d'un smart contract. Puis la connection d'un application Node.js à un smart contract et l'envoi de transactions à celui-ci.
+
+## Environnement
+
+L'environnement d'exécution de ce tutorial se fera sous Linux, mais il est possible de trouver l'équivalent de chaque commande sous Windows ou Mac.
+
+Ce tutorial sera basé sur Node.js. Il s'agit simplement de la technologie la plus répandue pour travailler avec les smart contracts, celle pour laquelle on trouve le plus d'outils et de frameworks disponibles.
+Mais il est possible de trouver également des frameworks Java, Python ... qui fonctionnent de la même façon.
+
+Nous allons dans un premier temps installer un certain nombre d'outils :
+
+- NodeJS : car le projet sera développé en Node.js :)
+- Ganache : une blockchain de test, qui s'exécute en local et fournit une interface visuelle pour voir ce qu'il s'y passe.
+- Truffle : un outil permettant de copiler, tester et déployer des smart contracts sur une blockchain.
+- Web3.js : un framework javascript permettant d'interagir avec une blockchain.
+
+## Initialisation de l'espace de travail
+
+Positionnez vous dans votre répertoire de travail, et lancez la commande suivante :
+
+ ```truffle init```
+ 
+
+## 2. Premier smart contract
