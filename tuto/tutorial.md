@@ -56,11 +56,67 @@ Nous allons dans un premier temps installer un certain nombre d'outils :
 - Truffle : un outil permettant de copiler, tester et déployer des smart contracts sur une blockchain.
 - Web3.js : un framework javascript permettant d'interagir avec une blockchain.
 
-## Initialisation de l'espace de travail
+***
 
-Positionnez vous dans votre répertoire de travail, et lancez la commande suivante :
+**Vous êtes prêts ? Alors allons-y !**
+
+***
+
+## 1. Initialisation de l'espace de travail
+
+Dans un terminal, positionnez vous dans votre répertoire de travail, et lancez la commande suivante :
 
  ```truffle init```
  
+Après une courte phase de téléchargement et d'initialisation, nous voyons apparaitre 3 répertoires et 1 fichier :
+ 
+```contracts``` : code des smart contracts
+
+```migrations``` : scripts permettant à Truffle de gérer les déploiements
+
+```tests``` : scripts de tests unitaires des smart contracts
+
+```truffle-config.js``` : fichier de configuration de Truffle
+
 
 ## 2. Premier smart contract
+
+Dans ```contracts```, créer un fichier Hello.sol. Y saisir le code suivant :
+
+```
+pragma solidity ^0.5.0;
+
+contract Hello {
+
+    string private name;
+
+    constructor() public {
+        name = "nobody";
+    }
+
+    function setName(string memory newName) public {
+        name = newName;
+    }
+
+    function getName() public view returns (string memory) {
+        return name;
+    }
+}
+
+```
+
+Etudions ce que nous venons d'écrire.
+
+```pragma solidity ^0.5.0;``` décrit la version du compilateur que nous utilisons. Solidity est encore un langage qui évolue beaucoup et pour lequel il risque d'y avoir beaucoup d'incompatibilités entre les versions tant qu'il ne sera pas complètement stabilisé. Pouvoir choisir une version de compilateur permet donc de ne pas avoir à mettre à jour son code trop souvent. (Il est tout de même conseillé de le faire régulièrement pour bénéficier des améliorations de sécurité.)
+
+Ensuite nous déclarons le contrat en indiquant son nom et en lui créant un champ privé de type chaine de caractères.
+
+Ce contrat possède un constructeur, qui initialise son champ avec la valeur "nobody", ainsi qu'un getter et un setter pour modifier et accéder à ce champ.
+
+Notez l'utilisation de certains mots clés :
+
+```memory``` : indique que la valeur de cette variable (```newName```) est stockée en mémoire uniquement et non dans la blockchain. Elle n'occasionnera donc aucun coût de stockage, contrairement au champ ```name```.
+
+```view``` : indique que cette fonction ne modifie pas l'état de la blockchain car elle ne fait que retourner une valeur. Elle n'occasionnera elle non plus aucun coût et peut donc être appelée gratuitement, contrairement à ```setName```, dont l'appel devra se faire via une transaction payante.
+
+```returns (string memory)``` : indique le type de retour de la fonction. Là encore, il faut préciser que la donnée retournée ne transitera que par la mémoire et non par le stockage sur la blockchain.
