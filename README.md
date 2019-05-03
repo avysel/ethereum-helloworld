@@ -39,6 +39,8 @@ _**- build/contracts**_ : compiles contracts and ABIs
 
 **_- migrations_** : Truffle migration file
 
+**_- test_** : Truffle contracts test files
+
 **_- src_** : Nodejs application, using Web3.js 1.0
 
 **_- src/oracle.js & api.js_** : simple API and Ethereum oracle
