@@ -5,10 +5,10 @@ Dans ce tutoriel, nous allons voir comment développer une application couplée 
 
 ## Introduction
 
-Ethereum permet la création de smart contracts. Ce sont des programmes qui sont envoyés à tous les noeuds du réseau et dont on active des fonctionnalités au moyen de transactions.
+Ethereum permet la création de **smart contracts**. Ce sont des programmes qui sont envoyés à tous les noeuds du réseau et dont on active des fonctionnalités au moyen de transactions.
 Ils vont donc s'exécuter sur tous les noeuds dès que ces derniers recevront la transaction correspondante.
 
-Les smart contracts sont écrits en Solidity, un langage créé pour Ethereum. Ils sont exécutés dans l'EVM (Ethereum Virtual Machine). C'est une machine à pile d'exécution. C'est à dire que le programme est décompoé en une suite d'instructions de base, placées sur une pile, et exécutées dans l'ordre de dépilage.
+Les smart contracts sont écrits en **Solidity**, un langage créé pour Ethereum. Ils sont exécutés dans l'**EVM (Ethereum Virtual Machine)**. C'est une **machine virtuelle à pile d'exécution** présente sur chaque noeud Ethereum. C'est à dire que le programme est décompoé en une suite d'instructions de base, placées sur une pile, et exécutées dans l'ordre de dépilage.
 
 La documentation officielle du langage est disponible ici : 
 https://solidity.readthedocs.io/en/latest/
@@ -25,7 +25,7 @@ Une mise à jour de smart contract équivaut au déploiement d'un nouveau smart 
 
 ## DApp ?
 
-Une DApp, ou Decentralized Application, application décentralisée, est une application déployée sur un réseau de façon uniforme et partagée, qui ne possède aucun élément central et nécessaire à son fonctionnement.
+Une DApp, ou **Decentralized Application**, application décentralisée, est une application déployée sur un réseau de façon uniforme et partagée, qui ne possède aucun élément central et nécessaire à son fonctionnement.
 
 Une application reposant uniquement sur des smart contracts déployés sur une blockchain est donc une DApp. La coupler à une application NodeJS ou autre, déployée sur un serveur, hors de la blockchain, revient à créer un Single Point Of Failure. De ce fait, il ne s'agit plus réellement d'une DApp.
 
@@ -51,10 +51,22 @@ Mais il est possible de trouver également des frameworks Java, Python ... qui f
 
 Nous allons dans un premier temps installer un certain nombre d'outils :
 
-- NodeJS : car le projet sera développé en Node.js :)
+- Node.js : car le projet sera développé en Node.js :)
+
 - Ganache : une blockchain de test, qui s'exécute en local et fournit une interface visuelle pour voir ce qu'il s'y passe.
-- Truffle : un outil permettant de copiler, tester et déployer des smart contracts sur une blockchain.
+
+https://truffleframework.com/ganache
+
+- Truffle : un outil permettant de compiler, tester et déployer des smart contracts sur une blockchain.
+
+https://truffleframework.com/truffle
+
 - Web3.js : un framework javascript permettant d'interagir avec une blockchain.
+
+https://web3js.readthedocs.io/en/1.0/index.html
+
+Web3.js existe en version 0.20.X, qui est la version stable actuelle, et en version 1.0.X qui est encore en beta.
+Nous allons utiliser la version 1.0 pour ce tutorial, car elle est bien plus complète et facile d'utilisation que la 0.20, et elle ne présente plus de problème de stabilité. La version 0.20 permet une utilisation directement intégrée à des pages web, dans un navigateur, alors que la version 1.0 impose de passer par une exécution côté serveur telle que Node.js.
 
 ***
 
