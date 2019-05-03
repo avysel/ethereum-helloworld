@@ -42,6 +42,7 @@ Le propriétaire du smart contract pourra alors récupérer quand il le souhaite
 
 Techniquement, nous aborderons la création, le test et le déploiement d'un smart contract. Puis la connection d'un application Node.js à un smart contract et l'envoi de transactions à celui-ci.
 
+
 ## Environnement
 
 L'environnement d'exécution de ce tutorial se fera sous Linux, mais il est possible de trouver l'équivalent de chaque commande sous Windows ou Mac.
@@ -133,3 +134,62 @@ Notez l'utilisation de certains mots clés :
 ```view``` : indique que cette fonction ne modifie pas l'état de la blockchain car elle ne fait que retourner une valeur. Elle n'occasionnera elle non plus aucun coût et peut donc être appelée gratuitement, contrairement à ```setName```, dont l'appel devra se faire via une transaction payante.
 
 ```returns (string memory)``` : indique le type de retour de la fonction. Là encore, il faut préciser que la donnée retournée ne transitera que par la mémoire et non par le stockage sur la blockchain.
+
+Maintenant, tapez la commande suivante :
+
+```truffle compile```
+
+Si la compilation se termine avec succès, un répertoire ```build/contracts``` vient d'être créé. Il contient les résultats de la compilation. C'est dans ce répertoire que nous trouverons les **ABI** (Application Binary Interface). Il s'agit des contrats de service, définis en json, que notre application aura besoin de connaitre pour pouvoir interagir avec le smart contract. Nous verrons cela par la suite.
+
+
+## 3. Test du smart contract
+
+Avant de déployer notre smart contract, nous allons le tester en utilisant Remix. C'est un IDE en ligne qui remplit à peu près le même rôle que Truffle. C'est l'occasion de tester un nouvel outil :).
+
+https://remix.ethereum.org
+
+
+## 4. Déploiement du smart contract
+
+Tout d'abord, lancez Ganache (ou tout autre client Ethereum).
+
+Nous allons modifier le fichier ```truffle-config.js``` pour indiquer à Truffle les paramètres de connexion :
+
+```
+module.exports = {
+  networks: {
+    ganache: {
+      host: "127.0.0.1",
+      port: 7545,
+      network_id: "*" // Match any network id
+    }
+  }
+};
+```
+
+Nous indiquons qu'il existe un réseau, que nous nommons **ganache**, et qui disponible sur 127.0.0.1:7545 (IP/Port par défaut de Ganache, adaptez au besoin).
+Il est possible de définir plusieurs réseaux, et de préciser dans la ligne de commande lequel utilisé. Le premier sera utilisé par défaut si rien n'est indiqué.
+
+Dans le répertoire ```migrations``` dupliquez le fichier ```1_initial_migration.js``` en le nommant ```2_hello_migration.js```. Modifiez le contenu de ce nouveau fichier de cette façon :
+
+```
+const Hello = artifacts.require("Hello");
+
+module.exports = function(deployer) {
+  deployer.deploy(Hello);
+};
+```
+
+Le paramètre du ```require``` doit être le nom du contrat tel que défini dans le fichier Hello.sol.
+
+
+Maintenant, tapez la commande suivante :
+
+```truffle deploy```
+
+Vous devez obtenir le résultat suivant :
+
+![Résultat du déploiement](images/1-deploy-result.png)
+
+Vous obtenez différentes informations sur la transaction qui a déployé de contrat (numéro de transaction, prix ...).
+Notez bien pour plus tard l'information la plus important, l'adresse à laquelle le smart contract a été déployé ("contract address").
