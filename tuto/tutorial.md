@@ -2,6 +2,7 @@
 
 Dans ce tutoriel, nous allons voir comment développer une application couplée à la blockchain Ethereum.
 
+Mise à jour : 03/05/2019
 
 ## Introduction
 
@@ -168,7 +169,7 @@ module.exports = {
 ```
 
 Nous indiquons qu'il existe un réseau, que nous nommons **ganache**, et qui disponible sur 127.0.0.1:7545 (IP/Port par défaut de Ganache, adaptez au besoin).
-Il est possible de définir plusieurs réseaux, et de préciser dans la ligne de commande lequel utilisé. Le premier sera utilisé par défaut si rien n'est indiqué.
+Il est possible de définir plusieurs réseaux, et de préciser dans la ligne de commande lequel utiliser. Le premier sera utilisé par défaut si rien n'est indiqué.
 
 Dans le répertoire ```migrations``` dupliquez le fichier ```1_initial_migration.js``` en le nommant ```2_hello_migration.js```. Modifiez le contenu de ce nouveau fichier de cette façon :
 
@@ -191,5 +192,5 @@ Vous devez obtenir le résultat suivant :
 
 ![Résultat du déploiement](images/1-deploy-result.png)
 
-Vous obtenez différentes informations sur la transaction qui a déployé de contrat (numéro de transaction, prix ...).
-Notez bien pour plus tard l'information la plus important, l'adresse à laquelle le smart contract a été déployé ("contract address").
+Vous obtenez différentes informations sur la transaction qui a déployé le contrat (numéro de transaction, prix ...).
+Notez bien pour plus tard l'information la plus importante, l'adresse à laquelle le smart contract a été déployé ("contract address").
