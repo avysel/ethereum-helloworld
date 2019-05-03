@@ -1,9 +1,13 @@
 # ethereum-helloworld
 Hello World smart contract & Dapp for Ethereum
 
+2 versions :
+
+-VanillaJS in browser, Web3.js 0.20
+
+-Node.js, Web3.js 1.0
 
 ## Hello
-(VanillaJS in browser, Web3.js 0.20)
 
 Simple smart contract containing a field "name", a getter and a setter.
 The HTML/javascript page displays the name, and provides a form field to change it.
@@ -16,10 +20,9 @@ To learn how to :
 
 
 ## PayableHello
-(Node.js, Web3.js 1.0)
 
 Same as Hello. But changing the name costs 2 ETH.
-User can pay more than 2 ETH, and gets a deposit (event) for any payment.
+User can pay more than 2 ETH, and gets a receipt (event) for any payment.
 Contract owner can get ethers owned by its contract.
 We can't send Ether to the contract without changing the name
 
@@ -33,19 +36,19 @@ To learn how to :
 
 
 ## Files
-_**- build/contracts**_ : compiles contracts and ABIs
+``build/contracts``: compiles contracts and ABIs
 
-**_- contracts_** : smart contracts code
+``contracts``: smart contracts code
 
-**_- migrations_** : Truffle migration file
+``migrations``: Truffle migration file
 
-**_- test_** : Truffle contracts test files
+``test``: Truffle contracts test files
 
-**_- src_** : Nodejs application, using Web3.js 1.0
+``src``: Nodejs application, using Web3.js 1.0
 
-**_- src/oracle.js & api.js_** : simple API and Ethereum oracle
+``src/oracle.js & api.js``: simple API and Ethereum oracle
 
-**_- vanilla_** : standalone Vanilla Js Hello and PayableHello applications, using Web3.js 0.20, browser-only.
+``vanilla``: standalone Vanilla Js Hello and PayableHello applications, using Web3.js 0.20, browser-only.
 
 
 ## Requirements
