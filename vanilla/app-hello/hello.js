@@ -35,6 +35,7 @@ function changeName() {
 
 /**
 * Update name using smart contract
+* newName : the new name to set
 */
 function updateName(newName) {
 	var gas = hello.setName.estimateGas(newName, { from: web3.eth.coinbase, gas: 4000000 }	);

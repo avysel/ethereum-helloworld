@@ -15,6 +15,7 @@ var exports = module.exports = {};
 var payableHello = null; // contract methods
 var web3 = null;
 
+// object to return the result of a request on blockchain
 function RequestResult(txHash, blockNumber, gas, data, errorMessage) {
 	this.txHash = txHash;
 	this.blockNumber = blockNumber
@@ -49,9 +50,13 @@ exports.connection = function() {
 */
 exports.initContracts = function() {
 
+	// read ABI from file
 	var parsed = JSON.parse(fs.readFileSync(config.abiFile));
 	var payableHelloWorldABI = parsed.abi;
+
+	// load contracts methods at contract address, using ABI
 	payableHello = new web3.eth.Contract(payableHelloWorldABI, config.payableHelloContractAddress);
+
 	console.log("Load contract at : "+config.payableHelloContractAddress);
 }
 
@@ -64,6 +69,8 @@ exports.readName = async function() {
 
 /*
 * Call change name function and wait for event
+* newName : the new name to set
+* price : the number of ethers we pay to change the name
 */
 exports.updateName = async function(newName, price) {
 
@@ -77,15 +84,19 @@ exports.updateName = async function(newName, price) {
 
 	var promiseSetName = new Promise( function (resolve, reject){
 
+		// send a transaction to setName
 		payableHello.methods.setName(newName).send({from: config.account, gas: gasAmount, value: web3.utils.toWei(price, "ether")})
 		.on('transactionHash', (hash) => {
+				// when tx hash is known
 			   console.log("tx hash : "+hash);
 			   result.txHash = hash;
 		   })
 		   .on('receipt', (receipt) => {
+		   		// when receipt is created
 			   console.log("receipt");
 		   })
 		   .on('confirmation', (confirmationNumber, receipt) => {
+		   		// when tx is confirmed
 			   console.log("confirmation");
 			   console.log(receipt);
 			   result.blockNumber = receipt.blockNumber;
@@ -103,6 +114,9 @@ exports.updateName = async function(newName, price) {
 
 /**
 * Update name using smart contract, using account different from default one
+* newName : the new name to set
+* price : the number of ethers we pay to change the name
+* address : the address used to send tx
 */
 exports.sendRawTransaction = async function(newName, price, address) {
 
@@ -185,6 +199,7 @@ exports.sendRawTransaction = async function(newName, price, address) {
 
 /**
 * Retreive contract balance. Only works for contract owner
+* withdrawAccount : the address to send ethers to
 */
 exports.withdraw = async function(withdrawAccount) {
 
@@ -198,6 +213,7 @@ exports.withdraw = async function(withdrawAccount) {
 
 	var promiseWithdraw = new Promise( function (resolve, reject){
 
+		// send tx to withdraw function
 		payableHello.methods.withdraw().send({from: withdrawAccount, gas: gasAmount*2})
 		.on('transactionHash', (hash) => {
 			   console.log("tx hash : "+hash);
@@ -232,6 +248,7 @@ exports.getNodeInfo = async function() {
 		web3Version:  web3.version
 	};
 
+	// get all blockchain info from current node
 	nodeInfo.blockNumber = await web3.eth.getBlockNumber();
 	nodeInfo.coinbase = await web3.eth.getCoinbase();
 	nodeInfo.node = await web3.eth.getNodeInfo();
@@ -242,10 +259,15 @@ exports.getNodeInfo = async function() {
 
 }
 
+/*
+* Get all NameChanged events data
+*/
 exports.getNameChangedHistory = async function() {
 	var eventsList = new Array();
 
 	return new Promise(function(resolve, reject) {
+
+		// get all emited events from first block to last block
 		payableHello.getPastEvents("NameChanged", { fromBlock: 0, toBlock: 'latest' })
 			.then((events, error) => {
 				events.forEach(function(item, index, array) {
@@ -257,10 +279,15 @@ exports.getNameChangedHistory = async function() {
 	});
 }
 
+/*
+* Get all Withdraw events data
+*/
 exports.getWithdrawHistory = function() {
 	var eventsList = new Array();
 
 	return new Promise(function(resolve, reject) {
+
+		// get all emited events from first block to last block
 		payableHello.getPastEvents("Withdraw", { fromBlock: 0, toBlock: 'latest' })
 			.then((events, error) => {
 				events.forEach(function(item, index, array) {

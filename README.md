@@ -3,14 +3,14 @@ Hello World smart contract & Dapp for Ethereum
 
 2 versions :
 
--VanillaJS in browser, Web3.js 0.20
+-Vanilla Js in browser, Web3.js 0.20
 
 -Node.js, Web3.js 1.0
 
 ## Hello
 
 Simple smart contract containing a field "name", a getter and a setter.
-The HTML/javascript page displays the name, and provides a form field to change it.
+The HTML/javascript page displays the name, and provides a form to change it.
 
 To learn how to :
 - Connect to blockchain

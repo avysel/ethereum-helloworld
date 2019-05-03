@@ -14,6 +14,9 @@ function connection() {
 	console.log("Connected");
 }
 
+/*
+* Update screen fields with blockchain data
+*/
 function refresh() {
 	document.getElementById("web3-version").innerHTML = web3.version.api;
 	document.getElementById("node").innerHTML = web3.version.node;
@@ -51,6 +54,8 @@ function changeName() {
 
 /**
 * Update name using smart contract, using default account
+* newName : the new name to set
+* price : the number of ethers we pay to change the name
 */
 function updateName(newName, price) {
 
@@ -82,6 +87,10 @@ function updateName(newName, price) {
 
 /**
 * Update name using smart contract, using account different from default one
+* newName : the new name to set
+* price : the number of ethers we pay to change the name
+* address : the address used to send tx
+* private key : the private key of account given by "address" parameter
 */
 function sendRawTransaction(newName, price, address, privateKey) {
 	console.log("Start creating raw tx from "+address);
