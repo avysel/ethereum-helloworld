@@ -480,6 +480,7 @@ Dans le navigateur ```http://localhost:3000```
 
 ![Premier affichage](images/2_index_blockchaininfo.png)
 
+Dans la partie "Blockchain info", nous pouvons voir que la valeur de la balance du compte utilisé, qui était à 100 ETH lors du lancement de Ganache, a été diminuée en fonction du coût des transactions qui ont permis de déployer les contrats.
 
 ### 1.4 Lecture d'une donnée
 
@@ -632,13 +633,14 @@ On créer une méthode _updateName_ qui prend en paramètre le nouveau nom. Ensu
 
 1. Nous allons appeler une méthode du smart contract qui modifie la blockchain, cette transaction va donc entrainer un coût d'utilisation. Ce coût s'exprime en _gaz_, le carburant d'Ethereum.
 Dans un premier temps, il faut estimer la quantité de gaz nécessaire au moyen de ```estimateGas()```.
-Puis nous pouvons appeler la méthode ```setName()``` en lui indiquant d'utiliser cette quantité de gaz. Il est possible de passer directement une grande quantité de gaz, mais au risque de la voir entièrement consommée si la transaction d'avère trop grosse, et donc qu'elle nous coûte très cher. A l'inverse, si la quantité de gaz fournie est trop faible, le gaz sera consommé, mais la transaction ne sera pas validée.
+
+2. Puis nous pouvons appeler la méthode ```setName()``` en lui indiquant d'utiliser cette quantité de gaz. Il est possible de passer directement une grande quantité de gaz, mais au risque de la voir entièrement consommée si la transaction d'avère trop grosse, et donc qu'elle nous coûte très cher. A l'inverse, si la quantité de gaz fournie est trop faible, le gaz sera consommé, mais la transaction ne sera pas validée.
 Le traitement d'une transaction étant asynchrone, nous récupérons une Promise, que nous allons retourner.
 
-Ensuite, il faut attendre que la transaction soit prise en compte. Pour celà, nous allons utiliser plusieurs événements :
-- ```transactionHash``` : quand la transaction obtient un hash et est envoyée au réseau
-- ```receipt``` : quand le reçu de transaction est créé
-- ```confirmtion``` : quand la transaction est confirmée (c'est à dire quand un certain nombre de blocs ont été minés à la suite de celui qui la contient, ce nombre peut être déterminé dans les options de connexion à la blockchain)
+3. Ensuite, il faut attendre que la transaction soit prise en compte. Pour celà, nous allons utiliser plusieurs événements, qui se produisent à différents moment de la vie de la transaction :
+- ```transactionHash``` : quand la transaction obtient un hash et est envoyée au réseau.
+- ```receipt``` : quand le reçu de transaction est créé, on y trouve la majeur partie des informations concernant cette transaction.
+- ```confirmtion``` : quand la transaction est confirmée (c'est à dire quand un certain nombre de blocs ont été minés à la suite de celui qui la contient, ce nombre peut être déterminé dans les options de connexion à la blockchain).
 - ```error``` : en cas d'erreur
 
 **_index.pug :_** 
@@ -711,7 +713,7 @@ html(lang='fr')
 On y ajoute un formulaire pour saisir le nouveau nom, ainsi qu'un bloc qui va afficher le résultat de la modification.
 
 
-**_app.js : _**
+**_app.js :_**
 
 Le formulaire effectue un POST sur ```/name```. Nous allons donc aussi modifier le contrôleur pour créer une route qui appelle le service créé précédemment.
 
@@ -756,6 +758,10 @@ Dans le bloc "Status", nous récupérons le numéro de la transaction qui a modi
 
 Il est possible de récupérer en grand nombre d'informations sur la transaction. Pour celà, vous pouvez inspecter l'objet ```receipt``` obtenu lors de l'envoi de la transaction.
 
+On peut également aller tester le smart contract avec Remix. On constatera que la valeur du nom est bien celle que nous avons envoyée.
+On peut aussi consulter la liste des transactions dans Ganache pour retrouver celle que nous avons envoyée.
+
+Dans la partie "Blockchain info", nous pouvons aussi voir que la valeur de la balance du compte utilisé diminue en fonction du coût de la transaction.
 
 ## 7. Les événements<a name="7"></a>
 
