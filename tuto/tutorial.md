@@ -68,15 +68,34 @@ https://truffleframework.com/truffle
 https://web3js.readthedocs.io/en/1.0/index.html
 
 Web3.js existe en version 0.20.X, qui est la version stable actuelle, et en version 1.0.X qui est encore en beta.
-Nous allons utiliser la version 1.0 pour ce tutorial, car elle est bien plus complète et facile d'utilisation que la 0.20, et elle ne présente plus de problème de stabilité. La version 0.20 permet une utilisation directement intégrée à des pages web, dans un navigateur, alors que la version 1.0 impose de passer par une exécution côté serveur telle que Node.js.
+La version 0.20 permet une utilisation directement intégrée à des pages web, dans un navigateur. Elle est plus simple d'utilisation, mais sera prochainement dépréciée.
+La version 1.0.X, bien que beta, a un bon niveau de stabilité et est bien plus complète. Cependant, elle impose un fonctionnement côté serveur, tel que Node.js.
+
+Nous allons utiliser la version 1.0 pour ce tutorial.
 
 ***
 
 **Vous êtes prêts ? Alors allons-y !**
 
 ***
+**Sommaire**
+1. [Initialisation de l'espace de travail](#1)
+2. [Premier smart contract](#2)
+3. [Test du smart contract](#3)
+4. [Déploiement du smart contract](#4)
+5. [Initialisation de l'application web](#5)
+6. [Modification de la valeur](#6)
+7. [Les événements](#7)
+8. [Rendre la modification payante](#8)
+9. [Administrer le contract](#9)
+10. [Envoyer une transaction signée](#10)
+11. [Ajouter un oracle](#11)
+12. [Tests automatiques](#12)
+13. [Ressources](#links)
 
-## 1. Initialisation de l'espace de travail
+***
+
+## 1. Initialisation de l'espace de travail<a name="1"></a>
 
 Dans un terminal, positionnez vous dans votre répertoire de travail, et lancez la commande suivante :
 
@@ -94,7 +113,7 @@ Après une courte phase de téléchargement et d'initialisation, nous voyons app
 
 Dans certains de ces répertoires, des fichiers ```*migration*``` on été créés. Ils sont nécessaires à Truffle pour les déploiements de contrats, il ne faut pas les supprimer.
 
-## 2. Premier smart contract
+## 2. Premier smart contract<a name="2"></a>
 
 Dans ```contracts```, créer un fichier Hello.sol. Y saisir le code suivant :
 
@@ -143,14 +162,14 @@ Maintenant, tapez la commande suivante :
 Si la compilation se termine avec succès, un répertoire ```build/contracts``` vient d'être créé. Il contient les résultats de la compilation. C'est dans ce répertoire que nous trouverons les **ABI** (Application Binary Interface). Il s'agit des contrats de service, définis en json, que notre application aura besoin de connaitre pour pouvoir interagir avec le smart contract. Nous verrons cela par la suite.
 
 
-## 3. Test du smart contract
+## 3. Test du smart contract<a name="3"></a>
 
 Avant de déployer notre smart contract, nous allons le tester en utilisant Remix. C'est un IDE en ligne qui remplit à peu près le même rôle que Truffle. C'est l'occasion de tester un nouvel outil :).
 
 https://remix.ethereum.org
 
 
-## 4. Déploiement du smart contract
+## 4. Déploiement du smart contract<a name="4"></a>
 
 Tout d'abord, lancez Ganache (ou tout autre client Ethereum).
 
@@ -194,3 +213,260 @@ Vous devez obtenir le résultat suivant :
 
 Vous obtenez différentes informations sur la transaction qui a déployé le contrat (numéro de transaction, prix ...).
 Notez bien pour plus tard l'information la plus importante, l'adresse à laquelle le smart contract a été déployé ("contract address").
+
+## 5. Initialisation de l'application web<a name="5"></a>
+
+### 1.1 Création des fichiers
+
+Nous allons initialiser une application web, basée sur Node.js, utilisant les framework Express pour MVC et Pug pour les templates HTML.
+Dans un premier temps, nous allons créer une simple page d'index qui affiche des informations sur le noeud de blockchain auquel nous sommes connectés.
+
+Nous allons créer plusieurs répertoires et fichiers :
+- ```src/``` : pour contenir les sources de notre application web
+- ```src/views``` : pour les templates des écrans
+- ```src/views/index.pug``` : le template de l'index
+- ```src/app.js``` : le contrôleur de l'application
+- ```src/payablehello.js``` : les services de connexion à la blockchain
+- ```src/config.js``` : la configuration de notre application
+
+Placez-vous dans le répertoire ```src``` et initialisez le projet Node.js avec la commande
+
+```npm init```
+
+Saisissez les quelques informations demandées pour initialiser le projet.
+
+Nous allons maintenant installer les packages nécessaires.
+
+```npm install pug```
+
+```npm install express```
+
+```npm install web```
+
+1ère étape, se connecter à la blockchain au moyen de web3.
+
+**_config.js :_**
+
+```javascript
+const config = {
+
+	// blockchain node IPC IP and port
+	nodeURL: "http://127.0.0.1",
+	nodePort: 7545,
+
+	// default account address
+	account:"0x1234567890abcdef......",
+
+	// ABI file of smart contract
+	abiFile:"../build/contracts/PayableHello.json",
+	
+	// address of deployed contract on blockchain
+	payableHelloContractAddress:"0x1234567890abcdef......"	
+
+};
+
+module.exports = config;
+```
+
+Initialiser les valeurs 
+- ```nodeURL``` et ```nodePort``` : éléments de connexion à Ganache
+- ```account``` : adresse Ethereum du premier compte disponible sur Ganache,
+- ```abiFile``` : chemin du fichier PayableHello.json dans le répertoire ```build``` généré par Truffle.
+- ```payableHelloContractAddress``` : adresse à laquelle le contrat a été déployé avec Truffle. ("contract address" dans le résultat de ```truffle deploy```)
+
+
+### 1.2 Connection à la blockchain
+
+**_payablehello.js :_**
+
+```
+var Web3 = require("web3");
+var fs = require('fs');
+var config = require("./config.js");
+
+var exports = module.exports = {};
+
+var payableHello = null; // contract methods
+var web3 = null;
+
+/*
+* Connect to blockchain
+*/
+exports.connection = function() {
+
+	const options = {
+		defaultAccount: config.account
+	}
+
+	web3 = new Web3(Web3.givenProvider || config.nodeURL+':'+config.nodePort, null, options);
+	console.log("Connected to "+config.nodeURL+':'+config.nodePort);
+}
+```
+
+### 1.3 Connection au contrat
+
+Nous allons maintenant nous connecter au contrat :
+
+**_payablehello.js :_**
+
+```
+/*
+* Load contract's methods with ABI
+*/
+exports.initContracts = function() {
+
+	// read ABI from file
+	var parsed = JSON.parse(fs.readFileSync(config.abiFile));
+	var payableHelloWorldABI = parsed.abi;
+
+	// load contracts methods at contract address, using ABI
+	payableHello = new web3.eth.Contract(payableHelloWorldABI, config.payableHelloContractAddress);
+
+}
+```
+
+Cette fonction récupère l'objet javascript ABI dans le fichier json et le passe en paramètre, avec l'adresse du smart contract déployé, à la méthode ```web3.eth.Contract```, qui va retourner un object javascript permettant d'interagir avec le smart contract.
+
+L'objet ```payableHello``` sera donc notre objet d'accès au contrat.
+
+Nous pouvons initialiser notre template (on intègre Bootstrap pour faciliter la mise en forme) :
+
+**_index.pug :_**
+```
+doctype html
+html(lang='fr')
+	head
+		meta(charset='utf-8')
+		title Ethereum Hello world
+		script(type='text/javascript', src='https://code.jquery.com/jquery-3.3.1.slim.min.js')
+		script(type='text/javascript', src='https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js')
+		script(type='text/javascript', src='https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js')
+		link(rel='stylesheet' href='https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css')
+	body
+	.container-fluid
+		.row
+			.col-md-6
+				div.card
+					h3.card-header Blockchain info
+					div.card-body
+						#info
+							br
+							div
+								b Web3 version :&nbsp;
+								span#web3-version #{nodeInfo.web3Version}
+							div
+								b Node :&nbsp;
+								span#node #{nodeInfo.node}
+							div
+								b Last block :&nbsp;
+								span#block-number #{nodeInfo.blockNumber}
+							div
+								b Coinbase :&nbsp;
+								span#coinbase #{nodeInfo.coinbase}
+							div
+								b Balance :&nbsp;
+								span#balance #{nodeInfo.balance}
+							div
+								b Contract balance :&nbsp;
+								span#contract-balance #{nodeInfo.contractBalance}
+```
+
+Et pour lier tout ça, notre contrôleur, **_app.js : _**
+
+```
+var http = require('http');
+var express = require('express');
+var bodyParser = require('body-parser');
+var stringify = require('json-stringify-safe');
+var config = require("./config.js");
+var payableHello = require('./payablehello'); // app services
+
+var app = express();
+app.set('view engine', 'pug');
+app.use(bodyParser.urlencoded({ extended: false }))
+
+
+// object containing data to display on index page
+var displayData = {};
+displayData.nodeInfo = null;
+displayData.name = null;
+displayData.txStatus = null;
+displayData.blockNumber = null;
+displayData.withdrawStatus = null;
+displayData.nameHistory = null;
+displayData.paymentHistory = null;
+displayData.withdrawHistory = null;
+displayData.errorMessage = null;
+displayData.accounts = config.accounts;
+
+
+/*
+* 
+*/
+async function renderIndex(res) {
+
+	try {
+		// get blockchain node's information
+		displayData.nodeInfo = await payableHello.getNodeInfo();
+	}
+	catch(error) {
+		console.error(error);
+	}
+
+	res.render('index', displayData);
+}
+
+/*
+* Display home page
+*/
+app.get('/', async function(req, res) {
+	renderIndex(res);
+});
+
+
+// init blockchain connection
+payableHello.connection();
+payableHello.initContracts();
+
+// start server
+app.listen(3000);
+
+```
+
+On définit une route GET "/", qui affichera l'index, puis on appelle les méthodes définies précédemment pour se connecter à la blockchain et au contrat. Enfin, on lance l'application sur le port 3000 de localhost.
+
+Nous avons maintenant tout ce qu'il faut pour lancer la première version de notre application, qui va :
+- se connecter à la blockchain
+- se connecter au smart contract
+- afficher un certain nombre d'informations concernant le noeud de blockchain utilisé
+
+Pour lancer l'application :
+
+```node app.js```
+
+Dans le navigateur ```http://localhost:3000```
+
+![Premier affichage](images/2_index_blockchaininfo.png)
+
+
+### 1.4 Lecture d'une donnée
+
+Nous allons maintenant enrichir tout ça en récupérant le nom de la personne à saluer et en l'affichant à l'écran.
+
+## 6. Modification de la valeur<a name="6"></a>
+
+## 7. Les événements<a name="7"></a>
+
+## 8. Rendre la modification payante<a name="8"></a>
+
+## 9. Administrer le contract<a name="9"></a>
+
+## 10. Envoyer une transaction signée<a name="10"></a>
+
+## 11. Ajouter un oracle<a name="11"></a>
+
+## 12. Tests automatiques<a name="12"></a>
+
+## Ressources<a name="links"></a>
+Lien vers le repository avec le code source complet : http://
+https://solidity.readthedocs.io/en/latest/

@@ -19,4 +19,3 @@ contract Hello {
         return name;
     }
 }
-
