@@ -31,6 +31,18 @@ Une DApp, ou **Decentralized Application**, application décentralisée, est une
 Une application reposant uniquement sur des smart contracts déployés sur une blockchain est donc une DApp. La coupler à une application NodeJS ou autre, déployée sur un serveur, hors de la blockchain, revient à créer un Single Point Of Failure. De ce fait, il ne s'agit plus réellement d'une DApp.
 
 
+## Vous avez dit asynchrone ?
+
+Un des concepts important du développement d'application connectée à une blockchain est le concetp d'asynchronicité.
+En effet, l'envoi de donneés à une blockchain se fait au moyen de transactions. Ces transactions, en plus d'entrainer des coûts d'utilisation, sont asynchrones.
+
+Lorsqu'une transaction est envoyée, elle doit être validée par un des noeuds de la blockchain, ce qui peut prendre un temps variable.
+Dans certains cas, il faut également attendre une confirmation afin d'être (presque) certain qu'elle ne sera pas remise en question par une chaine plus longue qui ne la prendrait pas en compte.
+
+L'obtention du résultat, ou le simple fait de considérer une modification comme effective, doit se faire dans ces conditions.
+
+Dans notre projet en Node.js, cet asynchronicité sera mise en place au moyen de promesses. Les mots clés _Promise_, _async_, _await_ seront donc largement de la partie :)
+
 ## Description du projet
 
 Dans ce projet, nous allons créer un simple HelloWorld.
@@ -506,7 +518,11 @@ async function renderIndex(res) {
 ```
 On y ajoute l'appel à notre fonction ```readName()```, pour initialiser la donnée à afficher.
 
-Et enfin, dans notre template **_index.pug_**:
+
+**_index.pug_**:
+
+On rajoute à la fin de notre template quelques lignes pour afficher le nom.
+
 
 ```
 doctype html
@@ -559,6 +575,187 @@ Dans le navigateur :
 Le nom s'affiche. Du moins, la valeur par défaut définie dans le constructeur.
 
 ## 6. Modification de la valeur<a name="6"></a>
+
+Nous allons maintenant pouvoir chercher à modifier le nom.
+
+**_payablehello.js :_**
+
+Commençons par créer le service
+
+```
+/*
+* Call change name function and wait for event
+* newName : the new name to set
+*/
+exports.updateName = async function(newName) {
+
+	// object containing return values
+	var result = new RequestResult();
+
+	// estimate gas cost
+	var gasAmount = await payableHello.methods.setName(newName).estimateGas({from: config.account, gas: 5000000});
+	
+	result.gas = gasAmount;
+
+	var promiseSetName = new Promise( function (resolve, reject){
+
+		// send a transaction to setName
+		payableHello.methods.setName(newName).send({from: config.account, gas: gasAmount})
+		.on('transactionHash', (hash) => {
+				// when tx hash is known
+			   console.log("tx hash : "+hash);
+			   result.txHash = hash;
+		   })
+		   .on('receipt', (receipt) => {
+		   		// when receipt is created
+			   console.log("receipt");
+		   })
+		   .on('confirmation', (confirmationNumber, receipt) => {
+		   		// when tx is confirmed
+			   console.log("confirmation");
+			   console.log(receipt);
+			   result.blockNumber = receipt.blockNumber;
+			   resolve(result);
+		   })
+		   .on('error',(error) => {
+				console.error("promiseSetName on error");
+				console.error(error);
+				reject(error);
+		   });
+	}); // end of promiseSetName, result to return
+
+	return promiseSetName;
+}
+```
+
+On créer une méthode _updateName_ qui prend en paramètre le nouveau nom. Ensuite, le traitement va s'effectuer en plusieurs étapes : 
+
+1. Nous allons appeler une méthode du smart contract qui modifie la blockchain, cette transaction va donc entrainer un coût d'utilisation. Ce coût s'exprime en _gaz_, le carburant d'Ethereum.
+Dans un premier temps, il faut estimer la quantité de gaz nécessaire au moyen de ```estimateGas()```.
+Puis nous pouvons appeler la méthode ```setName()``` en lui indiquant d'utiliser cette quantité de gaz. Il est possible de passer directement une grande quantité de gaz, mais au risque de la voir entièrement consommée si la transaction d'avère trop grosse, et donc qu'elle nous coûte très cher. A l'inverse, si la quantité de gaz fournie est trop faible, le gaz sera consommé, mais la transaction ne sera pas validée.
+Le traitement d'une transaction étant asynchrone, nous récupérons une Promise, que nous allons retourner.
+
+Ensuite, il faut attendre que la transaction soit prise en compte. Pour celà, nous allons utiliser plusieurs événements :
+- ```transactionHash``` : quand la transaction obtient un hash et est envoyée au réseau
+- ```receipt``` : quand le reçu de transaction est créé
+- ```confirmtion``` : quand la transaction est confirmée (c'est à dire quand un certain nombre de blocs ont été minés à la suite de celui qui la contient, ce nombre peut être déterminé dans les options de connexion à la blockchain)
+- ```error``` : en cas d'erreur
+
+**_index.pug :_** 
+
+Puis modifions notre template : 
+
+```
+doctype html
+html(lang='fr')
+	head
+		meta(charset='utf-8')
+		title Ethereum Hello world
+		script(type='text/javascript', src='https://code.jquery.com/jquery-3.3.1.slim.min.js')
+		script(type='text/javascript', src='https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js')
+		script(type='text/javascript', src='https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js')
+		link(rel='stylesheet' href='https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css')
+	body
+	.container-fluid
+		.row
+			.col-md-6
+				div.card
+					h3.card-header Blockchain info
+					div.card-body
+						#info
+							br
+							div
+								b Web3 version :&nbsp;
+								span#web3-version #{nodeInfo.web3Version}
+							div
+								b Node :&nbsp;
+								span#node #{nodeInfo.node}
+							div
+								b Last block :&nbsp;
+								span#block-number #{nodeInfo.blockNumber}
+							div
+								b Coinbase :&nbsp;
+								span#coinbase #{nodeInfo.coinbase}
+							div
+								b Balance :&nbsp;
+								span#balance #{nodeInfo.balance}
+							div
+								b Contract balance :&nbsp;
+								span#contract-balance #{nodeInfo.contractBalance}
+			.col-md-6
+				div.card
+					h5.card-header Hello who ?
+					div.card-body
+						h2 Hello #{name}
+		.row
+			.col-md-6
+				div.card
+					h3.card-header Change name
+					div.card-body
+						#form
+							form(method='post', action='/name')
+								.form-group
+									label(for='newName') Name :
+									input#newName(type='text', name='newName').form-control
+								div
+									input(type='submit', value='Send').btn.btn-primary
+			.col-md-6
+				div.card
+					h3.card-header Status
+					div.card-body
+						div#status Transaction : #{txStatus}
+						div#blockNumber Block : #{blockNumber}
+						div#errorMessage #{errorMessage}
+```
+
+On y ajoute un formulaire pour saisir le nouveau nom, ainsi qu'un bloc qui va afficher le résultat de la modification.
+
+
+**_app.js : _**
+
+Le formulaire effectue un POST sur ```/name```. Nous allons donc aussi modifier le contrôleur pour créer une route qui appelle le service créé précédemment.
+
+```
+/**
+* Update name
+*/
+app.post('/name', function(req, res) {
+
+	// execute the selected promise
+	try {
+		payableHello.updateName(req.body.newName)
+		.then(
+			(result) => {
+				displayData.txStatus = result.txHash;
+				displayData.blockNumber = result.blockNumber;
+				displayData.errorMessage = result.errorMessage;
+				res.redirect("/");
+			},
+			(error) => {
+            			displayData.errorMessage = error;
+				res.redirect("/");
+			}
+		);
+	}
+	catch(error){
+		displayData.errorMessage = error;
+		res.redirect("/");
+	}
+});
+```
+
+Nous pouvons afficher le résultat dans le navigateur :
+
+![On peut changer de nom](images/4_index_changename.png)
+
+Entrez le nom de votre choix, et cliquez sur "Send".
+
+![On peut changer de nom](images/5_index_namechanged.png)
+
+Dans le bloc "Status", nous récupérons le numéro de la transaction qui a modifié le nom et le numéro du bloc dans lequel elle a été validée.
+
+Il est possible de récupérer en grand nombre d'informations sur la transaction. Pour celà, vous pouvez inspecter l'objet ```receipt``` obtenu lors de l'envoi de la transaction.
+
 
 ## 7. Les événements<a name="7"></a>
 

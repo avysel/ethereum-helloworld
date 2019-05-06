@@ -76,6 +76,7 @@ exports.updateName = async function(newName, price) {
 
 	console.log("> call updateName : "+newName+", "+price);
 
+	// object containing return values
 	var result = new RequestResult();
 
 	// estimate gas cost
