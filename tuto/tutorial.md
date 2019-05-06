@@ -301,6 +301,26 @@ exports.connection = function() {
 	web3 = new Web3(Web3.givenProvider || config.nodeURL+':'+config.nodePort, null, options);
 	console.log("Connected to "+config.nodeURL+':'+config.nodePort);
 }
+
+/*
+* Get connection info
+*/
+exports.getNodeInfo = async function() {
+
+	var nodeInfo = {
+		web3Version:  web3.version
+	};
+
+	// get all blockchain info from current node
+	nodeInfo.blockNumber = await web3.eth.getBlockNumber();
+	nodeInfo.coinbase = await web3.eth.getCoinbase();
+	nodeInfo.node = await web3.eth.getNodeInfo();
+	nodeInfo.balance = web3.utils.fromWei(await web3.eth.getBalance(config.account), 'ether');
+	nodeInfo.contractBalance = web3.utils.fromWei(await web3.eth.getBalance(config.payableHelloContractAddress), 'ether');
+
+	return nodeInfo;
+
+}
 ```
 
 ### 1.3 Connection au contrat
@@ -371,7 +391,7 @@ html(lang='fr')
 								span#contract-balance #{nodeInfo.contractBalance}
 ```
 
-Et pour lier tout ça, notre contrôleur, **_app.js : _**
+Et pour lier tout ça, notre contrôleur, **_app.js :_**
 
 ```
 var http = require('http');
@@ -452,6 +472,91 @@ Dans le navigateur ```http://localhost:3000```
 ### 1.4 Lecture d'une donnée
 
 Nous allons maintenant enrichir tout ça en récupérant le nom de la personne à saluer et en l'affichant à l'écran.
+
+**_payablehello.js :_**
+
+```
+/**
+* Read the name from smart contract
+*/
+exports.readName = async function() {
+	return payableHello.methods.getName().call({from: config.account});
+}
+```
+On utilise l'objet ```payableHello``` défini précédement pour accéder aux méthodes du smart contact (```payableHello.methods```) et plus précisément à ```getName()```.
+On termine l'instruction avec ```call()```, qui prend en paramètre les éléments pour effectuer une transaction. Ici, nous appelons une méthode qui est définie comme ```view``` dans le contrat, donc qui n'engendre pas de coût. Le seul paramètre que nous allons passer est l'adresse du compte qui va émettre cette transaction.
+
+**_app.js :_**
+
+On modifie la fonction renderIndex :
+
+```
+async function renderIndex(res) {
+
+	try {
+		displayData.nodeInfo = await payableHello.getNodeInfo();
+		displayData.name = await payableHello.readName();
+	}
+	catch(error) {
+		console.error(error);
+	}
+
+	res.render('index', displayData);
+}
+```
+On y ajoute l'appel à notre fonction ```readName()```, pour initialiser la donnée à afficher.
+
+Et enfin, dans notre template **_index.pug_**:
+
+```
+doctype html
+html(lang='fr')
+	head
+		meta(charset='utf-8')
+		title Ethereum Hello world
+		script(type='text/javascript', src='https://code.jquery.com/jquery-3.3.1.slim.min.js')
+		script(type='text/javascript', src='https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js')
+		script(type='text/javascript', src='https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js')
+		link(rel='stylesheet' href='https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css')
+	body
+	.container-fluid
+		.row
+			.col-md-6
+				div.card
+					h3.card-header Blockchain info
+					div.card-body
+						#info
+							br
+							div
+								b Web3 version :&nbsp;
+								span#web3-version #{nodeInfo.web3Version}
+							div
+								b Node :&nbsp;
+								span#node #{nodeInfo.node}
+							div
+								b Last block :&nbsp;
+								span#block-number #{nodeInfo.blockNumber}
+							div
+								b Coinbase :&nbsp;
+								span#coinbase #{nodeInfo.coinbase}
+							div
+								b Balance :&nbsp;
+								span#balance #{nodeInfo.balance}
+							div
+								b Contract balance :&nbsp;
+								span#contract-balance #{nodeInfo.contractBalance}
+			.col-md-6
+				div.card
+					h5.card-header Hello who ?
+					div.card-body
+						h2 Hello #{name}
+```
+
+Dans le navigateur :
+
+![Bonjour qui ?](images/3_index_name.png)
+
+Le nom s'affiche. Du moins, la valeur par défaut définie dans le constructeur.
 
 ## 6. Modification de la valeur<a name="6"></a>
 
