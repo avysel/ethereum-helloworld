@@ -2,7 +2,7 @@
 
 Dans ce tutoriel, nous allons voir comment développer une application couplée à la blockchain Ethereum.
 
-Mise à jour : 03/05/2019
+Mise à jour : 06/05/2019
 
 ## Introduction
 
@@ -91,7 +91,7 @@ Nous allons utiliser la version 1.0 pour ce tutorial.
 
 ***
 **Sommaire**
-1. [Initialisation de l'espace de travail](#1)
+1. [Initialisation du projet](#1)
 2. [Premier smart contract](#2)
 3. [Test du smart contract](#3)
 4. [Déploiement du smart contract](#4)
@@ -107,7 +107,7 @@ Nous allons utiliser la version 1.0 pour ce tutorial.
 
 ***
 
-## 1. Initialisation de l'espace de travail<a name="1"></a>
+## 1. Initialisation du projet<a name="1"></a>
 
 Dans un terminal, positionnez vous dans votre répertoire de travail, et lancez la commande suivante :
 
