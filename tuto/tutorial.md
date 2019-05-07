@@ -986,6 +986,22 @@ Il ne reste plus qu'à modifier le contrôleur afin de prendre en compte ce nouv
 
 On récupère la valeur du champ ```price``` de la requête pour le transmettre en paramètre à ```updateName```.
 
+Nous pouvons maintenant tester :
+
+![On peut changer de nom en payant](images/6_index_pay.png)
+
+Taper un nom, entrez une valeur supérieure ou égale à 2 dans le champ "price", et validez.
+Vous pouvez constater que la balance du compte a été réduite du nombre d'Ether tapé, plus un peu de gaz, et que la balance du contrat a, quant à elle, augmenté de cette même somme.
+Celà signifie que pour le moment, c'est bien le smart contract qui possède les Ethers que nous lui avons envoyés.
+
+
+Nous pouvons aussi essayer de changer de nom en en payant qu'un seul Ether : 
+
+![On doit payer la somme minimum](images/7_index_revert.png)
+
+Nous obtenons une erreur, qui contient le message que nous avons passé en paramètre de ```require()``` dans le cas où la condition ne serait pas remplie.
+Les balances du compte et du contrat n'ont pas bougés, donc les Ethers n'ont pas été transférés et le nom n'a pas changé, preuve que la transaction n'a pas été acceptée.
+Cependant, la balance du compte a quand même perdu quelques Wei. En effet, même si une transaction est rejetée, le gas consommé pour la prendre en compte est bel et consommé pour de bon.
 
 
 ## 8. Les événements<a name="8"></a>
@@ -1005,10 +1021,12 @@ A partir de Web3.js 1.0, les promises rendent ce mécanisme moins utile, mais le
 
 ## 12. Tests automatiques<a name="12"></a>
 
-## 13. Focus sur l'utilisation du gas<a name="13"></a>
+## 13. Focus sur l'utilisation du gaz<a name="13"></a>
 
 ## 14. Sécurité<a name="14"></a>
 
-## 15 Ressources<a name="15"></a>
+## 15 Exercices<a name="14"></a>
+
+## 16 Ressources<a name="15"></a>
 Lien vers le repository avec le code source complet : http://
 https://solidity.readthedocs.io/en/latest/
