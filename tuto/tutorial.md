@@ -772,7 +772,7 @@ Prochaine étape, nous allons maintenant rendre la modification du nom payante. 
 
 **_PayableHello.sol :_**
 
-tout d'abord, on ajoute une condition dans le smart contract, dans la méthode ```setName```, afin d'indiquer que son exécution requiert au minimum un envoie de 2 ETH dans la transaction :
+Tout d'abord, on modifie le contrat : 
 
 ```
 pragma solidity ^0.5.0;
@@ -793,11 +793,33 @@ contract PayableHello {
     function getName() public view returns (string memory) {
         return name;
     }
+    
+    function() external payable {
+        revert();
+    }
+        
 }
 ```
 
+On ajoute une condition dans la méthode ```setName```, afin d'indiquer que son exécution requiert au minimum un envoi de 2 ETH dans la transaction.
 Via la fonction ```require()```, nous indiquons la condition à respecter et le message à retourner en cas de non respect.
 Nous introduisons ici la variable globale ```msg```, qui contient les données relative à la transaction courante. On peut y touver l'adresse de l'émetteur (```sender```), le nombre d'Ethers envoyés (```value```) ...
+
+Notez également l'ajout du mot clé ```payable``` dans la définition de la méthode. Il indique qu'elle pourra être appelée par des transactions qui envoient des Ethers. 
+Envoyer des Ethers à une méthode qui n'est pas ```payable``` échouera.
+
+Nous avons aussi ajouté ce que l'on appelle la fonction de fallback :
+
+```
+    function() external payable {
+        revert();
+    }
+```
+
+Cette fonction, sans nom, est automatiquement appelée lorsque le contrat reçoit une transaction avec des Ethers, sans appel de méthode spécifiquement.
+Ici, nous exécutons simplement ```revert()``` pour indiquer que la transaction doit être annulée si nous sommes dans ce cas.
+
+Cette fonction fallback est définie elle aussi comme ```payable```, mais également comme ```external```, c'est à dire qu'elle ne peut être appelée que depuis l'extérieur, et non par des méthodes du contrat.
 
 
 **_payablehello.js:_**
