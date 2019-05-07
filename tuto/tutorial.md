@@ -97,8 +97,8 @@ Nous allons utiliser la version 1.0 pour ce tutorial.
 4. [Déploiement du smart contract](#4)
 5. [Initialisation de l'application web](#5)
 6. [Modification de la valeur](#6)
-7. [Les événements](#7)
-8. [Rendre la modification payante](#8)
+7. [Rendre la modification payante](#7)
+8. [Les événements](#8)
 9. [Administrer le contract](#9)
 10. [Envoyer une transaction signée](#10)
 11. [Ajouter un oracle](#11)
@@ -763,9 +763,215 @@ On peut aussi consulter la liste des transactions dans Ganache pour retrouver ce
 
 Dans la partie "Blockchain info", nous pouvons aussi voir que la valeur de la balance du compte utilisé diminue en fonction du coût de la transaction.
 
-## 7. Les événements<a name="7"></a>
 
-## 8. Rendre la modification payante<a name="8"></a>
+## 7. Rendre la modification payante<a name="7"></a>
+
+Prochaine étape, nous allons maintenant rendre la modification du nom payante. Pour celà, nous allons mettre en place un certain nombre de conditions :
+- La modification du nom coûte 2 ETH, mais il est possible de payer plus.
+- Il ne doit pas être possible d'envoyer d'Ethers au smart contract sans modifier le nom.
+
+**_PayableHello.sol :_**
+
+tout d'abord, on ajoute une condition dans le smart contract, dans la méthode ```setName```, afin d'indiquer que son exécution requiert au minimum un envoie de 2 ETH dans la transaction :
+
+```
+pragma solidity ^0.5.0;
+
+contract PayableHello {
+
+    string private name;
+
+    constructor() public {
+        name = "nobody";
+    }
+
+    function setName(string memory newName) public payable {
+		require(msg.value >= 2 ether, "Pay 2 ETH or more");
+        name = newName;
+    }
+
+    function getName() public view returns (string memory) {
+        return name;
+    }
+}
+```
+
+Via la fonction ```require()```, nous indiquons la condition à respecter et le message à retourner en cas de non respect.
+Nous introduisons ici la variable globale ```msg```, qui contient les données relative à la transaction courante. On peut y touver l'adresse de l'émetteur (```sender```), le nombre d'Ethers envoyés (```value```) ...
+
+
+**_payablehello.js:_**
+
+Modifions le service afin de prendre en compte cette valeur :
+
+```
+/*
+* Call change name function and wait for event
+* newName : the new name to set
+* price : the number of ethers we pay to change the name
+*/
+exports.updateName = async function(newName, price) {
+
+	// object containing return values
+	var result = new Object();
+
+	// estimate gas cost
+	var gasAmount = await payableHello.methods.setName(newName).estimateGas({from: config.account, gas: 5000000, value: web3.utils.toWei(price, "ether")});
+	result.gas = gasAmount;
+
+	var promiseSetName = new Promise( function (resolve, reject){
+
+		// send a transaction to setName
+		payableHello.methods.setName(newName).send({from: config.account, gas: gasAmount, value: web3.utils.toWei(price, "ether")})
+		.on('transactionHash', (hash) => {
+				// when tx hash is known
+			   console.log("tx hash : "+hash);
+			   result.txHash = hash;
+		   })
+		   .on('receipt', (receipt) => {
+		   		// when receipt is created
+			   console.log("receipt");
+		   })
+		   .on('confirmation', (confirmationNumber, receipt) => {
+		   		// when tx is confirmed
+			   console.log("confirmation");
+			   console.log(receipt);
+			   result.blockNumber = receipt.blockNumber;
+			   resolve(result);
+		   })
+		   .on('error',(error) => {
+				console.error("promiseSetName on error");
+				console.error(error);
+				reject(error);
+		   });
+	}); // end of promiseSetName, result to return
+
+	return promiseSetName;
+}
+
+```
+On ajoute un paramètre ```price``` à la méthode ```updateName```.
+On utilise ce paramètre pour alimenter un nouveau paramètres ```value``` lors des appels à ```estimateGas``` et ```setName```.
+Lors de ces appels, il faut passer une valeur en Wei, or nous l'avons en Ethers. Il faut donc la convertir grâce à ```web3.utils.toWei(price, "ether")``` qui prend en premier paramètre une valeur et en second paramètre l'unité de cette valeur.
+
+
+**_index.pug :_**
+
+Nous ajoutons maintenant au template un champ dans le formulaire de modification de nom, afin que l'utilisateur saisisse le prix qu'il souhaite payer.
+
+```
+doctype html
+html(lang='fr')
+	head
+		meta(charset='utf-8')
+		title Ethereum Hello world
+		script(type='text/javascript', src='https://code.jquery.com/jquery-3.3.1.slim.min.js')
+		script(type='text/javascript', src='https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js')
+		script(type='text/javascript', src='https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js')
+		link(rel='stylesheet' href='https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css')
+	body
+	.container-fluid
+		.row
+			.col-md-6
+				div.card
+					h3.card-header Blockchain info
+					div.card-body
+						#info
+							br
+							div
+								b Web3 version :&nbsp;
+								span#web3-version #{nodeInfo.web3Version}
+							div
+								b Node :&nbsp;
+								span#node #{nodeInfo.node}
+							div
+								b Last block :&nbsp;
+								span#block-number #{nodeInfo.blockNumber}
+							div
+								b Coinbase :&nbsp;
+								span#coinbase #{nodeInfo.coinbase}
+							div
+								b Balance :&nbsp;
+								span#balance #{nodeInfo.balance}
+							div
+								b Contract balance :&nbsp;
+								span#contract-balance #{nodeInfo.contractBalance}
+			.col-md-6
+				div.card
+					h5.card-header Hello who ?
+					div.card-body
+						h2 Hello #{name}
+		.row
+			.col-md-6
+				div.card
+					h3.card-header Change name
+					div.card-body
+						#form
+							form(method='post', action='/name')
+								.form-group
+									label(for='newName') Name :
+									input#newName(type='text', name='newName').form-control
+								.form-group
+									label(for='price') Price (Eth) :
+									input#price(type='text', name='price').form-control
+								div
+									input(type='submit', value='Send').btn.btn-primary
+			.col-md-6
+				div.card
+					h3.card-header Status
+					div.card-body
+						div#status Transaction : #{txStatus}
+						div#blockNumber Block : #{blockNumber}
+						div#errorMessage #{errorMessage}
+
+
+```
+
+**_app.js :_**
+
+Il ne reste plus qu'à modifier le contrôleur afin de prendre en compte ce nouvelle valeur transmise par le champ de formulaire.
+
+```
+/**
+   * Update name
+   */
+   app.post('/name', function(req, res) {
+   
+   	// execute the selected promise
+   	try {
+   		payableHello.updateName(req.body.newName, req.body.price)
+   		.then(
+   			(result) => {
+   				displayData.txStatus = result.txHash;
+   				displayData.blockNumber = result.blockNumber;
+   				displayData.errorMessage = result.errorMessage;
+   				res.redirect("/");
+   			},
+   			(error) => {
+               			displayData.errorMessage = error;
+   				res.redirect("/");
+   			}
+   		);
+   	}
+   	catch(error){
+   		displayData.errorMessage = error;
+   		res.redirect("/");
+   	}
+   });
+```
+
+On récupère la valeur du champ ```price``` de la requête pour le transmettre en paramètre à ```updateName```.
+
+
+
+## 8. Les événements<a name="8"></a>
+
+Nous allons maintenant aborder la notion d'événements. En Solidity, il est possible de défini un événement, avec certains attributs. A certain endroit dans le code, nous pouvons émettre ces événements. Puis, une application peut écouter ces événement, elle sera ainsi notifiée à chaque fois que l'un d'entre eux se produit.
+
+Les versions de Web3.js antérieures à 1.0 n'utilisaient pas les Promises. En conséquence, il fallait définir dans le smart contract un événement que l'on émettait lorsque la méthode était appelée. L'application écoutait cet événement, elle était ainsi prévenu quand la transaction était validée et que le code était exécuté, elle pouvait alors interroger la blockchain pour récupérer le reçu de transaction (receipt).
+
+A partir de Web3.js 1.0, les promises rendent ce mécanisme moins utile, mais les événements conservent leur rôle d'historisation des actions. Nous allons voir comment les exploiter.
+
 
 ## 9. Administrer le contract<a name="9"></a>
 
