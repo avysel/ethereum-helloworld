@@ -98,9 +98,9 @@ Nous allons utiliser la version 1.0 pour ce tutorial.
 5. [Initialisation de l'application web](#5)
 6. [Modification de la valeur](#6)
 7. [Rendre la modification payante](#7)
-8. [Les événements](#8)
-9. [Administrer le contract](#9)
-10. [Envoyer une transaction signée](#10)
+8. [Administrer le contract](#8)
+9. [Envoyer une transaction signée](#9)
+10. [Les événements](#10)
 11. [Ajouter un oracle](#11)
 12. [Tests automatiques](#12)
 13. [Focus sur l'utilisation du gas](#13)
@@ -994,16 +994,7 @@ Les balances du compte et du contrat n'ont pas bougés, donc les Ethers n'ont pa
 Cependant, la balance du compte a quand même perdu quelques Wei. En effet, même si une transaction est rejetée, le gas consommé pour la prendre en compte est bel et consommé pour de bon.
 
 
-## 8. Les événements<a name="8"></a>
-
-Nous allons maintenant aborder la notion d'événements. En Solidity, il est possible de défini un événement, avec certains attributs. A certain endroit dans le code, nous pouvons émettre ces événements. Puis, une application peut écouter ces événement, elle sera ainsi notifiée à chaque fois que l'un d'entre eux se produit.
-
-Les versions de Web3.js antérieures à 1.0 n'utilisaient pas les Promises. En conséquence, il fallait définir dans le smart contract un événement que l'on émettait lorsque la méthode était appelée. L'application écoutait cet événement, elle était ainsi prévenu quand la transaction était validée et que le code était exécuté, elle pouvait alors interroger la blockchain pour récupérer le reçu de transaction (receipt).
-
-A partir de Web3.js 1.0, les promises rendent ce mécanisme moins utile, mais les événements conservent leur rôle d'historisation des actions. Nous allons voir comment les exploiter.
-
-
-## 9. Administrer le contract<a name="9"></a>
+## 8. Administrer le contract<a name="8"></a>
 
 Bien, maintenant que nous savons que le contrat possède des Ethers, il serait bien de pouvoir les récupérer, et si possible que ce ne soit possible que par son propriétaire.
 
@@ -1225,8 +1216,19 @@ Maintenant, la balance du contrat est revenue à 0, alors que le compte a récup
 
 Ca a donc fonctionné, parce que le compte que nous avons utilisé est bien le propriétaire du contrat.
 
+Nous savons maintenant comment créer un service payant, et récupérer l'argent qu'il a généré.
 
-## 10. Envoyer une transaction signée<a name="10"></a>
+
+## 9. Envoyer une transaction signée<a name="9"></a>
+
+## 10. Les événements<a name="10"></a>
+
+Nous allons maintenant aborder la notion d'événements. En Solidity, il est possible de défini un événement, avec certains attributs. A certain endroit dans le code, nous pouvons émettre ces événements. Puis, une application peut écouter ces événement, elle sera ainsi notifiée à chaque fois que l'un d'entre eux se produit.
+
+Les versions de Web3.js antérieures à 1.0 n'utilisaient pas les Promises. En conséquence, il fallait définir dans le smart contract un événement que l'on émettait lorsque la méthode était appelée. L'application écoutait cet événement, elle était ainsi prévenu quand la transaction était validée et que le code était exécuté, elle pouvait alors interroger la blockchain pour récupérer le reçu de transaction (receipt).
+
+A partir de Web3.js 1.0, les promises rendent ce mécanisme moins utile, mais les événements conservent leur rôle d'historisation des actions. Nous allons voir comment les exploiter.
+
 
 ## 11. Ajouter un oracle<a name="11"></a>
 
