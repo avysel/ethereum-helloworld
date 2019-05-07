@@ -593,7 +593,7 @@ Commençons par créer le service
 exports.updateName = async function(newName) {
 
 	// object containing return values
-	var result = new RequestResult();
+	var result = new Object();
 
 	// estimate gas cost
 	var gasAmount = await payableHello.methods.setName(newName).estimateGas({from: config.account, gas: 5000000});
@@ -606,7 +606,6 @@ exports.updateName = async function(newName) {
 		payableHello.methods.setName(newName).send({from: config.account, gas: gasAmount})
 		.on('transactionHash', (hash) => {
 				// when tx hash is known
-			   console.log("tx hash : "+hash);
 			   result.txHash = hash;
 		   })
 		   .on('receipt', (receipt) => {
@@ -615,14 +614,10 @@ exports.updateName = async function(newName) {
 		   })
 		   .on('confirmation', (confirmationNumber, receipt) => {
 		   		// when tx is confirmed
-			   console.log("confirmation");
-			   console.log(receipt);
 			   result.blockNumber = receipt.blockNumber;
 			   resolve(result);
 		   })
 		   .on('error',(error) => {
-				console.error("promiseSetName on error");
-				console.error(error);
 				reject(error);
 		   });
 	}); // end of promiseSetName, result to return
@@ -736,7 +731,7 @@ app.post('/name', function(req, res) {
 				res.redirect("/");
 			},
 			(error) => {
-            			displayData.errorMessage = error;
+            	displayData.errorMessage = error;
 				res.redirect("/");
 			}
 		);
@@ -849,7 +844,6 @@ exports.updateName = async function(newName, price) {
 		payableHello.methods.setName(newName).send({from: config.account, gas: gasAmount, value: web3.utils.toWei(price, "ether")})
 		.on('transactionHash', (hash) => {
 				// when tx hash is known
-			   console.log("tx hash : "+hash);
 			   result.txHash = hash;
 		   })
 		   .on('receipt', (receipt) => {
@@ -858,14 +852,10 @@ exports.updateName = async function(newName, price) {
 		   })
 		   .on('confirmation', (confirmationNumber, receipt) => {
 		   		// when tx is confirmed
-			   console.log("confirmation");
-			   console.log(receipt);
 			   result.blockNumber = receipt.blockNumber;
 			   resolve(result);
 		   })
 		   .on('error',(error) => {
-				console.error("promiseSetName on error");
-				console.error(error);
 				reject(error);
 		   });
 	}); // end of promiseSetName, result to return
@@ -972,7 +962,7 @@ Il ne reste plus qu'à modifier le contrôleur afin de prendre en compte ce nouv
    				res.redirect("/");
    			},
    			(error) => {
-               			displayData.errorMessage = error;
+               	displayData.errorMessage = error;
    				res.redirect("/");
    			}
    		);
@@ -990,8 +980,8 @@ Nous pouvons maintenant tester :
 
 ![On peut changer de nom en payant](images/6_index_pay.png)
 
-Taper un nom, entrez une valeur supérieure ou égale à 2 dans le champ "price", et validez.
-Vous pouvez constater que la balance du compte a été réduite du nombre d'Ether tapé, plus un peu de gaz, et que la balance du contrat a, quant à elle, augmenté de cette même somme.
+Tapez un nom, entrez une valeur supérieure ou égale à 2 dans le champ "price", et validez.
+On peut constater que la balance du compte a été réduite du nombre d'Ether donné, plus un peu de gaz, et que la balance du contrat a, quant à elle, augmenté de cette même somme.
 Celà signifie que pour le moment, c'est bien le smart contract qui possède les Ethers que nous lui avons envoyés.
 
 
@@ -1014,6 +1004,227 @@ A partir de Web3.js 1.0, les promises rendent ce mécanisme moins utile, mais le
 
 
 ## 9. Administrer le contract<a name="9"></a>
+
+Bien, maintenant que nous savons que le contrat possède des Ethers, il serait bien de pouvoir les récupérer, et si possible que ce ne soit possible que par son propriétaire.
+
+Nous allons donc modifier le contrat pour :
+- pouvoir récupérer les Ethers et les envoyer à une adresse
+- faire en sorte que les Ethers ne puissent être envoyés qu'au propriétaire du contrat.
+
+**_PayableHello.sol :_**
+
+```
+pragma solidity ^0.5.0;
+
+contract owned {
+	address payable owner;
+
+	// Contract constructor: set owner
+	constructor() public {
+		owner = msg.sender;
+	}
+
+	// Access control modifier
+	modifier onlyOwner {
+	    require(msg.sender == owner, "Only the contract owner can call this function");
+	    _;
+	}
+
+	// Contract destructor
+	function destroy() public onlyOwner {
+		selfdestruct(owner);
+	}
+
+}
+
+contract PayableHello is owned {
+
+    string private name;
+
+    constructor() public {
+        name = "nobody";
+    }
+
+    function setName(string memory newName) public payable {
+    	require(msg.value >= 2 ether, "Pay 2 ETH or more");
+        name = newName;
+    }
+
+    function getName() public view returns (string memory) {
+        return name;
+    }
+
+    function withdraw() public onlyOwner {
+    	uint balance = address(this).balance;
+		msg.sender.transfer(balance);
+    }
+
+    function() external payable {
+        revert();
+    }
+
+}
+```
+
+Nous allons introduire deux nouvelles notions : l'héritage et les modificateurs.
+
+Nous créons un nouveau contrat ```owned``` qui contient :
+- un champ privé ```owner``` qui contiendra l'adresse du propriétaire de ce contrat (notez que ce champ est ```payable```)
+- un constructeur, qui initialise ```owner``` avec l'adresse qui a émit la transaction de création du contrat
+- une méthode de type ```modifier``` appelée ```onlyOwner```. Il s'agit de définit un comportement, afin de créer un sorte de "mot-clé" que l'on réutilisera sur d'autres méthodes, pour lesquels ce comportement s'appliquera.
+Ici, ce modificateur comporte une condition qui impose que l'utilisateur qui l'appelle soit le propriétaire du contrat, donc que son adresse soit celle qui a créé le contrat. 
+Ensuite, on trouve ```_;``` qui signifie tout simplement "Exécuter ici le code défini dans la méthode qui utilise ce modificateur".
+En gros, toute fonction qui se verra appliquer le modificateur ```onlyOwner``` exécutera la condition de propriété, puis exécutera ensuite son code propre.
+- ue méthode ```destroy```, à laquelle le modificateur ```onlyOnwer``` est appliquée, qui exécute ```selfdestruct```. ```selfdestruct``` désactive le contrat et transfère sa balance à l'adresse qui l'appelle. Vous comprenez pourquoi il faut restreindre son accès au propriétaire, sinon n'importe qui pourrait tout casser et prendre l'argent.
+A noter qu'un contrat qui a subit un ```selfdesctuct``` est désactivé, mais pas supprimé. Il ne peut plus exécuter ses méthodes, par contre, il sera toujours possible de lui envoyer des Ethers, qui seront alors perdus car il sera impossible de les récupérer.
+
+Ensuite, nous modifions la définition du contrat PayableHello en ```contract PayableHello is owned ```. Cela signifie que ```PayableHello``` hérite de toutes les propriétés de ```owned```.
+L'adresse de son propriétaire est donc enregistrée, il pourra être désactivé par lui uniquement. Le modificateur ```onlyOwner``` pourra aussi être appliqué à n'importe laquelle de ses méthodes.
+
+D'ailleurs, nous ajoutons aussi une méthode ```withdraw``` qui utilise ce modificateur. Elle récupère l'adresse de l'émetteur de la transaction via ```msg.sender``` et lui envoie la balance via ```transfert```.
+
+Une fois le contrat modifié, nous allons créer un service pour permettre au propriétaire de récupérer ses Ether :
+
+**_payablehello.js :_**
+```
+/**
+* Retreive contract balance. Only works for contract owner
+* withdrawAccount : the address to send ethers to
+*/
+exports.withdraw = async function(withdrawAccount) {
+
+	var result = new Object();
+
+	// estimate gas cost
+	var gasAmount = await payableHello.methods.withdraw().estimateGas({from: withdrawAccount, gas: 5000000});
+	result.gas = gasAmount;
+
+	var promiseWithdraw = new Promise( function (resolve, reject){
+
+		// send tx to withdraw function
+		payableHello.methods.withdraw().send({from: withdrawAccount, gas: gasAmount*2})
+		.on('transactionHash', (hash) => {
+			   result.txHash = hash;
+		   })
+		   .on('receipt', (receipt) => {
+			   console.log("receipt");
+		   })
+		   .on('confirmation', (confirmationNumber, receipt) => {
+			   result.blockNumber = receipt.blockNumber;
+			   resolve(result);
+		   })
+		   .on('error',(error) => {
+				result.errorMessage = error;
+				reject(result);
+		   });
+	});
+
+	return promiseWithdraw;
+}
+```
+
+Nous lui ajoutons une méthode ```withdraw``` qui prend en paramètre l'adresse vers laquelle transférer la balance du contrat.
+Sur le même modèle que pour modifier le nom, cette méthode va d'abord estimer le gaz nécessaire pour appeler la méthode ```withdraw``` du contrat depuis l'adresse passée en paramètre. Puis va effectivement réaliser l'appel.
+Comme il s'agit également d'un envoi de transaction, nous allons ici aussi exploiter les différents événements disponibles pour récupérer les informations inhérentes à cette transaction.
+
+
+Maintenant modifions la page pour ajouter cette fonctionnalité :
+
+**_index.pug :_**
+
+```
+doctype html
+html(lang='fr')
+	head
+		meta(charset='utf-8')
+		title Ethereum Hello world
+		script(type='text/javascript', src='https://code.jquery.com/jquery-3.3.1.slim.min.js')
+		script(type='text/javascript', src='https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js')
+		script(type='text/javascript', src='https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js')
+		link(rel='stylesheet' href='https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css')
+	body
+	.container-fluid
+		.row
+			.col-md-6
+				div.card
+					h3.card-header Blockchain info
+					div.card-body
+						#info
+							br
+							div
+								b Web3 version :&nbsp;
+								span#web3-version #{nodeInfo.web3Version}
+							div
+								b Node :&nbsp;
+								span#node #{nodeInfo.node}
+							div
+								b Last block :&nbsp;
+								span#block-number #{nodeInfo.blockNumber}
+							div
+								b Coinbase :&nbsp;
+								span#coinbase #{nodeInfo.coinbase}
+							div
+								b Balance :&nbsp;
+								span#balance #{nodeInfo.balance}
+							div
+								b Contract balance :&nbsp;
+								span#contract-balance #{nodeInfo.contractBalance}
+							div
+								form(method='post', action='/withdraw')
+									div
+										input(type='submit', value='Withdraw').btn.btn-primary
+										span#withdraw-status
+										
+...
+```
+
+Dans le bloc "Blockchain info", nous ajoutons un formulaire qui ne contient qu'un seul bouton nommé "Withdraw", qui valide le formulaire vers l'URL ```withdraw```.
+Nous allons donc maintenant modifier le contrôleur pour ajouter cette nouvelle route.
+
+**_apps.js :_**
+
+```
+/**
+* Withdraw contract balance
+*/
+app.post('/withdraw', function(req, res) {
+
+	try {
+		payableHello.withdraw(config.account)
+		.then(
+			(result) => {
+				displayData.txStatus = result.txHash;
+				displayData.blockNumber = result.blockNumber;
+				displayData.errorMessage = result.errorMessage;
+				res.redirect("/");
+			},
+			(error) => {
+				displayData.errorMessage = error;
+				res.redirect("/");
+			}
+		);
+	}
+	catch(error) {
+		displayData.errorMessage = error;
+		res.redirect("/");
+	}
+});
+```
+
+Nous appelons le service ```withdraw``` avec comme paramètre l'adresse par défaut de notre configuration, celle qui a bien servi à créer le contrat.
+
+On peut maintenant tester :
+
+![Avant le retrait](images/8_index_beforewithdraw.png)
+
+Avant le retrait, le compte a une balance de 90 ETH environ, et le contrat, 7 ETH. Cliquez sur "withdraw".
+
+![Après le restrait](images/9_index_afterwithdraw.png)
+
+Maintenant, la balance du contrat est revenue à 0, alors que le compte a récupéré 7 ETH supplémentaires.
+
+Ca a donc fonctionné, parce que le compte que nous avons utilisé est bien le propriétaire du contrat.
+
 
 ## 10. Envoyer une transaction signée<a name="10"></a>
 
