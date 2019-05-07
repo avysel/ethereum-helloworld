@@ -103,7 +103,9 @@ Nous allons utiliser la version 1.0 pour ce tutorial.
 10. [Envoyer une transaction signée](#10)
 11. [Ajouter un oracle](#11)
 12. [Tests automatiques](#12)
-13. [Ressources](#links)
+13. [Focus sur l'utilisation du gas](#13)
+14. [Sécurité](#14)
+15. [Ressources](#15)
 
 ***
 
@@ -1003,6 +1005,10 @@ A partir de Web3.js 1.0, les promises rendent ce mécanisme moins utile, mais le
 
 ## 12. Tests automatiques<a name="12"></a>
 
-## Ressources<a name="links"></a>
+## 13. Focus sur l'utilisation du gas<a name="13"></a>
+
+## 14. Sécurité<a name="14"></a>
+
+## 15 Ressources<a name="15"></a>
 Lien vers le repository avec le code source complet : http://
 https://solidity.readthedocs.io/en/latest/
