@@ -85,6 +85,9 @@ La version 1.0.X, bien que beta, a un bon niveau de stabilité et est bien plus 
 
 Nous allons utiliser la version 1.0 pour ce tutorial.
 
+
+```npm install ethereumjs-tx```
+
 ***
 
 **Vous êtes prêts ? Alors allons-y !**
@@ -284,7 +287,7 @@ module.exports = config;
 
 Initialiser les valeurs 
 - ```nodeURL``` et ```nodePort``` : éléments de connexion à Ganache
-- ```account``` : adresse Ethereum du premier compte disponible sur Ganache,
+- ```account``` : adresse Ethereum du premier compte disponible sur Ganache.
 - ```abiFile``` : chemin du fichier PayableHello.json dans le répertoire ```build``` généré par Truffle.
 - ```payableHelloContractAddress``` : adresse à laquelle le contrat a été déployé avec Truffle. ("contract address" dans le résultat de ```truffle deploy```)
 
@@ -1221,13 +1224,331 @@ Nous savons maintenant comment créer un service payant, et récupérer l'argent
 
 ## 9. Envoyer une transaction signée<a name="9"></a>
 
+Pour le moment, il nous a été facile d'envoyer des transactions en utilisant un compte par défaut, que nous avons renseigné dans la configuration du projet. Nous avons émis en son nom un certain nombre de transactions, qui lui ont coûté des Ethers. Et pourtant, à aucun moment, il ne nous a été demandé de justifier que ce compte nous appartenait, en saisissant un mot de passe ou en fournissant une clé privée par exemple.
+Ca a été possible parce que ce compte est enregistré dans le noeud de blockchain que nous utilisons, et que par défaut dans Ganache, les comptes sont déverouillés, c'est à dire, utilisables directement.
+
+Avec un vrai noeud Ethereum, il aurait fallu enregistrer notre compte puis le déverrouiller en fournissant sa clé privée dans un keystore.
+
+Maintenant, dans notre projet, nous allons élargir un peu les possibilités en termes d'utilisation de comptes en donnant la possibilité de créer des transactions signées, c'est-à-dire dont l'utilisateur fournit son adresse et sa clé privée. Notre projet sera ainsi accessible à tout compte, qu'il soit enregistré ou non dans notre noeud de Blockchain.
+
+Attention : dans ce qui va suivre, nous allons manipuler des clés privées, qui sont le point sensible en matière de sécurité sur la blockchain. Nous allons le faire de façon simple, pour en apréhender le fonctionnement, mais dans un réel projet de production, il faudra mettre en place les politiques de sécurité adaptées pour les manipuler (HMS, keystore ...).
+
+Voici ce que nous allons faire :
+1. Ajouter des comptes et leurs clés privées dans la configuration (ce qui doit être bien plus sécurisé que ça dans la vraie vie)
+2. Ajouter à l'écran un liste de choix du compte à utiliser
+3. Pour chaque appel au smart contract, forger une transaction en fonction du compte sélectionné.
+
+Pour créer d'autres comptes, vous pouvez afficher la liste des comptes de Ganache, et prendre tous les autres comptes autres que le premier. Les clés privées peut être obtenus en cliquant sur l'icône "clé", sur la droite de l'écran pour chaque compte.
+
+**_config.js :_**
+```
+const config = {
+
+	// blockchain node IPC IP and port
+	nodeURL: "http://127.0.0.1",
+	nodePort: 7545,
+
+	// default account address
+	account:"0xdB4524A58c78f0945338fe7fF7c3E5988d413032",
+
+	// ABI file of smart contract
+	abiFile:"../build/contracts/PayableHello.json",
+
+	// address of deployed contract on blockchain
+	payableHelloContractAddress:"0x31314b12bBC4b9F21B08565EEB5840aF6A1F8dfD",
+
+	// all available accounts with their private key (except for first account, that is the default account)
+	accounts: [
+		{
+			address: "0xdB4524A58c78f0945338fe7fF7c3E5988d413032",
+			pk: null
+		},
+		{
+			address: "0x4a4817F49F7f31a2c639C5C723D4BAA194AD0f77",
+        	pk: "12cc2f60b68a8fefb85e93fed0a2ae4680a465f714e4ea42f4a73cf27f317257"
+		},
+		{
+			address: "0xD04EabD4Ba1d8C655B3f95A24e89CaBbfFe0af33",
+        	pk: "4b535457d08e576c956d693ef8f17cf07bfd364ed0de401c942537da92254a1f"
+		}
+	]
+
+};
+
+module.exports = config;
+```
+
+**_app.js :_**
+
+On rajoute dans le contrôleur, à l'initialisation des données d'affichage, la liste des comptes.
+```
+displayData.accounts = config.accounts;
+```
+
+**_index.pug :_**
+
+Et on modifie l'index pour afficher la liste des ces comptes au niveau du bouton de retrait de l'argent du contrat et de modification du nom.
+
+```
+doctype html
+html(lang='fr')
+	head
+		meta(charset='utf-8')
+		title Ethereum Hello world
+		script(type='text/javascript', src='https://code.jquery.com/jquery-3.3.1.slim.min.js')
+		script(type='text/javascript', src='https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js')
+		script(type='text/javascript', src='https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js')
+		link(rel='stylesheet' href='https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css')
+	body
+	.container-fluid
+		.row
+			.col-md-6
+				div.card
+					h3.card-header Blockchain info
+					div.card-body
+						#info
+							br
+							div
+								b Web3 version :&nbsp;
+								span#web3-version #{nodeInfo.web3Version}
+							div
+								b Node :&nbsp;
+								span#node #{nodeInfo.node}
+							div
+								b Last block :&nbsp;
+								span#block-number #{nodeInfo.blockNumber}
+							div
+								b Coinbase :&nbsp;
+								span#coinbase #{nodeInfo.coinbase}
+							div
+								b Balance :&nbsp;
+								span#balance #{nodeInfo.balance}
+							div
+								b Contract balance :&nbsp;
+								span#contract-balance #{nodeInfo.contractBalance}
+							hr
+							div
+								form(method='post', action='/withdraw')
+									.form-group
+										label(for='withdrawAccount') Account :
+										select#withdrawAccount(name='withdrawAccount').form-control
+											each account in accounts
+												option(value=account.address) #{account.address}
+									div
+										input(type='submit', value='Withdraw').btn.btn-primary
+										span#withdraw-status
+			.col-md-6
+				div.card
+					h5.card-header Hello who ?
+					div.card-body
+						h2 Hello #{name}
+		.row
+			.col-md-6
+				div.card
+					h3.card-header Change name
+					div.card-body
+						#form
+							form(method='post', action='/name')
+								.form-group
+									label(for='newName') Name :
+									input#newName(type='text', name='newName').form-control
+								.form-group
+									label(for='price') Price (Eth) :
+									input#price(type='text', name='price').form-control
+								.form-group
+									label(for='account') Account :
+									select#account(name='account').form-control
+										each account in accounts
+											option(value=account.address) #{account.address}
+								div
+									input(type='submit', value='Send').btn.btn-primary
+			.col-md-6
+				div.card
+					h3.card-header Status
+					div.card-body
+						div#status Transaction : #{txStatus}
+						div#blockNumber Block : #{blockNumber}
+						div#errorMessage #{errorMessage}
+```
+
+Voici le résultat à l'affichage :
+
+![Affichage des comptes](images/10_index_displayaccounts.png)
+
+Maintenant, nous allons exploiter tout ça.
+
+**_app.js :_**
+
+Dans le contrôleur, nous allons prendre en compte ce nouveau champ de formulaire, dans POST /name et dans POST /withdraw
+
+```
+/**
+* Update name
+*/
+app.post('/name', function(req, res) {
+
+	var promiseUpdateName;
+
+	if(req.body.account === config.account) {
+		// use default account activated on blockchain
+		promiseUpdateName = payableHello.updateName(req.body.newName, req.body.price);
+	}
+	else {
+		// use another account from default one, need to sign a raw transaction
+		promiseUpdateName = payableHello.sendRawTransaction(req.body.newName, req.body.price, req.body.account);
+	}
+
+	// execute the selected promise
+	try {
+		promiseUpdateName
+		.then(
+			(result) => {
+				displayData.txStatus = result.txHash;
+				displayData.blockNumber = result.blockNumber;
+				displayData.errorMessage = result.errorMessage;
+				res.redirect("/");
+			},
+			(error) => {
+            			displayData.errorMessage = error;
+				res.redirect("/");
+			}
+		);
+	}
+	catch(error){
+		displayData.errorMessage = error;
+		res.redirect("/");
+	}
+});
+
+
+/**
+* Withdraw contract balance
+*/
+app.post('/withdraw', function(req, res) {
+
+...
+		payableHello.withdraw(req.body.withdrawAccount)
+...
+});
+
+
+```
+
+Dans le POST /name, nous ajoutons une condition pour continuer à utiliser les méthodes définies précédemment si c'est le compte par défaut qui a été sélectionné, ou un nouveau service ```sendRawTransaction``` pour envoyer une transaction signée si c'est un autre compte.
+
+Maintenant, créons ce service ```sendRawTransaction``` :
+
+**_payablehello.js :_**
+
+```
+...
+var EthereumTx = require("ethereumjs-tx");
+...
+
+/**
+* Update name using smart contract, using account different from default one
+* newName : the new name to set
+* price : the number of ethers we pay to change the name
+* address : the address used to send tx
+*/
+exports.sendRawTransaction = async function(newName, price, address) {
+
+	var result = new Object();
+	var plainPrivateKey = null;
+
+	// get privake key from config according for sender address
+	config.accounts.forEach(function(element) {
+		if(element.address === address){
+			plainPrivateKey = element.pk;
+		}
+	});
+
+	// get tx count for address
+	var txCount = await web3.eth.getTransactionCount(address);
+
+	// create tx
+	var txParams = {
+		from: address,
+		nonce: web3.utils.toHex(txCount),
+		gasPrice: web3.utils.toHex(web3.utils.toWei('20', 'gwei')),
+		gasLimit: web3.utils.toHex(4000000),
+		to: config.payableHelloContractAddress,
+		value: web3.utils.toHex(web3.utils.toWei(price, "ether")),
+		data: web3.utils.toHex(payableHello.methods.setName(newName).encodeABI())
+	}
+
+	// estimate tx gas cost
+	var gasAmount = await web3.eth.estimateGas(txParams);
+	result.gas = gasAmount;
+
+	// update gas limit
+	txParams.gasLimit = web3.utils.toHex(gasAmount);
+
+	// create result promise that will be resolved when tx is confirmed
+	var promiseSendRawTx = new Promise( function (resolve, reject){
+
+		// create raw tx
+		const tx = new EthereumTx(txParams);
+
+		// encode pk in hex
+		const privateKey = Buffer.from(plainPrivateKey, 'hex');
+
+		// sign tx with private key
+		tx.sign(privateKey)
+
+		// serialize tx
+		const serializedTx = tx.serialize();
+
+		// send raw tx
+		web3.eth.sendSignedTransaction('0x' + serializedTx.toString('hex'))
+		.on('transactionHash', (hash) => {
+			   result.txHash = hash;
+		   })
+		   .on('receipt', (receipt) => {
+			   console.log("receipt");
+		   })
+		   .on('confirmation', (confirmationNumber, receipt) => {
+			   result.blockNumber = receipt.blockNumber;
+			   resolve(result);
+		   })
+		   .on('error',(error) => {
+				reject(error);
+		   });
+
+
+	}); // end of promiseSendRawTx, to be returned
+
+	return promiseSendRawTx;
+}
+
+```
+
+Tout d'abord, il faut importer ```EthereumTx```, qui nous aidera à construire des transactions signées.
+
+
+Décortiquons ce que fait ce service :
+1. Dans un premier temps, s'il reçoit en paramètre une adresse différente du compte par défaut, il va récupérer sa clé privée dans la configuration. (Cette étape devrait être beaucoup plus sécurisée dans la vraie vie.)
+2. Ensuite, il récupère le nombre de transactions que ce compte a déjà effectué, au moyen de ```web3.eth.getTransactionCount(address)```. Cette information sera à fournir en tant que nonce, pour éviter que la même transaction soit envoyée plusieurs fois.
+3. Puis il crée un transaction en renseignant tous les champs individuellement. Chaque valeur doit être fournie en hexadécimal, on peut utiliser ```web3.utils.toHex``` pour faciliter la conversion. 
+4. On estime ensuite la quantité de gaz nécessaire, que l'on vient mettre à jour dans la transaction précédemment créée.
+5. Et enfin, au moyen du module ```EthereumTx```, on crée la transaction que l'on vient signer avec la clé privée. La transaction sera ensuite sérialisée, puis envoyeé au moyen de ```web3.eth.sendSignedTransaction```, sans oublier de la préfixer par ```Ox```.
+
+Maintenant, on peut tester de reproduire les mêmes opérations que les des précédents tests, en choisissant un compte de la liste.
+
+Il doit être possible pour n'importe quel compte de modifier le nom. Vous devez voir dans les liste des comptes dans Ganache les balances des comptes correspondants se réduire.
+
+Par contre, si vous tenter de retirer les Ethers (Withdraw) avec un compte différent du compte par défaut, vous obtenez l'erreur suivante :
+
+![Seul l'administrateur peut retirer les Ether](images/11_index_forbiddenwithdraw.png)
+
+
 ## 10. Les événements<a name="10"></a>
 
 Nous allons maintenant aborder la notion d'événements. En Solidity, il est possible de défini un événement, avec certains attributs. A certain endroit dans le code, nous pouvons émettre ces événements. Puis, une application peut écouter ces événement, elle sera ainsi notifiée à chaque fois que l'un d'entre eux se produit.
 
 Les versions de Web3.js antérieures à 1.0 n'utilisaient pas les Promises. En conséquence, il fallait définir dans le smart contract un événement que l'on émettait lorsque la méthode était appelée. L'application écoutait cet événement, elle était ainsi prévenu quand la transaction était validée et que le code était exécuté, elle pouvait alors interroger la blockchain pour récupérer le reçu de transaction (receipt).
 
-A partir de Web3.js 1.0, les promises rendent ce mécanisme moins utile, mais les événements conservent leur rôle d'historisation des actions. Nous allons voir comment les exploiter.
+A partir de Web3.js 1.0, les Promises rendent ce mécanisme moins utile, mais les événements conservent leur rôle d'historisation des actions. Nous allons voir comment les exploiter.
 
 
 ## 11. Ajouter un oracle<a name="11"></a>
@@ -1238,7 +1559,14 @@ A partir de Web3.js 1.0, les promises rendent ce mécanisme moins utile, mais le
 
 ## 14. Sécurité<a name="14"></a>
 
+- Clés privées
+- Réentrée
+- Ownership des contrats
+
 ## 15 Exercices<a name="14"></a>
+
+
+- Créer un événement pour les withdraw, et les afficher à l'écran
 
 ## 16 Ressources<a name="15"></a>
 Lien vers le repository avec le code source complet : http://
