@@ -4,9 +4,10 @@
 */
 
 var request = require('request');
-var config = require("../config.js");
-var payableHello = require('../payablehello'); // app services
+var config = require('./config');
+var payableHello = require('./payablehello'); // app services
 
+var lastName = null;
 
 async function readAPI() {
 
@@ -16,17 +17,24 @@ async function readAPI() {
 		}
 
 		var name = json.name;
-		var price = "2";
+		console.log("READ : "+name);
 
-		await payableHello.updateName(name, price)
-		.then(
-			(result) => {
-				console.log(result);
-			},
-			(error) => {
-				console.error(error);
-			}
-		);
+		if(lastName == null || lastName !== name) {
+			console.log("Call smart contract");
+			var price = "2";
+
+			await payableHello.updateName(name, price)
+			.then(
+				(result) => {
+					console.log(result);
+				},
+				(error) => {
+					console.error(error);
+				}
+			);
+		}
+
+		lastName = name;
     });
 
 }

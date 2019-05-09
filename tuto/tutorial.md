@@ -1759,6 +1759,119 @@ Maintenant, il suffit de redéployer le contrat, de faire quelques changements d
 Pour l'instant, nous avons vu comment développer une application décentralisée reposant uniquement sur un smart contract, comment coupler un smart contract sur une application "traditionnelle". Maintenant, nous allons voir les oracles.
 Un oracle est un terme qui désigne une façon pour une DApp (smart contract seulement) d'interagir avec l'extérieur.
 
+Cependant, derrière ce nom, aucun concept nouveau ni magique ne se cache. Il ne s'agit ni plus ni moins d'une application qui interroge régulièrement ou écoute une source de données, et envoie des transactions au smart contract dans certaines conditions.
+
+Nous allons mettre en place l'exemple suivant :
+- Une API génère un nouveau nom toutes les minutes
+- Un oracle va mettre à jour le nom dans le contrat à chaque fois que le nom change dans l'API
+
+Tout d'abord, créons l'API. Ici, il s'agit juste de fournir un exemple simple pour illustrer une source de données pouvant impacter la blockchain. Elle est complètement indépendant et décorellée de ce que nous avons fait précédemment
+
+**_api.js :_**
+
+```
+/**
+* Simple API that can returns a new string every second
+*/
+
+var express = require('express');
+var stringify = require('json-stringify-safe');
+var config = require("../config.js");
+
+var app = express();
+
+app.get('/name', function(req, res) {
+	console.log("GET /name");
+	var responseBody = new Object();
+	var today = new Date();
+
+	// name is Toto-yyyymmddhhmm
+	responseBody.name = "Toto-"+today.getFullYear()+(today.getMonth()+1)+today.getDate()+today.getHours()+today.getMinutes()+today.getSeconds();
+	console.log("Response : "+responseBody.name);
+	res.setHeader('Content-Type', 'application/json');
+    res.send(JSON.stringify(responseBody));
+
+});
+
+// start server on port 3001
+app.listen(3001);
+```
+Cette API, disponible sur le port 3001, va simplement exposer une route ```GET /name``` qui retourne une chaine de caractères composée de "Toto" concaténée à la date et heure du jour à la minute. Ce qui fait que le résultat changera chaque minute.
+
+Maintenant, créons l'oracle proprement dit :
+
+Faisons un petit ```npm instal request``` juste avant, afin de pouvoir exploiter le module ```request``` qui nous facilitera la vie avec les requêtes HTTP vers l'API.
+
+**_oracle.js :_**
+
+```
+/*
+* Ethereum oracle example
+* Reads an API every 10 seconds, get different value each time and use PayableHello to update name with this value
+*/
+
+var request = require('request');
+var config = require("../config.js");
+var payableHello = require('../payablehello'); // app services
+
+
+async function readAPI() {
+
+	request({url: 'http://127.0.0.1:3001/name', json: true}, async function(err, res, json) {
+		 if (err) {
+			console.error(err);
+		}
+
+		var name = json.name;
+		var price = "2";
+
+		await payableHello.updateName(name, price)
+		.then(
+			(result) => {
+				console.log(result);
+			},
+			(error) => {
+				console.error(error);
+			}
+		);
+    });
+
+}
+
+// init blockchain connection
+payableHello.connection();
+payableHello.initContracts();
+
+setInterval(readAPI, 1000 * 10);
+```
+
+Etudions cet oracle :
+1. Il importe le module de services ```payablehello.js``` pour pouvoir utiliser les services qui accèdent au smart contract
+2. Il se connecte à la blockchain et initialise le contrat, de la même façon que le contrôleur ```app.js``` de notre projet.
+3. Il lance toutes les 10 secondes une méthode qui
+	1. Interroge l'API est récupère le nom
+	2. Vérifie si le nom a été modifié depuis le dernier appel
+	3. Si c'est le cas, appelle le service ```updateName``` en lui fournissant le nouveau nom, et un prix fixe défini à l'avance.
+	
+Précision : le compte par défaut, définit dans notre ```config.js``` sera utilisé par cet oracle. Il est possible de faire évoluer l'oracle pour gérer les comptes plus finement, mais ce n'est pas le sujet ici.
+
+Pour tester, procédez en plusieurs étapes :
+
+1. Lancer l'application web
+```node app.js```
+
+2. Dans un autre terminal, lancez l'API de test
+```node api.js```
+
+3. Dans un nouveau termine, lancez l'oracle
+```node oracle.js```
+
+Dans les logs de l'API, vous devriez voir qu'un appel a lieu toutes les 10 secondes, mais que le nom ne change que toutes les minutes.
+Dans les logs de l'oracle, vous devriez voir qu'une transaction est émise toutes les minutes.
+Sur l'application web, si vous rafraichissez régulièrement, vous voyez le nom changer toutes les minutes, ainsi que l'historique des changements de nom se remplir au fil du temps.
+
+Et voilà, c'est un oracle !
+
 <a name="12"></a>
 ## 12. Tests automatiques
 

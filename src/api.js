@@ -4,7 +4,7 @@
 
 var express = require('express');
 var stringify = require('json-stringify-safe');
-var config = require("../config.js");
+var config = require("./config.js");
 
 var app = express();
 
@@ -14,7 +14,7 @@ app.get('/name', function(req, res) {
 	var today = new Date();
 
 	// name is Toto-yyyymmddhhmm
-	responseBody.name = "Toto-"+today.getFullYear()+(today.getMonth()+1)+today.getDate()+today.getHours()+today.getMinutes()+today.getSeconds();
+	responseBody.name = "Toto-"+today.getFullYear()+(today.getMonth()+1)+today.getDate()+today.getHours()+today.getMinutes();
 	console.log("Response : "+responseBody.name);
 	res.setHeader('Content-Type', 'application/json');
     res.send(JSON.stringify(responseBody));
