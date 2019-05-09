@@ -114,7 +114,8 @@ Nous allons utiliser la version 1.0 pour ce tutorial.
 
 ***
 
-## 1. Initialisation du projet<a name="1"></a>
+<a name="1"></a>
+## 1. Initialisation du projet
 
 Dans un terminal, positionnez vous dans votre répertoire de travail, et lancez la commande suivante :
 
@@ -132,7 +133,8 @@ Après une courte phase de téléchargement et d'initialisation, nous voyons app
 
 Dans certains de ces répertoires, des fichiers ```*migration*``` on été créés. Ils sont nécessaires à Truffle pour les déploiements de contrats, il ne faut pas les supprimer.
 
-## 2. Premier smart contract<a name="2"></a>
+<a name="2"></a>
+## 2. Premier smart contract
 
 Dans ```contracts```, créer un fichier Hello.sol. Y saisir le code suivant :
 
@@ -180,15 +182,15 @@ Maintenant, tapez la commande suivante :
 
 Si la compilation se termine avec succès, un répertoire ```build/contracts``` vient d'être créé. Il contient les résultats de la compilation. C'est dans ce répertoire que nous trouverons les **ABI** (Application Binary Interface). Il s'agit des contrats de service, définis en json, que notre application aura besoin de connaitre pour pouvoir interagir avec le smart contract. Nous verrons cela par la suite.
 
-
-## 3. Test du smart contract<a name="3"></a>
+<a name="3"></a>
+## 3. Test du smart contract
 
 Avant de déployer notre smart contract, nous allons le tester en utilisant Remix. C'est un IDE en ligne qui remplit à peu près le même rôle que Truffle. C'est l'occasion de tester un nouvel outil :).
 
 https://remix.ethereum.org
 
-
-## 4. Déploiement du smart contract<a name="4"></a>
+<a name="4"></a>
+## 4. Déploiement du smart contract
 
 Tout d'abord, lancez Ganache (ou tout autre client Ethereum).
 
@@ -238,7 +240,8 @@ Notez bien pour plus tard l'information la plus importante, l'adresse à laquell
 Il n'est pas nécessaire d'effectuer un ```truffle compile``` à chaque fois, le ```truffle deploy``` le fera automatiquement si besoin.
 A chaque déploiement, il ne faut pas oublier de modifier l'adresse du contrat dans le fichier de configuration.**
 
-## 5. Initialisation de l'application web<a name="5"></a>
+<a name="5"></a>
+## 5. Initialisation de l'application web
 
 ### 5.1 Création des fichiers
 
@@ -587,7 +590,8 @@ Dans le navigateur :
 
 Le nom s'affiche. Du moins, la valeur par défaut définie dans le constructeur.
 
-## 6. Modification de la valeur<a name="6"></a>
+<a name="6"></a>
+## 6. Modification de la valeur
 
 Nous allons maintenant pouvoir chercher à modifier le nom.
 
@@ -770,8 +774,8 @@ On peut aussi consulter la liste des transactions dans Ganache pour retrouver ce
 
 Dans la partie "Blockchain info", nous pouvons aussi voir que la valeur de la balance du compte utilisé diminue en fonction du coût de la transaction.
 
-
-## 7. Rendre la modification payante<a name="7"></a>
+<a name="7"></a>
+## 7. Rendre la modification payante
 
 Prochaine étape, nous allons maintenant rendre la modification du nom payante. Pour celà, nous allons mettre en place un certain nombre de conditions :
 - La modification du nom coûte 2 ETH, mais il est possible de payer plus.
@@ -1003,8 +1007,8 @@ Nous obtenons une erreur, qui contient le message que nous avons passé en param
 Les balances du compte et du contrat n'ont pas bougés, donc les Ethers n'ont pas été transférés et le nom n'a pas changé, preuve que la transaction n'a pas été acceptée.
 Cependant, la balance du compte a quand même perdu quelques Wei. En effet, même si une transaction est rejetée, le gas consommé pour la prendre en compte est bel et consommé pour de bon.
 
-
-## 8. Administrer le contract<a name="8"></a>
+<a name="8"></a>
+## 8. Administrer le contract
 
 Bien, maintenant que nous savons que le contrat possède des Ethers, il serait bien de pouvoir les récupérer, et si possible que ce ne soit possible que par son propriétaire.
 
@@ -1228,8 +1232,8 @@ Ca a donc fonctionné, parce que le compte que nous avons utilisé est bien le p
 
 Nous savons maintenant comment créer un service payant, et récupérer l'argent qu'il a généré.
 
-
-## 9. Envoyer une transaction signée<a name="9"></a>
+<a name="9"></a>
+## 9. Envoyer une transaction signée
 
 Pour le moment, il nous a été facile d'envoyer des transactions en utilisant un compte par défaut, que nous avons renseigné dans la configuration du projet. Nous avons émis en son nom un certain nombre de transactions, qui lui ont coûté des Ethers. Et pourtant, à aucun moment, il ne nous a été demandé de justifier que ce compte nous appartenait, en saisissant un mot de passe ou en fournissant une clé privée par exemple.
 Ca a été possible parce que ce compte est enregistré dans le noeud de blockchain que nous utilisons, et que par défaut dans Ganache, les comptes sont déverouillés, c'est à dire, utilisables directement.
@@ -1548,8 +1552,8 @@ Par contre, si vous tenter de retirer les Ethers (Withdraw) avec un compte diff�
 
 ![Seul l'administrateur peut retirer les Ether](images/11_index_forbiddenwithdraw.png)
 
-
-## 10. Les événements<a name="10"></a>
+<a name="10"></a>
+## 10. Les événements
 
 Nous allons maintenant aborder la notion d'événements. En Solidity, il est possible de définir un événement, avec certains attributs. A certain endroit dans le code, nous pouvons émettre ces événements. Puis, une application peut écouter ces événement, elle sera ainsi notifiée à chaque fois que l'un d'entre eux se produit.
 
@@ -1747,14 +1751,14 @@ Maintenant, il suffit de redéployer le contrat, de faire quelques changements d
 
 ![Historique des changements de nom](images/12_index_history.png)
 
-
-## 11. Ajouter un oracle<a name="11"></a>
+<a name="11"></a>
+## 11. Ajouter un oracle
 
 Pour l'instant, nous avons vu comment développer une application décentralisée reposant uniquement sur un smart contract, comment coupler un smart contract sur une application "traditionnelle". Maintenant, nous allons voir les oracles.
 Un oracle est un terme qui désigne une façon pour une DApp (smart contract seulement) d'interagir avec l'extérieur.
 
-
-## 12. Tests automatiques<a name="12"></a>
+<a name="12"></a>
+## 12. Tests automatiques
 
 Au début de ce tutoriel, nous avons insisté sur l'immuabilité des smart contracts, donc de la nécessité de prendre grand soin de la qualité.
 
@@ -1843,15 +1847,18 @@ Vous devriez obtenir un résultat de ce type :
 <a name="13"></a>
 ## 13. Debugger un contrat
 
-## 14. Focus sur l'utilisation du gaz<a name="14"></a>
+<a name="14"></a>
+## 14. Focus sur l'utilisation du gaz
 
-## 15. Sécurité<a name="15"></a>
+<a name="15"></a>
+## 15. Sécurité
 
 - Clés privées
 - Réentrée
 - Ownership des contrats
 
-## 16 Exercices<a name="16"></a>
+<a name="16"></a>
+## 16 Exercices
 
 - Ajouter un champ "From", pour afficher "Hello X, from Y" !
 
@@ -1861,6 +1868,7 @@ Vous devriez obtenir un résultat de ce type :
 
 - Créer un test qui valide que le withdraw fonctionne (balance contrat = 0, balance admin += balance contrat - gaz)
 
-## 17 Ressources<a name="17"></a>
+<a name="17"></a>
+## 17 Ressources
 Lien vers le repository avec le code source complet : http://
 https://solidity.readthedocs.io/en/latest/
