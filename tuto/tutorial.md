@@ -33,15 +33,17 @@ Une application reposant uniquement sur des smart contracts déployés sur une b
 
 ## Vous avez dit asynchrone ?
 
-Un des concepts important du développement d'application connectée à une blockchain est le concetp d'asynchronicité.
-En effet, l'envoi de donneés à une blockchain se fait au moyen de transactions. Ces transactions, en plus d'entrainer des coûts d'utilisation, sont asynchrones.
+Un des concepts important du développement d'application connectée à une blockchain est l'asynchronicité.
+En effet, l'envoi de données à une blockchain se fait au moyen de transactions. Ces transactions, en plus d'entrainer des coûts d'utilisation, sont asynchrones.
 
 Lorsqu'une transaction est envoyée, elle doit être validée par un des noeuds de la blockchain, ce qui peut prendre un temps variable.
 Dans certains cas, il faut également attendre une confirmation afin d'être (presque) certain qu'elle ne sera pas remise en question par une chaine plus longue qui ne la prendrait pas en compte.
 
 L'obtention du résultat, ou le simple fait de considérer une modification comme effective, doit se faire dans ces conditions.
 
-Dans notre projet en Node.js, cet asynchronicité sera mise en place au moyen de promesses. Les mots clés _Promise_, _async_, _await_ seront donc largement de la partie :)
+Dans notre projet en Node.js, cette asynchronicité sera mise en place au moyen de promesses. Les mots clés _Promise_, _async_, _await_ seront donc largement de la partie :).
+Si vous n'êtes pas familiers de ces concepts, [un petit détour par ici](https://javascript.info/async) vous sera utile.
+
 
 ## Description du projet
 
@@ -1870,5 +1872,16 @@ Vous devriez obtenir un résultat de ce type :
 
 <a name="17"></a>
 ## 17 Ressources
-Lien vers le repository avec le code source complet : http://
-https://solidity.readthedocs.io/en/latest/
+
+Code source du projet : https://github.com/avysel/ethereum-helloworld
+
+Truffle : https://truffleframework.com/docs/truffle/overview
+
+Ganache : https://truffleframework.com/docs/ganache/overview
+
+Web3.js : https://web3js.readthedocs.io/en/1.0/
+
+Solidity : https://solidity.readthedocs.io/en/latest/
+
+Asynchronicité en javascript : https://javascript.info/async
+
