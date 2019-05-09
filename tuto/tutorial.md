@@ -1870,6 +1870,8 @@ Dans les logs de l'API, vous devriez voir qu'un appel a lieu toutes les 10 secon
 Dans les logs de l'oracle, vous devriez voir qu'une transaction est émise toutes les minutes.
 Sur l'application web, si vous rafraichissez régulièrement, vous voyez le nom changer toutes les minutes, ainsi que l'historique des changements de nom se remplir au fil du temps.
 
+![L'oracle change le nom automatiquement](images/14_index_oracle.png)
+
 Et voilà, c'est un oracle !
 
 <a name="12"></a>
