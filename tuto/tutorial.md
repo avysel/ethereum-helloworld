@@ -106,9 +106,11 @@ Nous allons utiliser la version 1.0 pour ce tutorial.
 10. [Les événements](#10)
 11. [Ajouter un oracle](#11)
 12. [Tests automatiques](#12)
-13. [Focus sur l'utilisation du gas](#13)
-14. [Sécurité](#14)
-15. [Ressources](#15)
+13. [Debugguer un contrat](#13)
+14. [Focus sur l'utilisation du gas](#14)
+15. [Sécurité](#15)
+16. [Exercices](#16)
+17. [Ressources](#17)
 
 ***
 
@@ -1828,7 +1830,7 @@ module.exports = function(deployer) {
 
 ```
 
-## 12.3 Exécuter les tests
+### 12.3 Exécuter les tests
 
 Exécutez la commande :
 
@@ -1838,18 +1840,18 @@ Vous devriez obtenir un résultat de ce type :
 
 ![Résultat des tests](images/13_truffle_test.png)
 
+<a name="13"></a>
+## 13. Debugger un contrat
 
-## Debug ?
+## 14. Focus sur l'utilisation du gaz<a name="14"></a>
 
-## 13. Focus sur l'utilisation du gaz<a name="13"></a>
-
-## 14. Sécurité<a name="14"></a>
+## 15. Sécurité<a name="15"></a>
 
 - Clés privées
 - Réentrée
 - Ownership des contrats
 
-## 15 Exercices<a name="14"></a>
+## 16 Exercices<a name="16"></a>
 
 - Ajouter un champ "From", pour afficher "Hello X, from Y" !
 
@@ -1859,6 +1861,6 @@ Vous devriez obtenir un résultat de ce type :
 
 - Créer un test qui valide que le withdraw fonctionne (balance contrat = 0, balance admin += balance contrat - gaz)
 
-## 16 Ressources<a name="15"></a>
+## 17 Ressources<a name="17"></a>
 Lien vers le repository avec le code source complet : http://
 https://solidity.readthedocs.io/en/latest/
