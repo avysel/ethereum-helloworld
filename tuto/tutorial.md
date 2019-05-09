@@ -231,6 +231,11 @@ Vous devez obtenir le résultat suivant :
 Vous obtenez différentes informations sur la transaction qui a déployé le contrat (numéro de transaction, prix ...).
 Notez bien pour plus tard l'information la plus importante, l'adresse à laquelle le smart contract a été déployé ("contract address").
 
+**Le contrat devra être redéployé à chaque modification.
+
+Il n'est pas nécessaire d'effectuer un ```truffle compile``` à chaque fois, le ```truffle deploy``` le fera automatiquement si besoin.
+A chaque déploiement, il ne faut pas oublier de modifier l'adresse du contrat dans le fichier de configuration.**
+
 ## 5. Initialisation de l'application web<a name="5"></a>
 
 ### 1.1 Création des fichiers
@@ -1533,7 +1538,7 @@ Décortiquons ce que fait ce service :
 4. On estime ensuite la quantité de gaz nécessaire, que l'on vient mettre à jour dans la transaction précédemment créée.
 5. Et enfin, au moyen du module ```EthereumTx```, on crée la transaction que l'on vient signer avec la clé privée. La transaction sera ensuite sérialisée, puis envoyeé au moyen de ```web3.eth.sendSignedTransaction```, sans oublier de la préfixer par ```Ox```.
 
-Maintenant, on peut tester de reproduire les mêmes opérations que les des précédents tests, en choisissant un compte de la liste.
+Maintenant, on peut tester toutes les opérations définies précédemment, en choisissant un compte de la liste.
 
 Il doit être possible pour n'importe quel compte de modifier le nom. Vous devez voir dans les liste des comptes dans Ganache les balances des comptes correspondants se réduire.
 
@@ -1544,11 +1549,201 @@ Par contre, si vous tenter de retirer les Ethers (Withdraw) avec un compte diff�
 
 ## 10. Les événements<a name="10"></a>
 
-Nous allons maintenant aborder la notion d'événements. En Solidity, il est possible de défini un événement, avec certains attributs. A certain endroit dans le code, nous pouvons émettre ces événements. Puis, une application peut écouter ces événement, elle sera ainsi notifiée à chaque fois que l'un d'entre eux se produit.
+Nous allons maintenant aborder la notion d'événements. En Solidity, il est possible de définir un événement, avec certains attributs. A certain endroit dans le code, nous pouvons émettre ces événements. Puis, une application peut écouter ces événement, elle sera ainsi notifiée à chaque fois que l'un d'entre eux se produit.
 
 Les versions de Web3.js antérieures à 1.0 n'utilisaient pas les Promises. En conséquence, il fallait définir dans le smart contract un événement que l'on émettait lorsque la méthode était appelée. L'application écoutait cet événement, elle était ainsi prévenu quand la transaction était validée et que le code était exécuté, elle pouvait alors interroger la blockchain pour récupérer le reçu de transaction (receipt).
 
-A partir de Web3.js 1.0, les Promises rendent ce mécanisme moins utile, mais les événements conservent leur rôle d'historisation des actions. Nous allons voir comment les exploiter.
+A partir de Web3.js 1.0, les Promises rendent ce mécanisme moins utile, mais les événements conservent leur rôle d'historisation et de notification des actions. Nous allons voir comment les exploiter.
+
+Nous allons afficher l'historique des modifications du nom, en indiquant quel utilisateur l'a demandée et combien il a payé.
+
+Tout d'abord, modifions le contrat pour créer l'événement.
+
+**_PayableHello.sol :_**
+
+```
+contract PayableHello is owned {
+
+    string private name;
+
+	event NameChanged(string newName, address userAddress, uint value);
+
+    constructor() public {
+        name = "nobody";
+    }
+
+    function setName(string memory newName) public payable {
+    	require(msg.value >= 2 ether, "Pay 2 ETH or more");
+        name = newName;
+        emit NameChanged(newName, msg.sender, msg.value);
+    }
+
+    function getName() public view returns (string memory) {
+        return name;
+    }
+
+    function withdraw() public onlyOwner {
+    	uint balance = address(this).balance;
+		msg.sender.transfer(balance);
+    }
+
+    function() external payable {
+        revert();
+    }
+
+}
+```
+
+Tout tient en 2 instructions :
+
+```event NameChanged(string newName, address userAddress, uint value);``` : la définition de l'événement, avec le mot clé ```event```. Ensuite on le nomme et on indique une liste de paramètres qu'il va prendre. Ici, le nouveau nom, l'adresse de l'utilisateur et le prix payé.
+
+```emit NameChanged(newName, msg.sender, msg.value);``` : la création de l'événement, dans la méthode ```setName```, avec le mot clé ```emit```. Nous lui passons les valeurs attendues en paramètres.
+
+Ces événements ne servent pas à grand chose s'ils ne sont pas exploités. Nous allons donc créer un service qui les récupère :
+
+
+**_payablehello.js :_**
+
+```
+/*
+* Get all NameChanged events data
+*/
+exports.getNameChangedHistory = async function() {
+	var eventsList = new Array();
+
+	return new Promise(function(resolve, reject) {
+
+		// get all emited events from first block to last block
+		payableHello.getPastEvents("NameChanged", { fromBlock: 0, toBlock: 'latest' })
+			.then((events, error) => {
+				events.forEach(function(item, index, array) {
+					var valueInEth = web3.utils.fromWei(item.returnValues.value.toString(), 'ether');
+				  	eventsList.push({ block:item.blockNumber, name:item.returnValues.newName, userAddress:item.returnValues.userAddress, value:valueInEth});
+				});
+				resolve(eventsList);
+			});
+	});
+}
+```
+
+Nous récupérons les événements au moyen de  ```payableHello.getPastEvents("NameChanged", { fromBlock: 0, toBlock: 'latest' })```. Il suffit d'utiliser ```getPastEvents``` sur notre objet ```payableHello```, et de lui passer en paramètre le nom du contrat concerné, ainsi quelques paramètres supplémentaires, par exemple ici nous indiquons que nous allons chercher du bloc 0 jusqu'au dernier (soit toute la chaine).
+
+Puis on modifie le contrôleur pour récupérer des données :
+
+```
+async function renderIndex(res) {
+
+	try {
+		displayData.nodeInfo = await payableHello.getNodeInfo();
+		displayData.name = await payableHello.readName();
+		displayData.nameHistory = await payableHello.getNameChangedHistory();
+	}
+	catch(error) {
+		console.error(error);
+	}
+
+	res.render('index', displayData);
+}
+```
+
+Et enfin, on modifie le template pour les afficher (on ajoute un bloc à la fin) :
+
+```
+doctype html
+html(lang='fr')
+	head
+		meta(charset='utf-8')
+		title Ethereum Hello world
+		script(type='text/javascript', src='https://code.jquery.com/jquery-3.3.1.slim.min.js')
+		script(type='text/javascript', src='https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js')
+		script(type='text/javascript', src='https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js')
+		link(rel='stylesheet' href='https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css')
+	body
+	.container-fluid
+		.row
+			.col-md-6
+				div.card
+					h3.card-header Blockchain info
+					div.card-body
+						#info
+							br
+							div
+								b Web3 version :&nbsp;
+								span#web3-version #{nodeInfo.web3Version}
+							div
+								b Node :&nbsp;
+								span#node #{nodeInfo.node}
+							div
+								b Last block :&nbsp;
+								span#block-number #{nodeInfo.blockNumber}
+							div
+								b Coinbase :&nbsp;
+								span#coinbase #{nodeInfo.coinbase}
+							div
+								b Balance :&nbsp;
+								span#balance #{nodeInfo.balance}
+							div
+								b Contract balance :&nbsp;
+								span#contract-balance #{nodeInfo.contractBalance}
+							hr
+							div
+								form(method='post', action='/withdraw')
+									.form-group
+										label(for='withdrawAccount') Account :
+										select#withdrawAccount(name='withdrawAccount').form-control
+											each account in accounts
+												option(value=account.address) #{account.address}
+									div
+										input(type='submit', value='Withdraw').btn.btn-primary
+										span#withdraw-status
+			.col-md-6
+				div.card
+					h5.card-header Hello who ?
+					div.card-body
+						h2 Hello #{name}
+		.row
+			.col-md-6
+				div.card
+					h3.card-header Change name
+					div.card-body
+						#form
+							form(method='post', action='/name')
+								.form-group
+									label(for='newName') Name :
+									input#newName(type='text', name='newName').form-control
+								.form-group
+									label(for='price') Price (Eth) :
+									input#price(type='text', name='price').form-control
+								.form-group
+									label(for='account') Account :
+									select#account(name='account').form-control
+										each account in accounts
+											option(value=account.address) #{account.address}
+								div
+									input(type='submit', value='Send').btn.btn-primary
+			.col-md-6
+				div.card
+					h3.card-header Status
+					div.card-body
+						div#status Transaction : #{txStatus}
+						div#blockNumber Block : #{blockNumber}
+						div#errorMessage #{errorMessage}
+
+		.row
+			.col-md-12
+				div.card
+					h3.card-header Names history
+					div.card-body
+						ul
+						each item in nameHistory
+							li= 'Block '+item.block +' -> '+item.name + ' ('+item.userAddress+', '+item.value+')'
+```
+
+
+Maintenant, il suffit de redéployer le contrat, de faire quelques changements de nom, avec différents comptes, et nous voyons l'historique des changements :
+
+![Historique des changements de nom](images/12_index_history.png)
 
 
 ## 11. Ajouter un oracle<a name="11"></a>

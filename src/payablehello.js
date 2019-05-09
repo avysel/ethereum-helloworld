@@ -225,7 +225,7 @@ exports.withdraw = async function(withdrawAccount) {
 		   })
 		   .on('confirmation', (confirmationNumber, receipt) => {
 			   console.log("confirmation");
-			   console.log(stringify(receipt));
+			  // console.log(stringify(receipt));
 			   result.blockNumber = receipt.blockNumber;
 			   resolve(result);
 		   })
