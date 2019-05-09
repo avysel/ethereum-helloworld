@@ -1790,19 +1790,24 @@ contract("PayableHello", async accounts => {
 
 ### 12.2 Tester en Solidity
 
-Idem que précédement, mais cette fois en Solidity. Nous allons créer un fichier ```PayableHelloTest.sol```.
+Idem que précédement, mais cette fois en Solidity. Nous allons créer un fichier ```TestPayableHello.sol```.
+Attention, les contrats de test doivent impérativement commencer par ```Test``` et il ne faut pas oublier de les ajouter au fichier de migration.
+
+**_TestPayableHello.sol :_**
 
 ```
+pragma solidity ^0.5.0;
+
 import "truffle/Assert.sol";
 import "truffle/DeployedAddresses.sol";
 import "../contracts/PayableHello.sol";
 
 contract TestPayableHello {
 
-  function testInitialPayableHello() {
+  function testInitialPayableHello() public {
     PayableHello payableHello = PayableHello(DeployedAddresses.PayableHello());
 
-    string expected = "nobody";
+    string memory expected = "nobody";
 
     Assert.equal(payableHello.getName(), expected, "name wasn't nobody");
   }
@@ -1810,9 +1815,29 @@ contract TestPayableHello {
 }
 ```
 
+**_3_payablehello_migrations.js :_**
+
+```
+const PayableHello = artifacts.require("PayableHello");
+const TestPayableHello = artifacts.require("TestPayableHello");
+
+module.exports = function(deployer) {
+  	deployer.deploy(PayableHello);
+    deployer.deploy(TestPayableHello);
+};
+
+```
+
 ## 12.3 Exécuter les tests
 
+Exécutez la commande :
+
 ```truffle test```
+
+Vous devriez obtenir un résultat de ce type :
+
+![Résultat des tests](images/13_truffle_test.png)
+
 
 ## Debug ?
 
