@@ -228,7 +228,7 @@ Vous devez obtenir le résultat suivant :
 
 ![Résultat du déploiement](images/1-deploy-result.png)
 
-Vous obtenez différentes informations sur la transaction qui a déployé le contrat (numéro de transaction, prix ...).
+Vous obtenez différentes informations sur la transaction qui a déployé le contrat (numéro de transaction, coût ...).
 Notez bien pour plus tard l'information la plus importante, l'adresse à laquelle le smart contract a été déployé ("contract address").
 
 **Le contrat devra être redéployé à chaque modification.
@@ -238,7 +238,7 @@ A chaque déploiement, il ne faut pas oublier de modifier l'adresse du contrat d
 
 ## 5. Initialisation de l'application web<a name="5"></a>
 
-### 1.1 Création des fichiers
+### 5.1 Création des fichiers
 
 Nous allons initialiser une application web, basée sur Node.js, utilisant les framework Express pour MVC et Pug pour les templates HTML.
 Dans un premier temps, nous allons créer une simple page d'index qui affiche des informations sur le noeud de blockchain auquel nous sommes connectés.
@@ -297,7 +297,7 @@ Initialiser les valeurs
 - ```payableHelloContractAddress``` : adresse à laquelle le contrat a été déployé avec Truffle. ("contract address" dans le résultat de ```truffle deploy```)
 
 
-### 1.2 Connection à la blockchain
+### 5.2 Connection à la blockchain
 
 **_payablehello.js :_**
 
@@ -345,7 +345,7 @@ exports.getNodeInfo = async function() {
 }
 ```
 
-### 1.3 Connection au contrat
+### 5.3 Connection au contrat
 
 Nous allons maintenant nous connecter au contrat :
 
@@ -492,7 +492,7 @@ Dans le navigateur ```http://localhost:3000```
 
 Dans la partie "Blockchain info", nous pouvons voir que la valeur de la balance du compte utilisé, qui était à 100 ETH lors du lancement de Ganache, a été diminuée en fonction du coût des transactions qui ont permis de déployer les contrats.
 
-### 1.4 Lecture d'une donnée
+### 5.4 Lecture d'une donnée
 
 Nous allons maintenant enrichir tout ça en récupérant le nom de la personne à saluer et en l'affichant à l'écran.
 
@@ -1748,7 +1748,73 @@ Maintenant, il suffit de redéployer le contrat, de faire quelques changements d
 
 ## 11. Ajouter un oracle<a name="11"></a>
 
+Pour l'instant, nous avons vu comment développer une application décentralisée reposant uniquement sur un smart contract, comment coupler un smart contract sur une application "traditionnelle". Maintenant, nous allons voir les oracles.
+Un oracle est un terme qui désigne une façon pour une DApp (smart contract seulement) d'interagir avec l'extérieur.
+
+
 ## 12. Tests automatiques<a name="12"></a>
+
+Au début de ce tutoriel, nous avons insisté sur l'immuabilité des smart contracts, donc de la nécessité de prendre grand soin de la qualité.
+
+Truffle permet d'écrire des tests unitaires, ils seront placés dans le répertoire ```test```.
+
+Pour la documentation complète, voir ici :
+https://truffleframework.com/docs/truffle/testing/testing-your-contracts
+
+Ces tests peuvent être écrits en Javascript ou Solidity.
+
+### 12.1 Tester avec Javascript
+
+Les tests javascript de Truffle utilisent les frameworks [Mocha](https://mochajs.org/) et [Chai](https://www.chaijs.com/).
+Nous n'allons pas nous étendre sur la syntaxe de ces deux frameworks, leurs documentations respectives  
+
+Nous allons créer un fichier ```payablehello-test.js```.
+
+Voici un exemple de test qui valide que lors de l'initialisation du contrat, le nom est bien "nobody".
+
+**_payablehello-test.js :_**
+
+```
+const Hello = artifacts.require("PayableHello");
+
+contract("PayableHello", async accounts => {
+
+	it("should display 'nobody' when no name set", async () => {
+		let hello = await Hello.deployed();
+		let name = await hello.getName.call();
+		assert.equal(name, "nobody","name wasn't nobody");
+	});
+});
+
+```
+
+### 12.2 Tester en Solidity
+
+Idem que précédement, mais cette fois en Solidity. Nous allons créer un fichier ```PayableHelloTest.sol```.
+
+```
+import "truffle/Assert.sol";
+import "truffle/DeployedAddresses.sol";
+import "../contracts/PayableHello.sol";
+
+contract TestPayableHello {
+
+  function testInitialPayableHello() {
+    PayableHello payableHello = PayableHello(DeployedAddresses.PayableHello());
+
+    string expected = "nobody";
+
+    Assert.equal(payableHello.getName(), expected, "name wasn't nobody");
+  }
+
+}
+```
+
+## 12.3 Exécuter les tests
+
+```truffle test```
+
+## Debug ?
 
 ## 13. Focus sur l'utilisation du gaz<a name="13"></a>
 
@@ -1760,8 +1826,13 @@ Maintenant, il suffit de redéployer le contrat, de faire quelques changements d
 
 ## 15 Exercices<a name="14"></a>
 
+- Ajouter un champ "From", pour afficher "Hello X, from Y" !
+
+- Limiter le prix du changement de nom à 5 ETH. Tous les ETH supplémentaires seront rendus à l'émetteur.
 
 - Créer un événement pour les withdraw, et les afficher à l'écran
+
+- Créer un test qui valide que le withdraw fonctionne (balance contrat = 0, balance admin += balance contrat - gaz)
 
 ## 16 Ressources<a name="15"></a>
 Lien vers le repository avec le code source complet : http://
