@@ -13,19 +13,45 @@ Dans ce tutoriel, nous allons voir comment développer une application couplée 
 
 Mise à jour : 06/05/2019
 
-## Introduction
+***
 
+**Sommaire**
+1. Introduction
+2. Le projet
+3. [Initialisation du projet](#1)
+4. [Premier smart contract](#2)
+5. [Test du smart contract](#3)
+6. [Déploiement du smart contract](#4)
+7. [Initialisation de l'application web](#5)
+8. [Modification de la valeur](#6)
+9. [Rendre la modification payante](#7)
+10. [Administrer le contract](#8)
+11. [Envoyer une transaction signée](#9)
+12. [Les événements](#10)
+13. [Ajouter un oracle](#11)
+14. [Tests automatiques](#12)
+15. [Debugguer un contrat](#13)
+16. [Focus sur l'utilisation du gas](#14)
+17. [Sécurité](#15)
+18. [Exercices](#16)
+19. [Ressources](#17)
+
+***
+
+## 1. Introduction
+
+### Smart contracts
 Ethereum permet la création de **smart contracts**. Ce sont des programmes qui sont envoyés à tous les noeuds du réseau et dont on active des fonctionnalités au moyen de transactions.
 Ils vont donc s'exécuter sur tous les noeuds dès que ces derniers recevront la transaction correspondante.
 
-Les smart contracts sont écrits en **Solidity**, un langage créé pour Ethereum. Ils sont exécutés dans l'**EVM (Ethereum Virtual Machine)**. C'est une **machine virtuelle à pile d'exécution** présente sur chaque noeud Ethereum. C'est à dire que le programme est décompoé en une suite d'instructions de base, placées sur une pile, et exécutées dans l'ordre de dépilage.
+Les smart contracts sont écrits en **Solidity**, un langage créé pour Ethereum. Ils sont exécutés dans l'**EVM (Ethereum Virtual Machine)**. C'est une **machine virtuelle à pile d'exécution** présente sur chaque noeud Ethereum. C'est à dire que le programme est décomposé en une suite d'instructions de base, placées sur une pile, et exécutées dans l'ordre de dépilage.
 
 La documentation officielle du langage est disponible ici : 
 https://solidity.readthedocs.io/en/latest/
 
 Il est ensuite possible de connecter une application traditionnelle à un smart contract.
 
-## Mise en garde
+### Mise en garde
 
 Il faut garder à l'esprit que l'état de l'environnement d'exécution peut varier d'un noeud à l'autre. Par exemple, si un traitement nécessite l'envoi de plusieurs transactions, l'ordre de réception par chaque noeud du réseau sera aléatoire. La conception des smart contracts ne doit donc pas être dépendante de l'environnement.
 
@@ -33,14 +59,14 @@ Ensuite, comme tout élément stocké sur la blockchain, une fois validés, ils 
 
 Une mise à jour de smart contract équivaut au déploiement d'un nouveau smart contract. L'ancien restera toujours présent, avec ses données. Il pourra cependant être désactivé, mais ne sera jamais complètement supprimé.
 
-## DApp ?
+### DApp ?
 
-Une DApp, ou **Decentralized Application**, application décentralisée, est une application déployée sur un réseau de façon uniforme et partagée, qui ne possède aucun élément central et nécessaire à son fonctionnement.
+Une DApp, ou **Decentralized Application**, application décentralisée, est une application déployée sur un réseau de façon uniforme et partagée, qui ne possède aucun élément central.
 
 Une application reposant uniquement sur des smart contracts déployés sur une blockchain est donc une DApp. La coupler à une application NodeJS ou autre, déployée sur un serveur, hors de la blockchain, revient à créer un Single Point Of Failure. De ce fait, il ne s'agit plus réellement d'une DApp.
 
 
-## Vous avez dit asynchrone ?
+### Vous avez dit asynchrone ?
 
 Un des concepts important du développement d'application connectée à une blockchain est l'asynchronicité.
 En effet, l'envoi de données à une blockchain se fait au moyen de transactions, diffusées au reste du réseau. Ces transactions, en plus d'entrainer des coûts d'utilisation, sont asynchrones.
@@ -54,7 +80,9 @@ Dans notre projet en Node.js, cette asynchronicité sera mise en place au moyen 
 Si vous n'êtes pas familiers de ces concepts, [un petit détour par ici](https://javascript.info/async) vous sera utile.
 
 
-## Description du projet
+## 2. Le projet
+
+### Description du projet
 
 Dans ce projet, nous allons créer un HelloWorld.
 
@@ -67,7 +95,7 @@ Le propriétaire du smart contract pourra alors récupérer quand il le souhaite
 Techniquement, nous aborderons la création, le test et le déploiement d'un smart contract. Puis la connection d'un application Node.js à un smart contract et l'envoi de transactions à celui-ci.
 
 
-## Environnement
+### Environnement technique
 
 L'environnement d'exécution de ce tutorial se fera sous Linux, mais il est possible de trouver l'équivalent de chaque commande sous Windows ou Mac.
 
@@ -104,29 +132,9 @@ Nous allons utiliser la version 1.0 pour ce tutorial.
 **Vous êtes prêts ? Alors allons-y !**
 
 ***
-**Sommaire**
-1. [Initialisation du projet](#1)
-2. [Premier smart contract](#2)
-3. [Test du smart contract](#3)
-4. [Déploiement du smart contract](#4)
-5. [Initialisation de l'application web](#5)
-6. [Modification de la valeur](#6)
-7. [Rendre la modification payante](#7)
-8. [Administrer le contract](#8)
-9. [Envoyer une transaction signée](#9)
-10. [Les événements](#10)
-11. [Ajouter un oracle](#11)
-12. [Tests automatiques](#12)
-13. [Debugguer un contrat](#13)
-14. [Focus sur l'utilisation du gas](#14)
-15. [Sécurité](#15)
-16. [Exercices](#16)
-17. [Ressources](#17)
 
-***
-
-<a name="1"></a>
-## 1. Initialisation du projet
+<a name="3"></a>
+## 3. Initialisation du projet
 
 Dans un terminal, positionnez vous dans votre répertoire de travail, et lancez la commande suivante :
 
@@ -143,8 +151,8 @@ Après une courte phase de téléchargement et d'initialisation, nous voyons app
 ```truffle-config.js``` : fichier de configuration de Truffle
 
 
-<a name="2"></a>
-## 2. Premier smart contract
+<a name="4"></a>
+## 4. Premier smart contract
 
 Dans ```contracts```, créer un fichier PayableHello.sol. Y saisir le code suivant :
 
@@ -192,15 +200,15 @@ Maintenant, tapez la commande suivante :
 
 Si la compilation se termine avec succès, un répertoire ```build/contracts``` vient d'être créé. Il contient les résultats de la compilation. C'est dans ce répertoire que nous trouverons les **ABI** (Application Binary Interface). Il s'agit des contrats de service, définis en json, que notre application aura besoin de connaitre pour pouvoir interagir avec le smart contract. Nous verrons cela par la suite.
 
-<a name="3"></a>
-## 3. Test du smart contract
+<a name="5"></a>
+## 5. Test du smart contract
 
 Avant de déployer notre smart contract, nous allons le tester en utilisant Remix. C'est un IDE en ligne qui remplit à peu près le même rôle que Truffle. C'est l'occasion de tester un nouvel outil :).
 
 https://remix.ethereum.org
 
-<a name="4"></a>
-## 4. Déploiement du smart contract
+<a name="6"></a>
+## 6. Déploiement du smart contract
 
 Tout d'abord, lancez Ganache (ou tout autre client Ethereum).
 
@@ -250,10 +258,10 @@ Notez bien pour plus tard l'information la plus importante, l'adresse à laquell
 Il n'est pas nécessaire d'effectuer un ```truffle compile``` à chaque fois, le ```truffle deploy``` le fera automatiquement si besoin.
 A chaque déploiement, il ne faut pas oublier de modifier l'adresse du contrat dans le fichier de configuration.**
 
-<a name="5"></a>
-## 5. Initialisation de l'application web
+<a name="7"></a>
+## 7. Initialisation de l'application web
 
-### 5.1 Création des fichiers
+### 7.1 Création des fichiers
 
 Nous allons initialiser une application web, basée sur Node.js, utilisant les framework Express pour MVC et Pug pour les templates HTML.
 Dans un premier temps, nous allons créer une simple page d'index qui affiche des informations sur le noeud de blockchain auquel nous sommes connectés.
@@ -312,7 +320,7 @@ Initialiser les valeurs
 - ```payableHelloContractAddress``` : adresse à laquelle le contrat a été déployé avec Truffle. ("contract address" dans le résultat de ```truffle deploy```)
 
 
-### 5.2 Connection à la blockchain
+### 7.2 Connection à la blockchain
 
 **_payablehello.js :_**
 
@@ -360,7 +368,7 @@ exports.getNodeInfo = async function() {
 }
 ```
 
-### 5.3 Connection au contrat
+### 7.3 Connection au contrat
 
 Nous allons maintenant nous connecter au contrat :
 
@@ -507,7 +515,7 @@ Dans le navigateur ```http://localhost:3000```
 
 Dans la partie "Blockchain info", nous pouvons voir que la valeur de la balance du compte utilisé, qui était à 100 ETH lors du lancement de Ganache, a été diminuée en fonction du coût des transactions qui ont permis de déployer les contrats.
 
-### 5.4 Lecture d'une donnée
+### 7.4 Lecture d'une donnée
 
 Nous allons maintenant enrichir tout ça en récupérant le nom de la personne à saluer et en l'affichant à l'écran.
 
@@ -600,8 +608,8 @@ Dans le navigateur :
 
 Le nom s'affiche. Du moins, la valeur par défaut définie dans le constructeur.
 
-<a name="6"></a>
-## 6. Modification de la valeur
+<a name="8"></a>
+## 8. Modification de la valeur
 
 Nous allons maintenant pouvoir chercher à modifier le nom.
 
@@ -784,8 +792,8 @@ On peut aussi consulter la liste des transactions dans Ganache pour retrouver ce
 
 Dans la partie "Blockchain info", nous pouvons aussi voir que la valeur de la balance du compte utilisé diminue en fonction du coût de la transaction.
 
-<a name="7"></a>
-## 7. Rendre la modification payante
+<a name="9"></a>
+## 9. Rendre la modification payante
 
 Prochaine étape, nous allons maintenant rendre la modification du nom payante. Pour celà, nous allons mettre en place un certain nombre de conditions :
 - La modification du nom coûte 2 ETH, mais il est possible de payer plus.
@@ -1017,8 +1025,8 @@ Nous obtenons une erreur, qui contient le message que nous avons passé en param
 Les balances du compte et du contrat n'ont pas bougés, donc les Ethers n'ont pas été transférés et le nom n'a pas changé, preuve que la transaction n'a pas été acceptée.
 Cependant, la balance du compte a quand même perdu quelques Wei. En effet, même si une transaction est rejetée, le gas consommé pour la prendre en compte est bel et consommé pour de bon.
 
-<a name="8"></a>
-## 8. Administrer le contract
+<a name="10"></a>
+## 10. Administrer le contract
 
 Bien, maintenant que nous savons que le contrat possède des Ethers, il serait bien de pouvoir les récupérer, et si possible que ce ne soit possible que par son propriétaire.
 
@@ -1242,8 +1250,8 @@ Ca a donc fonctionné, parce que le compte que nous avons utilisé est bien le p
 
 Nous savons maintenant comment créer un service payant, et récupérer l'argent qu'il a généré.
 
-<a name="9"></a>
-## 9. Envoyer une transaction signée
+<a name="11"></a>
+## 11. Envoyer une transaction signée
 
 Pour le moment, il nous a été facile d'envoyer des transactions en utilisant un compte par défaut, que nous avons renseigné dans la configuration du projet. Nous avons émis en son nom un certain nombre de transactions, qui lui ont coûté des Ethers. Et pourtant, à aucun moment, il ne nous a été demandé de justifier que ce compte nous appartenait, en saisissant un mot de passe ou en fournissant une clé privée par exemple.
 Ca a été possible parce que ce compte est enregistré dans le noeud de blockchain que nous utilisons, et que par défaut dans Ganache, les comptes sont déverouillés, c'est à dire, utilisables directement.
@@ -1562,8 +1570,8 @@ Par contre, si vous tenter de retirer les Ethers (Withdraw) avec un compte diff�
 
 ![Seul l'administrateur peut retirer les Ether](images/11_index_forbiddenwithdraw.png)
 
-<a name="10"></a>
-## 10. Les événements
+<a name="12"></a>
+## 12. Les événements
 
 Nous allons maintenant aborder la notion d'événements. En Solidity, il est possible de définir un événement, avec certains attributs. A certain endroit dans le code, nous pouvons émettre ces événements. Puis, une application peut écouter ces événement, elle sera ainsi notifiée à chaque fois que l'un d'entre eux se produit.
 
@@ -1761,8 +1769,8 @@ Maintenant, il suffit de redéployer le contrat, de faire quelques changements d
 
 ![Historique des changements de nom](images/12_index_history.png)
 
-<a name="11"></a>
-## 11. Ajouter un oracle
+<a name="13"></a>
+## 13. Ajouter un oracle
 
 Pour l'instant, nous avons vu comment développer une application décentralisée reposant uniquement sur un smart contract, comment coupler un smart contract sur une application "traditionnelle". Maintenant, nous allons voir les oracles.
 Un oracle est un terme qui désigne une façon pour une DApp (smart contract seulement) d'interagir avec l'extérieur.
@@ -1882,8 +1890,8 @@ Sur l'application web, si vous rafraichissez régulièrement, vous voyez le nom 
 
 Et voilà, c'est un oracle !
 
-<a name="12"></a>
-## 12. Tests automatiques
+<a name="14"></a>
+## 14. Tests automatiques
 
 Au début de ce tutoriel, nous avons insisté sur l'immuabilité des smart contracts, donc de la nécessité de prendre grand soin de la qualité.
 
@@ -1894,7 +1902,7 @@ https://truffleframework.com/docs/truffle/testing/testing-your-contracts
 
 Ces tests peuvent être écrits en Javascript ou Solidity.
 
-### 12.1 Tester avec Javascript
+### 14.1 Tester avec Javascript
 
 Les tests javascript de Truffle utilisent les frameworks [Mocha](https://mochajs.org/) et [Chai](https://www.chaijs.com/).
 Nous n'allons pas nous étendre sur la syntaxe de ces deux frameworks, leurs documentations respectives  
@@ -1919,7 +1927,7 @@ contract("PayableHello", async accounts => {
 
 ```
 
-### 12.2 Tester en Solidity
+### 14.2 Tester en Solidity
 
 Idem que précédement, mais cette fois en Solidity. Nous allons créer un fichier ```TestPayableHello.sol```.
 Attention, les contrats de test doivent impérativement commencer par ```Test``` et il ne faut pas oublier de les ajouter au fichier de migration.
@@ -1959,7 +1967,7 @@ module.exports = function(deployer) {
 
 ```
 
-### 12.3 Exécuter les tests
+### 14.3 Exécuter les tests
 
 Exécutez la commande :
 
@@ -1969,21 +1977,21 @@ Vous devriez obtenir un résultat de ce type :
 
 ![Résultat des tests](images/13_truffle_test.png)
 
-<a name="13"></a>
-## 13. Debugger un contrat
-
-<a name="14"></a>
-## 14. Focus sur l'utilisation du gaz
-
 <a name="15"></a>
-## 15. Sécurité
+## 15. Debugger un contrat
+
+<a name="16"></a>
+## 16. Focus sur l'utilisation du gaz
+
+<a name="17"></a>
+## 17. Sécurité
 
 - Clés privées
 - Réentrée
 - Ownership des contrats
 
-<a name="16"></a>
-## 16 Exercices
+<a name="18"></a>
+## 18 Exercices
 
 - Ajouter un champ "From", pour afficher "Hello X, from Y" !
 
@@ -1993,8 +2001,8 @@ Vous devriez obtenir un résultat de ce type :
 
 - Créer un test qui valide que le withdraw fonctionne (balance contrat = 0, balance admin += balance contrat - gaz)
 
-<a name="17"></a>
-## 17 Ressources
+<a name="19"></a>
+## 19 Ressources
 
 Code source du projet : https://github.com/avysel/ethereum-helloworld
 
