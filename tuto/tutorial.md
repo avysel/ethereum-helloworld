@@ -9,13 +9,13 @@ analytics account: 0
 
 # Développer avec Ethereum
 
-Dans ce tutoriel, nous allons voir comment développer une application couplée à la blockchain Ethereum.
+Dans ce tutoriel, nous allons voir comment développer une application connectée à la blockchain Ethereum.
 
 Mise à jour : 10/05/2019
 
 ***
 
-**Sommaire**
+**Sommaire :**
 1. [Introduction](#1)
 2. [Le projet](#2)
 3. [Initialisation du projet](#3)
@@ -128,11 +128,6 @@ Nous allons utiliser la version 1.0 pour ce tutorial.
 
 ```npm install ethereumjs-tx```
 
-***
-
-**Vous êtes prêts ? Alors allons-y !**
-
-***
 
 <a name="3"></a>
 ## 3. Initialisation du projet
@@ -1027,9 +1022,9 @@ Les balances du compte et du contrat n'ont pas bougés, donc les Ethers n'ont pa
 Cependant, la balance du compte a quand même perdu quelques Wei. En effet, même si une transaction est rejetée, le gas consommé pour la prendre en compte est bel et consommé pour de bon.
 
 <a name="10"></a>
-## 10. Administrer le contract
+## 10. Administrer le contrat
 
-Bien, maintenant que nous savons que le contrat possède des Ethers, il serait bien de pouvoir les récupérer, et si possible que ce ne soit possible que par son propriétaire.
+Bien, maintenant que nous savons que le contrat possède des Ethers, il serait bien de pouvoir les récupérer, et si possible, uniquement par son propriétaire.
 
 Nous allons donc modifier le contrat pour :
 - pouvoir récupérer les Ethers et les envoyer à une adresse
@@ -1092,22 +1087,22 @@ contract PayableHello is owned {
 
 Nous allons introduire deux nouvelles notions : l'héritage et les modificateurs.
 
-Nous créons un nouveau contrat ```owned``` qui contient :
+Nous créons un nouveau contrat ```owned``` composé de :
 - un champ privé ```owner``` qui contiendra l'adresse du propriétaire de ce contrat (notez que ce champ est ```payable```)
 - un constructeur, qui initialise ```owner``` avec l'adresse qui a émit la transaction de création du contrat
-- une méthode de type ```modifier``` appelée ```onlyOwner```. Il s'agit de définit un comportement, afin de créer un sorte de "mot-clé" que l'on réutilisera sur d'autres méthodes, pour lesquels ce comportement s'appliquera.
+- une méthode de type ```modifier``` appelée ```onlyOwner```. Il s'agit de définir un comportement, afin de créer un sorte de "mot-clé" que l'on réutilisera sur d'autres méthodes, pour lesquelles ce comportement s'appliquera.
 Ici, ce modificateur comporte une condition qui impose que l'utilisateur qui l'appelle soit le propriétaire du contrat, donc que son adresse soit celle qui a créé le contrat. 
 Ensuite, on trouve ```_;``` qui signifie tout simplement "Exécuter ici le code défini dans la méthode qui utilise ce modificateur".
 En gros, toute fonction qui se verra appliquer le modificateur ```onlyOwner``` exécutera la condition de propriété, puis exécutera ensuite son code propre.
-- ue méthode ```destroy```, à laquelle le modificateur ```onlyOnwer``` est appliquée, qui exécute ```selfdestruct```. ```selfdestruct``` désactive le contrat et transfère sa balance à l'adresse qui l'appelle. Vous comprenez pourquoi il faut restreindre son accès au propriétaire, sinon n'importe qui pourrait tout casser et prendre l'argent.
+- une méthode ```destroy```, à laquelle le modificateur ```onlyOnwer``` est appliquée, qui exécute ```selfdestruct```. ```selfdestruct``` désactive le contrat et transfère sa balance à l'adresse qui l'appelle. Vous comprenez pourquoi il faut restreindre son accès au propriétaire, sinon n'importe qui pourrait tout casser et prendre l'argent.
 A noter qu'un contrat qui a subit un ```selfdesctuct``` est désactivé, mais pas supprimé. Il ne peut plus exécuter ses méthodes, par contre, il sera toujours possible de lui envoyer des Ethers, qui seront alors perdus car il sera impossible de les récupérer.
 
-Ensuite, nous modifions la définition du contrat PayableHello en ```contract PayableHello is owned ```. Cela signifie que ```PayableHello``` hérite de toutes les propriétés de ```owned```.
+Ensuite, nous modifions la définition du contrat PayableHello en ```PayableHello is owned ```. Cela signifie que ```PayableHello``` hérite de toutes les propriétés de ```owned```.
 L'adresse de son propriétaire est donc enregistrée, il pourra être désactivé par lui uniquement. Le modificateur ```onlyOwner``` pourra aussi être appliqué à n'importe laquelle de ses méthodes.
 
 D'ailleurs, nous ajoutons aussi une méthode ```withdraw``` qui utilise ce modificateur. Elle récupère l'adresse de l'émetteur de la transaction via ```msg.sender``` et lui envoie la balance via ```transfert```.
 
-Une fois le contrat modifié, nous allons créer un service pour permettre au propriétaire de récupérer ses Ether :
+Une fois le contrat modifié, nous allons créer un service pour permettre au propriétaire de récupérer ses Ethers :
 
 **_payablehello.js :_**
 ```
@@ -1903,6 +1898,8 @@ https://truffleframework.com/docs/truffle/testing/testing-your-contracts
 
 Ces tests peuvent être écrits en Javascript ou Solidity.
 
+Ici, nous avons amené les tests assez tardivement, pour permettre de passer en revue au préalable un certain nombre de notions nécessaires. Par la suite, il sera plus approprié d'effectuer ces tests avant le déploiement du contrat.
+
 ### 14.1 Tester avec Javascript
 
 Les tests javascript de Truffle utilisent les frameworks [Mocha](https://mochajs.org/) et [Chai](https://www.chaijs.com/).
@@ -1987,9 +1984,31 @@ Vous devriez obtenir un résultat de ce type :
 <a name="17"></a>
 ## 17. Sécurité
 
-- Clés privées
-- Réentrée
-- Ownership des contrats
+Un point d'attention particulier doit être apporté à la sécurité, notamment sur certains points : 
+
+### Clés privées
+
+Les clés privés sont au coeur de la sécurité sur une blockchain. Elles permettent de signer les transactions, de revendiquer la possession d'actifs ... Il faut les protéger, les garder dans le secret le plus absolu.
+(De même pour la phrase seed).
+
+Dans notre projet, nous avons fait quelques tests avec des clés privées mises en clair dans un fichier de configurations. Dans un réel projet, les clés privées doivent être beaucoup mieux sécurisées. Personne d'autre que leur propiétaire légitime ne doit pouvoir y accéder.
+
+
+### Ré-entrée
+
+Une des erreurs de programmation d'un smart contract les plus dangereuses est de créer sans le savoir une "faille de ré-entrée".
+
+Vous trouvez des explications et un exemple ici :
+
+https://github.com/avysel/ethereum-reentrancy
+
+
+### Ownership des contrats
+
+Nous avons mis en place dans ce projet une gestion de la propriété d'un smart contrat, de prévoir des méthodes administration (désactivation, récupération de balance ...).
+Il est très important que les besoins en administration soient bien identifiés en amont, puis développés et sécurisés.
+
+Il serait dommage de ne pas pouvoir récupérer les Ether que nous avons pu généré par notre travail, ou que quelqu'un les récupère à notre place.
 
 <a name="18"></a>
 ## 18 Exercices
