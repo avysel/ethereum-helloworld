@@ -3,7 +3,7 @@
   "format": "html",
   "prefix": "https://storage.googleapis.com",
   "mainga": "UA-49880327-14",
-  "updated": "2019-05-10T14:19:43+02:00",
+  "updated": "2019-05-10T15:29:13+02:00",
   "id": "tuto-dapp-ethereum",
   "duration": 0,
   "title": "Développer avec Ethereum",
@@ -19,7 +19,6 @@
   "tags": [
     "linux"
   ],
-  "feedback": "http://nowhere",
-  "ga": "0",
+  "feedback": "https://github.com/avysel/ethereum-helloworld",
   "url": "tuto-dapp-ethereum"
 }

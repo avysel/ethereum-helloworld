@@ -21,11 +21,11 @@
 </head>
 <body>
   <google-codelab-analytics gaid="UA-49880327-14"></google-codelab-analytics>
-  <google-codelab codelab-gaid="0"
+  <google-codelab codelab-gaid=""
                   id="tuto-dapp-ethereum"
                   title="Développer avec Ethereum"
                   environment="web"
-                  feedback-link="http://nowhere">
+                  feedback-link="https://github.com/avysel/ethereum-helloworld">
     
       <google-codelab-step label="1. Introduction" duration="0">
         <h2 is-upgraded>1.1. Smart contracts</h2>
@@ -60,22 +60,27 @@
 <p>Ce tutorial sera basé sur Node.js. Il s&#39;agit simplement de la technologie la plus répandue pour travailler avec les smart contracts, celle pour laquelle on trouve le plus d&#39;outils et de frameworks disponibles.<br>Mais il est possible de trouver également des frameworks Java, Python ... qui fonctionnent de la même façon.</p>
 <p>Nous allons dans un premier temps installer un certain nombre d&#39;outils :</p>
 <ul>
-<li>Node.js : car le projet sera développé en Node.js :)</li>
+<li>Node.js : car le projet sera développé en Node.js :)<pre><code>sudo apt-get install nodejs
+</code></pre>
+</li>
 <li>Ganache : une blockchain de test, qui s&#39;exécute en local et fournit une interface visuelle pour voir ce qu&#39;il s&#39;y passe.</li>
 </ul>
-<p>https://truffleframework.com/ganache</p>
+<p>Téléchargez le fichier disponible ici <a href="https://truffleframework.com/ganache" target="_blank">https://truffleframework.com/ganache</a></p>
 <ul>
-<li>Truffle : un outil permettant de compiler, tester et déployer des smart contracts sur une blockchain.</li>
+<li>Truffle : un outil permettant de compiler, tester et déployer des smart contracts sur une blockchain.<a href="https://truffleframework.com/truffle" target="_blank">https://truffleframework.com/truffle</a><pre><code>npm install truffle
+</code></pre>
+</li>
+<li>Web3.js : un framework javascript permettant d&#39;interagir avec une blockchain.<a href="https://web3js.readthedocs.io/en/1.0/index.html" target="_blank">https://web3js.readthedocs.io/en/1.0/index.html</a><pre><code>npm install web3          
+</code></pre>
+</li>
 </ul>
-<p>https://truffleframework.com/truffle</p>
-<ul>
-<li>Web3.js : un framework javascript permettant d&#39;interagir avec une blockchain.</li>
-</ul>
-<p>https://web3js.readthedocs.io/en/1.0/index.html</p>
 <p>Web3.js existe en version 0.20.X, qui est la version stable actuelle, et en version 1.0.X qui est encore en beta.<br>La version 0.20 permet une utilisation directement intégrée à des pages web, dans un navigateur. Elle est plus simple d&#39;utilisation, mais sera prochainement dépréciée.<br>La version 1.0.X, bien que beta, a un bon niveau de stabilité et est bien plus complète. Cependant, elle impose un fonctionnement côté serveur, tel que Node.js.</p>
 <p>Nous allons utiliser la version 1.0 pour ce tutorial.</p>
-<pre><code>npm install ethereumjs-tx
+<ul>
+<li>EthereumJs-Tx : un module permettant de manipuler des transactions<pre><code>npm install ethereumjs-tx
 </code></pre>
+</li>
+</ul>
 
 
       </google-codelab-step>
@@ -1493,7 +1498,7 @@ html(lang=&#39;fr&#39;)
     
       <google-codelab-step label="13. Ajouter un oracle" duration="0">
         <p>Pour l&#39;instant, nous avons vu comment développer une application décentralisée reposant uniquement sur un smart contract, comment coupler un smart contract sur une application &#34;traditionnelle&#34;. Maintenant, nous allons voir les oracles.<br>Un oracle est un terme qui désigne une façon pour une DApp (smart contract seulement) d&#39;interagir avec l&#39;extérieur.</p>
-<p>Cependant, derrière ce nom, aucun concept nouveau ni magique ne se cache. Il ne s&#39;agit ni plus ni moins d&#39;une application qui interroge régulièrement ou écoute une source de données, et envoie des transactions au smart contract dans certaines conditions.</p>
+<p>Cependant, derrière ce nom, aucun concept nouveau ni magique ne se cache. Il ne s&#39;agit ni plus ni moins que d&#39;une application qui interroge régulièrement ou écoute une source de données, et envoie des transactions au smart contract dans certaines conditions.</p>
 <p>Nous allons mettre en place l&#39;exemple suivant :</p>
 <ul>
 <li>Une API génère un nouveau nom toutes les minutes</li>
@@ -1502,7 +1507,7 @@ html(lang=&#39;fr&#39;)
 <p>Tout d&#39;abord, créons l&#39;API. Ici, il s&#39;agit juste de fournir un exemple simple pour illustrer une source de données pouvant impacter la blockchain. Elle est complètement indépendant et décorellée de ce que nous avons fait précédemment</p>
 <p><strong>api.js :</strong></p>
 <pre><code>/**
-* Simple API that can returns a new string every second
+* Simple API that provides a new string every minute
 */
 
 var express = require(&#39;express&#39;);
@@ -1530,7 +1535,7 @@ app.listen(3001);
 <p>Cette API, disponible sur le port 3001, va simplement exposer une route <strong>GET /name</strong> qui retourne une chaine de caractères composée de &#34;Toto&#34; concaténée à la date et heure du jour à la minute. Ce qui fait que le résultat changera chaque minute.</p>
 <p>Maintenant, créons l&#39;oracle proprement dit :</p>
 <p>Faisons un petit</p>
-<pre><code>npm instal request
+<pre><code>npm install request
 </code></pre>
 <p>juste avant, afin de pouvoir exploiter le module <strong>request</strong> qui nous facilitera la vie avec les requêtes HTTP vers l&#39;API.</p>
 <p><em>oracle.js :</em></p>
@@ -1593,7 +1598,7 @@ setInterval(readAPI, 1000 * 10);
 <li>Dans un autre terminal, lancez l&#39;API de test<pre><code>node api.js
 </code></pre>
 </li>
-<li>Dans un nouveau termine, lancez l&#39;oracle<pre><code>node oracle.js
+<li>Dans un nouveau terminal, lancez l&#39;oracle<pre><code>node oracle.js
 </code></pre>
 </li>
 </ol>
@@ -1685,7 +1690,7 @@ module.exports = function(deployer) {
 <p>Dans notre projet, nous avons fait quelques tests avec des clés privées mises en clair dans un fichier de configurations. Dans un réel projet, les clés privées doivent être beaucoup mieux sécurisées. Personne d&#39;autre que leur propiétaire légitime ne doit pouvoir y accéder.</p>
 <h2 is-upgraded>Ré-entrée</h2>
 <p>Une des erreurs de programmation d&#39;un smart contract les plus dangereuses est de créer sans le savoir une &#34;faille de ré-entrée&#34;.</p>
-<p>Vous trouvez des explications et un exemple ici :</p>
+<p>Vous trouverez des explications et un exemple ici :</p>
 <p>https://github.com/avysel/ethereum-reentrancy</p>
 <h2 is-upgraded>Ownership des contrats</h2>
 <p>Nous avons mis en place dans ce projet une gestion de la propriété d&#39;un smart contrat, de prévoir des méthodes administration (désactivation, récupération de balance ...).<br>Il est très important que les besoins en administration soient bien identifiés en amont, puis développés et sécurisés.</p>
@@ -1695,12 +1700,51 @@ module.exports = function(deployer) {
       </google-codelab-step>
     
       <google-codelab-step label="18 Exercices" duration="0">
-        <ul>
-<li>Ajouter un champ &#34;From&#34;, pour afficher &#34;Hello X, from Y&#34; !</li>
-<li>Limiter le prix du changement de nom à 5 ETH. Tous les ETH supplémentaires seront rendus à l&#39;émetteur.</li>
-<li>Créer un événement pour les withdraw, et les afficher à l&#39;écran</li>
-<li>Créer un test qui valide que le withdraw fonctionne (balance contrat = 0, balance admin += balance contrat - gaz)</li>
-</ul>
+        <h2 is-upgraded>Ajouter un champ &#34;From&#34;, pour afficher &#34;Hello X, from Y&#34; !</h2>
+<h2 is-upgraded>Limiter le prix du changement de nom à 5 ETH. Tous les ETH supplémentaires seront rendus à l&#39;émetteur.</h2>
+<pre><code>contract PayableHello is owned {
+
+	...
+
+    function setName(string memory newName) public payable {
+    	require(msg.value &gt;= 2 ether, &#34;Pay 2 ETH or more&#34;);
+    	uint256 purchaseExcess = 0;
+    	
+    	if(msg.value &gt; 5 ether) {
+    		purchaseExcess = (msg.value - 5 ether);
+    		msg.sender.transfer(purchaseExcess);
+    	}
+    	
+        name = newName;
+        emit NameChanged(newName, msg.sender, (msg.value-purchaseExcess));
+    }
+
+	...
+
+}
+</code></pre>
+<h2 is-upgraded>Créer un événement pour les withdraw, et les afficher à l&#39;écran</h2>
+<h2 is-upgraded>Créer un test qui valide que le withdraw fonctionne (balance contrat = 0, balance admin += balance contrat - gaz)</h2>
+<pre><code>it(&#34;should withdraw contract balance&#34;, async () =&gt; {
+	let hello = await Hello.deployed();
+	let initialContractBalance = await web3.eth.getBalance(hello.address);
+	let initialUserBalance = await web3.eth.getBalance(accounts[0]);
+
+	let gas = await hello.withdraw.estimateGas({ from: accounts[0], gas: 4000000 }	);
+	let receipt = await hello.withdraw.sendTransaction( { from: accounts[0], gas: gas*2 });
+
+	let gasUsed = receipt.receipt.gasUsed;
+	let tx = await web3.eth.getTransaction(receipt.tx);
+	let gasPrice = tx.gasPrice;
+	let txPrice = (gasPrice * gasUsed);
+
+	let finalContractBalance = await web3.eth.getBalance(hello.address);
+	let finalUserBalance = await web3.eth.getBalance(accounts[0]);
+
+	assert.equal(finalContractBalance, 0,&#34;contract balance is not 0&#34;);
+	assert.equal(t(finalUserBalance), t(parseInt(initialContractBalance,10) + parseInt(initialUserBalance,10) - parseInt(txPrice,10)) ,&#34;user balance is not initial balance + contract balance - tx price&#34;);
+});
+</code></pre>
 
 
       </google-codelab-step>
