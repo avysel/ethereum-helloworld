@@ -6,6 +6,7 @@ environments: linux
 status: draft
 feedback link: http://nowhere
 analytics account: 0
+4/RgElMUq5TMSAgndOnxoY5oTQYXW8Rfl89ZQoWyOc4164d-eLyRQB4EQ
 
 # Développer avec Ethereum
 
@@ -38,8 +39,9 @@ Mise à jour : 10/05/2019
 
 ***
 
-<a name="1"></a>
-## 1. Introduction
+
+
+## 1. Introduction<a name="1"></a>
 
 ### 1.1. Smart contracts
 Ethereum permet la création de **smart contracts**. Ce sont des programmes qui sont envoyés à tous les noeuds du réseau et dont on active des fonctionnalités au moyen de transactions.
@@ -80,8 +82,11 @@ L'obtention du résultat, ou le simple fait de considérer une modification comm
 Dans notre projet en Node.js, cette asynchronicité sera mise en place au moyen de promesses. Les mots clés _Promise_, _async_, _await_ seront donc largement de la partie :).
 Si vous n'êtes pas familiers de ces concepts, [un petit détour par ici](https://javascript.info/async) vous sera utile.
 
-<a name="2"></a>
-## 2. Le projet
+
+
+
+
+## 2. Le projet<a name="2"></a>
 
 ### 2.1. Description du projet
 
@@ -94,7 +99,6 @@ Dans un second temps, nous transformerons notre HelloWorld en service payant. La
 Le propriétaire du smart contract pourra alors récupérer quand il le souhaite l'intégralité des sommes que les utilisateurs auront payées.
 
 Techniquement, nous aborderons la création, le test et le déploiement d'un smart contract. Puis la connection d'un application Node.js à un smart contract et l'envoi de transactions à celui-ci.
-
 
 ### 2.2. Environnement technique
 
@@ -125,32 +129,31 @@ La version 1.0.X, bien que beta, a un bon niveau de stabilité et est bien plus 
 
 Nous allons utiliser la version 1.0 pour ce tutorial.
 
+```
+npm install ethereumjs-tx
+```
 
-```npm install ethereumjs-tx```
-
-
-<a name="3"></a>
-## 3. Initialisation du projet
+## 3. Initialisation du projet<a name="3"></a>
 
 Dans un terminal, positionnez vous dans votre répertoire de travail, et lancez la commande suivante :
 
- ```truffle init```
+ ```
+ truffle init
+ ```
  
 Après une courte phase de téléchargement et d'initialisation, nous voyons apparaitre 3 répertoires et 1 fichier :
  
-```contracts``` : code des smart contracts
+**_contracts**_ : code des smart contracts
 
-```migrations``` : scripts nécessaire à Truffle de effectuer les déploiements de contrats sur la blockchain.
+**_migrations**_ : scripts nécessaire à Truffle de effectuer les déploiements de contrats sur la blockchain.
 
-```tests``` : scripts de tests unitaires des smart contracts
+**_tests**_ : scripts de tests unitaires des smart contracts
 
-```truffle-config.js``` : fichier de configuration de Truffle
+**_truffle-config.js**_ : fichier de configuration de Truffle
 
+## 4. Premier smart contract<a name="4"></a>
 
-<a name="4"></a>
-## 4. Premier smart contract
-
-Dans ```contracts```, créer un fichier PayableHello.sol. Y saisir le code suivant :
+Dans **_contracts_**, créer un fichier PayableHello.sol. Y saisir le code suivant :
 
 ```
 pragma solidity ^0.5.0;
@@ -176,7 +179,10 @@ contract PayableHello {
 
 Etudions ce que nous venons d'écrire.
 
-```pragma solidity ^0.5.0;``` décrit la version du compilateur que nous utilisons. Solidity est encore un langage qui évolue beaucoup et pour lequel il risque d'y avoir beaucoup d'incompatibilités entre les versions tant qu'il ne sera pas complètement stabilisé. Pouvoir choisir une version de compilateur permet donc de ne pas avoir à mettre à jour son code trop souvent. (Il est tout de même conseillé de le faire régulièrement pour bénéficier des améliorations de sécurité.)
+```
+pragma solidity ^0.5.0;
+``` 
+décrit la version du compilateur que nous utilisons. Solidity est encore un langage qui évolue beaucoup et pour lequel il risque d'y avoir beaucoup d'incompatibilités entre les versions tant qu'il ne sera pas complètement stabilisé. Pouvoir choisir une version de compilateur permet donc de ne pas avoir à mettre à jour son code trop souvent. (Il est tout de même conseillé de le faire régulièrement pour bénéficier des améliorations de sécurité.)
 
 Ensuite nous déclarons le contrat en indiquant son nom et en lui créant un champ privé de type chaine de caractères.
 
@@ -184,17 +190,22 @@ Ce contrat possède un constructeur, qui initialise son champ avec la valeur "no
 
 Notez l'utilisation de certains mots clés :
 
-```memory``` : indique que la valeur de cette variable (```newName```) est stockée en mémoire uniquement et non dans la blockchain. Elle n'occasionnera donc aucun coût de stockage, contrairement au champ ```name```.
+**memory** : indique que la valeur de cette variable (**newName**) est stockée en mémoire uniquement et non dans la blockchain. Elle n'occasionnera donc aucun coût de stockage, contrairement au champ **name**.
 
-```view``` : indique que cette fonction ne modifie pas l'état de la blockchain car elle ne fait que retourner une valeur. Elle n'occasionnera elle non plus aucun coût et peut donc être appelée gratuitement, contrairement à ```setName```, dont l'appel devra se faire via une transaction payante.
+**view** : indique que cette fonction ne modifie pas l'état de la blockchain car elle ne fait que retourner une valeur. Elle n'occasionnera elle non plus aucun coût et peut donc être appelée gratuitement, contrairement à **setName**, dont l'appel devra se faire via une transaction payante.
 
-```returns (string memory)``` : indique le type de retour de la fonction. Là encore, il faut préciser que la donnée retournée ne transitera que par la mémoire et non par le stockage sur la blockchain.
+**returns (string memory)** : indique le type de retour de la fonction. Là encore, il faut préciser que la donnée retournée ne transitera que par la mémoire et non par le stockage sur la blockchain.
 
 Maintenant, tapez la commande suivante :
 
-```truffle compile```
+```
+truffle compile
+```
 
-Si la compilation se termine avec succès, un répertoire ```build/contracts``` vient d'être créé. Il contient les résultats de la compilation. C'est dans ce répertoire que nous trouverons les **ABI** (Application Binary Interface). Il s'agit des contrats de service, définis en json, que notre application aura besoin de connaitre pour pouvoir interagir avec le smart contract. Nous verrons cela par la suite.
+Si la compilation se termine avec succès, un répertoire **build/contracts** vient d'être créé. Il contient les résultats de la compilation. C'est dans ce répertoire que nous trouverons les **ABI** (Application Binary Interface). Il s'agit des contrats de service, définis en json, que notre application aura besoin de connaitre pour pouvoir interagir avec le smart contract. Nous verrons cela par la suite.
+
+
+
 
 <a name="5"></a>
 ## 5. Test du smart contract
@@ -203,12 +214,15 @@ Avant de déployer notre smart contract, nous allons le tester en utilisant Remi
 
 https://remix.ethereum.org
 
+
+
+
 <a name="6"></a>
 ## 6. Déploiement du smart contract
 
 Tout d'abord, lancez Ganache (ou tout autre client Ethereum).
 
-Nous allons modifier le fichier ```truffle-config.js``` pour indiquer à Truffle les paramètres de connexion :
+Nous allons modifier le fichier **truffle-config.js** pour indiquer à Truffle les paramètres de connexion :
 
 ```
 module.exports = {
@@ -225,9 +239,9 @@ module.exports = {
 Nous indiquons qu'il existe un réseau, que nous nommons **ganache**, et qui disponible sur 127.0.0.1:7545 (IP/Port par défaut de Ganache, adaptez au besoin).
 Il est possible de définir plusieurs réseaux, et de préciser dans la ligne de commande lequel utiliser. Le premier sera utilisé par défaut si rien n'est indiqué.
 
-Dans le répertoire ```migrations``` dupliquez le fichier ```1_initial_migration.js``` en le nommant ```2_hello_migration.js```. Modifiez le contenu de ce nouveau fichier de cette façon :
+Dans le répertoire **migrations** dupliquez le fichier **1_initial_migration.js** en le nommant **2_hello_migration.js**. Modifiez le contenu de ce nouveau fichier de cette façon :
 
-```
+```javascript
 const PayableHello = artifacts.require("PayableHello");
 
 module.exports = function(deployer) {
@@ -235,12 +249,14 @@ module.exports = function(deployer) {
 };
 ```
 
-Le paramètre du ```require``` doit être le nom du contrat tel que défini dans le fichier Hello.sol.
+Le paramètre du **require** doit être le nom du contrat tel que défini dans le fichier **PayableHello.sol**.
 
 
 Maintenant, tapez la commande suivante :
 
-```truffle deploy```
+```
+truffle deploy
+```
 
 Vous devez obtenir le résultat suivant :
 
@@ -249,10 +265,11 @@ Vous devez obtenir le résultat suivant :
 Vous obtenez différentes informations sur la transaction qui a déployé le contrat (numéro de transaction, coût ...).
 Notez bien pour plus tard l'information la plus importante, l'adresse à laquelle le smart contract a été déployé ("contract address").
 
-**Le contrat devra être redéployé à chaque modification.
+**Le contrat devra être redéployé à chaque modification.**
 
-Il n'est pas nécessaire d'effectuer un ```truffle compile``` à chaque fois, le ```truffle deploy``` le fera automatiquement si besoin.
-A chaque déploiement, il ne faut pas oublier de modifier l'adresse du contrat dans le fichier de configuration.**
+Il n'est pas nécessaire d'effectuer un **truffle compile** à chaque fois, le **truffle deploy** le fera automatiquement si besoin.
+
+**A chaque déploiement, il ne faut pas oublier de modifier l'adresse du contrat dans le fichier de configuration.**
 
 <a name="7"></a>
 ## 7. Initialisation de l'application web
@@ -263,30 +280,41 @@ Nous allons initialiser une application web, basée sur Node.js, utilisant les f
 Dans un premier temps, nous allons créer une simple page d'index qui affiche des informations sur le noeud de blockchain auquel nous sommes connectés.
 
 Nous allons créer plusieurs répertoires et fichiers :
-- ```src/``` : pour contenir les sources de notre application web
-- ```src/views``` : pour les templates des écrans
-- ```src/views/index.pug``` : le template de l'index
-- ```src/app.js``` : le contrôleur de l'application
-- ```src/payablehello.js``` : les services de connexion à la blockchain
-- ```src/config.js``` : la configuration de notre application
+- **src/** : pour contenir les sources de notre application web
+- **src/views** : pour les templates des écrans
+- **src/views/index.pug** : le template de l'index
+- **src/app.js** : le contrôleur de l'application
+- **src/payablehello.js** : les services de connexion à la blockchain
+- **src/config.js** : la configuration de notre application
 
-Placez-vous dans le répertoire ```src``` et initialisez le projet Node.js avec la commande
+Placez-vous dans le répertoire **src** et initialisez le projet Node.js avec la commande
 
-```npm init```
+```
+npm init
+```
 
 Saisissez les quelques informations demandées pour initialiser le projet.
 
 Nous allons maintenant installer les packages nécessaires.
 
-```npm install pug```
+Pug : 
+```
+npm install pug
+```
 
-```npm install express```
+Express : 
+```
+npm install express
+```
 
-```npm install web```
+Web3 : 
+```
+npm install web3
+```
 
 1ère étape, se connecter à la blockchain au moyen de web3.
 
-**_config.js :_**
+**config.js :**
 
 ```javascript
 const config = {
@@ -310,15 +338,15 @@ module.exports = config;
 ```
 
 Initialiser les valeurs 
-- ```nodeURL``` et ```nodePort``` : éléments de connexion à Ganache
-- ```account``` : adresse Ethereum du premier compte disponible sur Ganache.
-- ```abiFile``` : chemin du fichier PayableHello.json dans le répertoire ```build``` généré par Truffle.
-- ```payableHelloContractAddress``` : adresse à laquelle le contrat a été déployé avec Truffle. ("contract address" dans le résultat de ```truffle deploy```)
+- **nodeURL** et **nodePort** : éléments de connexion à Ganache
+- **account** : adresse Ethereum du premier compte disponible sur Ganache.
+- **abiFile** : chemin du fichier PayableHello.json dans le répertoire **build** généré par Truffle.
+- **payableHelloContractAddress** : adresse à laquelle le contrat a été déployé avec Truffle. ("contract address" dans le résultat de ```truffle deploy```)
 
 
 ### 7.2 Connection à la blockchain
 
-**_payablehello.js :_**
+**payablehello.js :**
 
 ```
 var Web3 = require("web3");
@@ -368,7 +396,7 @@ exports.getNodeInfo = async function() {
 
 Nous allons maintenant nous connecter au contrat :
 
-**_payablehello.js :_**
+**payablehello.js :**
 
 ```
 /*
@@ -386,13 +414,13 @@ exports.initContracts = function() {
 }
 ```
 
-Cette fonction récupère l'objet javascript ABI dans le fichier json et le passe en paramètre, avec l'adresse du smart contract déployé, à la méthode ```web3.eth.Contract```, qui va retourner un object javascript permettant d'interagir avec le smart contract.
+Cette fonction récupère l'objet javascript ABI dans le fichier json et le passe en paramètre, avec l'adresse du smart contract déployé, à la méthode **web3.eth.Contract**, qui va retourner un object javascript permettant d'interagir avec le smart contract.
 
-L'objet ```payableHello``` sera donc notre objet d'accès au contrat.
+L'objet **payableHello** sera donc notre objet d'accès au contrat.
 
 Nous pouvons initialiser notre template (on intègre Bootstrap pour faciliter la mise en forme) :
 
-**_index.pug :_**
+**index.pug :**
 ```
 doctype html
 html(lang='fr')
@@ -432,7 +460,7 @@ html(lang='fr')
 								span#contract-balance #{nodeInfo.contractBalance}
 ```
 
-Et pour lier tout ça, notre contrôleur, **_app.js :_**
+Et pour lier tout ça, notre contrôleur, **app.js :**
 
 ```
 var http = require('http');
@@ -503,9 +531,11 @@ Nous avons maintenant tout ce qu'il faut pour lancer la première version de not
 
 Pour lancer l'application :
 
-```node app.js```
+```
+node app.js
+```
 
-Dans le navigateur ```http://localhost:3000```
+Dans le navigateur **http://localhost:3000**
 
 ![Premier affichage](images/2_index_blockchaininfo.png)
 
@@ -515,7 +545,7 @@ Dans la partie "Blockchain info", nous pouvons voir que la valeur de la balance 
 
 Nous allons maintenant enrichir tout ça en récupérant le nom de la personne à saluer et en l'affichant à l'écran.
 
-**_payablehello.js :_**
+**payablehello.js :**
 
 ```
 /**
@@ -525,10 +555,10 @@ exports.readName = async function() {
 	return payableHello.methods.getName().call({from: config.account});
 }
 ```
-On utilise l'objet ```payableHello``` défini précédement pour accéder aux méthodes du smart contact (```payableHello.methods```) et plus précisément à ```getName()```.
-On termine l'instruction avec ```call()```, qui prend en paramètre les éléments pour effectuer une transaction. Ici, nous appelons une méthode qui est définie comme ```view``` dans le contrat, donc qui n'engendre pas de coût. Le seul paramètre que nous allons passer est l'adresse du compte qui va émettre cette transaction.
+On utilise l'objet **payableHello** défini précédement pour accéder aux méthodes du smart contact (**payableHello.methods**) et plus précisément à **getName()**.
+On termine l'instruction avec **call()**, qui prend en paramètre les éléments pour effectuer une transaction. Ici, nous appelons une méthode qui est définie comme **view** dans le contrat, donc qui n'engendre pas de coût. Le seul paramètre que nous allons passer est l'adresse du compte qui va émettre cette transaction.
 
-**_app.js :_**
+**app.js :**
 
 On modifie la fonction renderIndex :
 
@@ -546,10 +576,10 @@ async function renderIndex(res) {
 	res.render('index', displayData);
 }
 ```
-On y ajoute l'appel à notre fonction ```readName()```, pour initialiser la donnée à afficher.
+On y ajoute l'appel à notre fonction **readName()**, pour initialiser la donnée à afficher.
 
 
-**_index.pug_**:
+**index.pug**:
 
 On rajoute à la fin de notre template quelques lignes pour afficher le nom.
 
@@ -609,7 +639,7 @@ Le nom s'affiche. Du moins, la valeur par défaut définie dans le constructeur.
 
 Nous allons maintenant pouvoir chercher à modifier le nom.
 
-**_payablehello.js :_**
+**payablehello.js :**
 
 Commençons par créer le service
 
@@ -657,18 +687,18 @@ exports.updateName = async function(newName) {
 On créer une méthode _updateName_ qui prend en paramètre le nouveau nom. Ensuite, le traitement va s'effectuer en plusieurs étapes : 
 
 1. Nous allons appeler une méthode du smart contract qui modifie la blockchain, cette transaction va donc entrainer un coût d'utilisation. Ce coût s'exprime en _gaz_, le carburant d'Ethereum.
-Dans un premier temps, il faut estimer la quantité de gaz nécessaire au moyen de ```estimateGas()```.
+Dans un premier temps, il faut estimer la quantité de gaz nécessaire au moyen de **estimateGas()**.
 
-2. Puis nous pouvons appeler la méthode ```setName()``` en lui indiquant d'utiliser cette quantité de gaz. Il est possible de passer directement une grande quantité de gaz, mais au risque de la voir entièrement consommée si la transaction d'avère trop grosse, et donc qu'elle nous coûte très cher. A l'inverse, si la quantité de gaz fournie est trop faible, le gaz sera consommé, mais la transaction ne sera pas validée.
+2. Puis nous pouvons appeler la méthode **setName()** en lui indiquant d'utiliser cette quantité de gaz. Il est possible de passer directement une grande quantité de gaz, mais au risque de la voir entièrement consommée si la transaction d'avère trop grosse, et donc qu'elle nous coûte très cher. A l'inverse, si la quantité de gaz fournie est trop faible, le gaz sera consommé, mais la transaction ne sera pas validée.
 Le traitement d'une transaction étant asynchrone, nous récupérons une Promise, que nous allons retourner.
 
 3. Ensuite, il faut attendre que la transaction soit prise en compte. Pour celà, nous allons utiliser plusieurs événements, qui se produisent à différents moment de la vie de la transaction :
-- ```transactionHash``` : quand la transaction obtient un hash et est envoyée au réseau.
-- ```receipt``` : quand le reçu de transaction est créé, on y trouve la majeur partie des informations concernant cette transaction.
-- ```confirmtion``` : quand la transaction est confirmée (c'est à dire quand un certain nombre de blocs ont été minés à la suite de celui qui la contient, ce nombre peut être déterminé dans les options de connexion à la blockchain).
-- ```error``` : en cas d'erreur
+- **transactionHash** : quand la transaction obtient un hash et est envoyée au réseau.
+- **receipt** : quand le reçu de transaction est créé, on y trouve la majeur partie des informations concernant cette transaction.
+- **confirmtion** : quand la transaction est confirmée (c'est à dire quand un certain nombre de blocs ont été minés à la suite de celui qui la contient, ce nombre peut être déterminé dans les options de connexion à la blockchain).
+- **error** : en cas d'erreur
 
-**_index.pug :_** 
+**index.pug :** 
 
 Puis modifions notre template : 
 
@@ -738,9 +768,9 @@ html(lang='fr')
 On y ajoute un formulaire pour saisir le nouveau nom, ainsi qu'un bloc qui va afficher le résultat de la modification.
 
 
-**_app.js :_**
+**app.js :**
 
-Le formulaire effectue un POST sur ```/name```. Nous allons donc aussi modifier le contrôleur pour créer une route qui appelle le service créé précédemment.
+Le formulaire effectue un POST sur **/name**. Nous allons donc aussi modifier le contrôleur pour créer une route qui appelle le service créé précédemment.
 
 ```
 /**
@@ -781,7 +811,7 @@ Entrez le nom de votre choix, et cliquez sur "Send".
 
 Dans le bloc "Status", nous récupérons le numéro de la transaction qui a modifié le nom et le numéro du bloc dans lequel elle a été validée.
 
-Il est possible de récupérer en grand nombre d'informations sur la transaction. Pour celà, vous pouvez inspecter l'objet ```receipt``` obtenu lors de l'envoi de la transaction.
+Il est possible de récupérer en grand nombre d'informations sur la transaction. Pour celà, vous pouvez inspecter l'objet **receipt** obtenu lors de l'envoi de la transaction.
 
 On peut également aller tester le smart contract avec Remix. On constatera que la valeur du nom est bien celle que nous avons envoyée.
 On peut aussi consulter la liste des transactions dans Ganache pour retrouver celle que nous avons envoyée.
@@ -795,7 +825,7 @@ Prochaine étape, nous allons maintenant rendre la modification du nom payante. 
 - La modification du nom coûte 2 ETH, mais il est possible de payer plus.
 - Il ne doit pas être possible d'envoyer d'Ethers au smart contract sans modifier le nom.
 
-**_PayableHello.sol :_**
+**PayableHello.sol :**
 
 Tout d'abord, on modifie le contrat : 
 
@@ -826,12 +856,12 @@ contract PayableHello {
 }
 ```
 
-On ajoute une condition dans la méthode ```setName```, afin d'indiquer que son exécution requiert au minimum un envoi de 2 ETH dans la transaction.
-Via la fonction ```require()```, nous indiquons la condition à respecter et le message à retourner en cas de non respect.
-Nous introduisons ici la variable globale ```msg```, qui contient les données relative à la transaction courante. On peut y touver l'adresse de l'émetteur (```sender```), le nombre d'Ethers envoyés (```value```) ...
+On ajoute une condition dans la méthode **setName**, afin d'indiquer que son exécution requiert au minimum un envoi de 2 ETH dans la transaction.
+Via la fonction **require()**, nous indiquons la condition à respecter et le message à retourner en cas de non respect.
+Nous introduisons ici la variable globale **msg**, qui contient les données relative à la transaction courante. On peut y touver l'adresse de l'émetteur (**sender**), le nombre d'Ethers envoyés (**value**) ...
 
-Notez également l'ajout du mot clé ```payable``` dans la définition de la méthode. Il indique qu'elle pourra être appelée par des transactions qui envoient des Ethers. 
-Envoyer des Ethers à une méthode qui n'est pas ```payable``` échouera.
+Notez également l'ajout du mot clé **payable** dans la définition de la méthode. Il indique qu'elle pourra être appelée par des transactions qui envoient des Ethers. 
+Envoyer des Ethers à une méthode qui n'est pas **payable** échouera.
 
 Nous avons aussi ajouté ce que l'on appelle la fonction de fallback :
 
@@ -842,12 +872,12 @@ Nous avons aussi ajouté ce que l'on appelle la fonction de fallback :
 ```
 
 Cette fonction, sans nom, est automatiquement appelée lorsque le contrat reçoit une transaction avec des Ethers, sans appel de méthode spécifiquement.
-Ici, nous exécutons simplement ```revert()``` pour indiquer que la transaction doit être annulée si nous sommes dans ce cas.
+Ici, nous exécutons simplement **revert()** pour indiquer que la transaction doit être annulée si nous sommes dans ce cas.
 
-Cette fonction fallback est définie elle aussi comme ```payable```, mais également comme ```external```, c'est à dire qu'elle ne peut être appelée que depuis l'extérieur, et non par des méthodes du contrat.
+Cette fonction fallback est définie elle aussi comme **payable**, mais également comme **external**, c'est à dire qu'elle ne peut être appelée que depuis l'extérieur, et non par des méthodes du contrat.
 
 
-**_payablehello.js:_**
+**payablehello.js:**
 
 Modifions le service afin de prendre en compte cette valeur :
 
@@ -892,12 +922,12 @@ exports.updateName = async function(newName, price) {
 }
 
 ```
-On ajoute un paramètre ```price``` à la méthode ```updateName```.
-On utilise ce paramètre pour alimenter un nouveau paramètres ```value``` lors des appels à ```estimateGas``` et ```setName```.
-Lors de ces appels, il faut passer une valeur en Wei, or nous l'avons en Ethers. Il faut donc la convertir grâce à ```web3.utils.toWei(price, "ether")``` qui prend en premier paramètre une valeur et en second paramètre l'unité de cette valeur.
+On ajoute un paramètre **price** à la méthode **updateName**.
+On utilise ce paramètre pour alimenter un nouveau paramètres **value** lors des appels à **estimateGas** et **setName**.
+Lors de ces appels, il faut passer une valeur en Wei, or nous l'avons en Ethers. Il faut donc la convertir grâce à **web3.utils.toWei(price, "ether")** qui prend en premier paramètre une valeur et en second paramètre l'unité de cette valeur.
 
 
-**_index.pug :_**
+**index.pug :**
 
 Nous ajoutons maintenant au template un champ dans le formulaire de modification de nom, afin que l'utilisateur saisisse le prix qu'il souhaite payer.
 
@@ -969,7 +999,7 @@ html(lang='fr')
 
 ```
 
-**_app.js :_**
+**app.js :**
 
 Il ne reste plus qu'à modifier le contrôleur afin de prendre en compte ce nouvelle valeur transmise par le champ de formulaire.
 
@@ -1002,7 +1032,7 @@ Il ne reste plus qu'à modifier le contrôleur afin de prendre en compte ce nouv
    });
 ```
 
-On récupère la valeur du champ ```price``` de la requête pour le transmettre en paramètre à ```updateName```.
+On récupère la valeur du champ **price** de la requête pour le transmettre en paramètre à **updateName**.
 
 Nous pouvons maintenant tester :
 
@@ -1017,7 +1047,7 @@ Nous pouvons aussi essayer de changer de nom en en payant qu'un seul Ether :
 
 ![On doit payer la somme minimum](images/7_index_revert.png)
 
-Nous obtenons une erreur, qui contient le message que nous avons passé en paramètre de ```require()``` dans le cas où la condition ne serait pas remplie.
+Nous obtenons une erreur, qui contient le message que nous avons passé en paramètre de ***require()*** dans le cas où la condition ne serait pas remplie.
 Les balances du compte et du contrat n'ont pas bougés, donc les Ethers n'ont pas été transférés et le nom n'a pas changé, preuve que la transaction n'a pas été acceptée.
 Cependant, la balance du compte a quand même perdu quelques Wei. En effet, même si une transaction est rejetée, le gas consommé pour la prendre en compte est bel et consommé pour de bon.
 
@@ -1030,7 +1060,7 @@ Nous allons donc modifier le contrat pour :
 - pouvoir récupérer les Ethers et les envoyer à une adresse
 - faire en sorte que les Ethers ne puissent être envoyés qu'au propriétaire du contrat.
 
-**_PayableHello.sol :_**
+**PayableHello.sol :**
 
 ```
 pragma solidity ^0.5.0;
@@ -1087,24 +1117,24 @@ contract PayableHello is owned {
 
 Nous allons introduire deux nouvelles notions : l'héritage et les modificateurs.
 
-Nous créons un nouveau contrat ```owned``` composé de :
-- un champ privé ```owner``` qui contiendra l'adresse du propriétaire de ce contrat (notez que ce champ est ```payable```)
-- un constructeur, qui initialise ```owner``` avec l'adresse qui a émit la transaction de création du contrat
-- une méthode de type ```modifier``` appelée ```onlyOwner```. Il s'agit de définir un comportement, afin de créer un sorte de "mot-clé" que l'on réutilisera sur d'autres méthodes, pour lesquelles ce comportement s'appliquera.
+Nous créons un nouveau contrat **owned** composé de :
+- un champ privé **owner** qui contiendra l'adresse du propriétaire de ce contrat (notez que ce champ est **payable**)
+- un constructeur, qui initialise **owner** avec l'adresse qui a émit la transaction de création du contrat
+- une méthode de type **modifier** appelée **onlyOwner**. Il s'agit de définir un comportement, afin de créer un sorte de "mot-clé" que l'on réutilisera sur d'autres méthodes, pour lesquelles ce comportement s'appliquera.
 Ici, ce modificateur comporte une condition qui impose que l'utilisateur qui l'appelle soit le propriétaire du contrat, donc que son adresse soit celle qui a créé le contrat. 
-Ensuite, on trouve ```_;``` qui signifie tout simplement "Exécuter ici le code défini dans la méthode qui utilise ce modificateur".
-En gros, toute fonction qui se verra appliquer le modificateur ```onlyOwner``` exécutera la condition de propriété, puis exécutera ensuite son code propre.
-- une méthode ```destroy```, à laquelle le modificateur ```onlyOnwer``` est appliquée, qui exécute ```selfdestruct```. ```selfdestruct``` désactive le contrat et transfère sa balance à l'adresse qui l'appelle. Vous comprenez pourquoi il faut restreindre son accès au propriétaire, sinon n'importe qui pourrait tout casser et prendre l'argent.
-A noter qu'un contrat qui a subit un ```selfdesctuct``` est désactivé, mais pas supprimé. Il ne peut plus exécuter ses méthodes, par contre, il sera toujours possible de lui envoyer des Ethers, qui seront alors perdus car il sera impossible de les récupérer.
+Ensuite, on trouve **_;** qui signifie tout simplement "Exécuter ici le code défini dans la méthode qui utilise ce modificateur".
+En gros, toute fonction qui se verra appliquer le modificateur **onlyOwner** exécutera la condition de propriété, puis exécutera ensuite son code propre.
+- une méthode **destroy**, à laquelle le modificateur **onlyOnwer** est appliquée, qui exécute **selfdestruct**. Cette méthode désactive le contrat et transfère sa balance à l'adresse qui l'appelle. Vous comprenez pourquoi il faut restreindre son accès au propriétaire, sinon n'importe qui pourrait tout casser et prendre l'argent.
+A noter qu'un contrat qui a subit un **selfdesctuct** est désactivé, mais pas supprimé. Il ne peut plus exécuter ses méthodes, par contre, il sera toujours possible de lui envoyer des Ethers, qui seront alors perdus car il sera impossible de les récupérer.
 
-Ensuite, nous modifions la définition du contrat PayableHello en ```PayableHello is owned ```. Cela signifie que ```PayableHello``` hérite de toutes les propriétés de ```owned```.
-L'adresse de son propriétaire est donc enregistrée, il pourra être désactivé par lui uniquement. Le modificateur ```onlyOwner``` pourra aussi être appliqué à n'importe laquelle de ses méthodes.
+Ensuite, nous modifions la définition du contrat PayableHello en **PayableHello is owned**. Cela signifie que **PayableHello** hérite de toutes les propriétés de **owned**.
+L'adresse de son propriétaire est donc enregistrée, il pourra être désactivé par lui uniquement. Le modificateur **onlyOwner** pourra aussi être appliqué à n'importe laquelle de ses méthodes.
 
-D'ailleurs, nous ajoutons aussi une méthode ```withdraw``` qui utilise ce modificateur. Elle récupère l'adresse de l'émetteur de la transaction via ```msg.sender``` et lui envoie la balance via ```transfert```.
+D'ailleurs, nous ajoutons aussi une méthode **withdraw** qui utilise ce modificateur. Elle récupère l'adresse de l'émetteur de la transaction via **msg.sender** et lui envoie la balance via **transfert**.
 
 Une fois le contrat modifié, nous allons créer un service pour permettre au propriétaire de récupérer ses Ethers :
 
-**_payablehello.js :_**
+**payablehello.js :**
 ```
 /**
 * Retreive contract balance. Only works for contract owner
@@ -1142,14 +1172,14 @@ exports.withdraw = async function(withdrawAccount) {
 }
 ```
 
-Nous lui ajoutons une méthode ```withdraw``` qui prend en paramètre l'adresse vers laquelle transférer la balance du contrat.
-Sur le même modèle que pour modifier le nom, cette méthode va d'abord estimer le gaz nécessaire pour appeler la méthode ```withdraw``` du contrat depuis l'adresse passée en paramètre. Puis va effectivement réaliser l'appel.
+Nous lui ajoutons une méthode **withdraw** qui prend en paramètre l'adresse vers laquelle transférer la balance du contrat.
+Sur le même modèle que pour modifier le nom, cette méthode va d'abord estimer le gaz nécessaire pour appeler la méthode **withdraw** du contrat depuis l'adresse passée en paramètre. Puis va effectivement réaliser l'appel.
 Comme il s'agit également d'un envoi de transaction, nous allons ici aussi exploiter les différents événements disponibles pour récupérer les informations inhérentes à cette transaction.
 
 
 Maintenant modifions la page pour ajouter cette fonctionnalité :
 
-**_index.pug :_**
+**index.pug :**
 
 ```
 doctype html
@@ -1197,10 +1227,10 @@ html(lang='fr')
 ...
 ```
 
-Dans le bloc "Blockchain info", nous ajoutons un formulaire qui ne contient qu'un seul bouton nommé "Withdraw", qui valide le formulaire vers l'URL ```withdraw```.
+Dans le bloc "Blockchain info", nous ajoutons un formulaire qui ne contient qu'un seul bouton nommé **"Withdraw"**, qui valide le formulaire vers l'URL **POST /withdraw**.
 Nous allons donc maintenant modifier le contrôleur pour ajouter cette nouvelle route.
 
-**_apps.js :_**
+**apps.js :**
 
 ```
 /**
@@ -1230,7 +1260,7 @@ app.post('/withdraw', function(req, res) {
 });
 ```
 
-Nous appelons le service ```withdraw``` avec comme paramètre l'adresse par défaut de notre configuration, celle qui a bien servi à créer le contrat.
+Nous appelons le service **withdraw*** avec comme paramètre l'adresse par défaut de notre configuration, celle qui a bien servi à créer le contrat.
 
 On peut maintenant tester :
 
@@ -1265,7 +1295,7 @@ Voici ce que nous allons faire :
 
 Pour créer d'autres comptes, vous pouvez afficher la liste des comptes de Ganache, et prendre tous les autres comptes autres que le premier. Les clés privées peut être obtenus en cliquant sur l'icône "clé", sur la droite de l'écran pour chaque compte.
 
-**_config.js :_**
+**config.js :**
 ```
 const config = {
 
@@ -1303,14 +1333,14 @@ const config = {
 module.exports = config;
 ```
 
-**_app.js :_**
+**app.js :**
 
 On rajoute dans le contrôleur, à l'initialisation des données d'affichage, la liste des comptes.
 ```
 displayData.accounts = config.accounts;
 ```
 
-**_index.pug :_**
+**index.pug :**
 
 Et on modifie l'index pour afficher la liste des ces comptes au niveau du bouton de retrait de l'argent du contrat et de modification du nom.
 
@@ -1402,9 +1432,9 @@ Voici le résultat à l'affichage :
 
 Maintenant, nous allons exploiter tout ça.
 
-**_app.js :_**
+**app.js :**
 
-Dans le contrôleur, nous allons prendre en compte ce nouveau champ de formulaire, dans POST /name et dans POST /withdraw
+Dans le contrôleur, nous allons prendre en compte ce nouveau champ de formulaire, dans **POST /name** et dans **POST /withdraw**.
 
 ```
 /**
@@ -1459,11 +1489,11 @@ app.post('/withdraw', function(req, res) {
 
 ```
 
-Dans le POST /name, nous ajoutons une condition pour continuer à utiliser les méthodes définies précédemment si c'est le compte par défaut qui a été sélectionné, ou un nouveau service ```sendRawTransaction``` pour envoyer une transaction signée si c'est un autre compte.
+Dans le **POST /name**, nous ajoutons une condition pour continuer à utiliser les méthodes définies précédemment si c'est le compte par défaut qui a été sélectionné, ou un nouveau service **sendRawTransaction** pour envoyer une transaction signée si c'est un autre compte.
 
-Maintenant, créons ce service ```sendRawTransaction``` :
+Maintenant, créons ce service **sendRawTransaction** :
 
-**_payablehello.js :_**
+**payablehello.js :**
 
 ```
 ...
@@ -1548,15 +1578,15 @@ exports.sendRawTransaction = async function(newName, price, address) {
 
 ```
 
-Tout d'abord, il faut importer ```EthereumTx```, qui nous aidera à construire des transactions signées.
+Tout d'abord, il faut importer **EthereumTx**, qui nous aidera à construire des transactions signées.
 
 
 Décortiquons ce que fait ce service :
 1. Dans un premier temps, s'il reçoit en paramètre une adresse différente du compte par défaut, il va récupérer sa clé privée dans la configuration. (Cette étape devrait être beaucoup plus sécurisée dans la vraie vie.)
-2. Ensuite, il récupère le nombre de transactions que ce compte a déjà effectué, au moyen de ```web3.eth.getTransactionCount(address)```. Cette information sera à fournir en tant que nonce, pour éviter que la même transaction soit envoyée plusieurs fois.
-3. Puis il crée un transaction en renseignant tous les champs individuellement. Chaque valeur doit être fournie en hexadécimal, on peut utiliser ```web3.utils.toHex``` pour faciliter la conversion. 
+2. Ensuite, il récupère le nombre de transactions que ce compte a déjà effectué, au moyen de **web3.eth.getTransactionCount(address)**. Cette information sera à fournir en tant que nonce, pour éviter que la même transaction soit envoyée plusieurs fois.
+3. Puis il crée un transaction en renseignant tous les champs individuellement. Chaque valeur doit être fournie en hexadécimal, on peut utiliser **web3.utils.toHex** pour faciliter la conversion. 
 4. On estime ensuite la quantité de gaz nécessaire, que l'on vient mettre à jour dans la transaction précédemment créée.
-5. Et enfin, au moyen du module ```EthereumTx```, on crée la transaction que l'on vient signer avec la clé privée. La transaction sera ensuite sérialisée, puis envoyeé au moyen de ```web3.eth.sendSignedTransaction```, sans oublier de la préfixer par ```Ox```.
+5. Et enfin, au moyen du module **EthereumTx**, on crée la transaction que l'on vient signer avec la clé privée. La transaction sera ensuite sérialisée, puis envoyeé au moyen de **web3.eth.sendSignedTransaction*, sans oublier de la préfixer par **Ox**.
 
 Maintenant, on peut tester toutes les opérations définies précédemment, en choisissant un compte de la liste.
 
@@ -1579,7 +1609,7 @@ Nous allons afficher l'historique des modifications du nom, en indiquant quel ut
 
 Tout d'abord, modifions le contrat pour créer l'événement.
 
-**_PayableHello.sol :_**
+**PayableHello.sol :**
 
 ```
 contract PayableHello is owned {
@@ -1616,14 +1646,14 @@ contract PayableHello is owned {
 
 Tout tient en 2 instructions :
 
-```event NameChanged(string newName, address userAddress, uint value);``` : la définition de l'événement, avec le mot clé ```event```. Ensuite on le nomme et on indique une liste de paramètres qu'il va prendre. Ici, le nouveau nom, l'adresse de l'utilisateur et le prix payé.
+**event NameChanged(string newName, address userAddress, uint value);** : la définition de l'événement, avec le mot clé **event**. Ensuite on le nomme et on indique une liste de paramètres qu'il va prendre. Ici, le nouveau nom, l'adresse de l'utilisateur et le prix payé.
 
-```emit NameChanged(newName, msg.sender, msg.value);``` : la création de l'événement, dans la méthode ```setName```, avec le mot clé ```emit```. Nous lui passons les valeurs attendues en paramètres.
+**emit NameChanged(newName, msg.sender, msg.value);** : la création de l'événement, dans la méthode **setName**, avec le mot clé **emit**. Nous lui passons les valeurs attendues en paramètres.
 
 Ces événements ne servent pas à grand chose s'ils ne sont pas exploités. Nous allons donc créer un service qui les récupère :
 
 
-**_payablehello.js :_**
+**payablehello.js :**
 
 ```
 /*
@@ -1647,7 +1677,7 @@ exports.getNameChangedHistory = async function() {
 }
 ```
 
-Nous récupérons les événements au moyen de  ```payableHello.getPastEvents("NameChanged", { fromBlock: 0, toBlock: 'latest' })```. Il suffit d'utiliser ```getPastEvents``` sur notre objet ```payableHello```, et de lui passer en paramètre le nom du contrat concerné, ainsi quelques paramètres supplémentaires, par exemple ici nous indiquons que nous allons chercher du bloc 0 jusqu'au dernier (soit toute la chaine).
+Nous récupérons les événements au moyen de  **payableHello.getPastEvents("NameChanged", { fromBlock: 0, toBlock: 'latest' })**. Il suffit d'utiliser **getPastEvents** sur notre objet **payableHello**, et de lui passer en paramètre le nom du contrat concerné, ainsi quelques paramètres supplémentaires, par exemple ici nous indiquons que nous allons chercher du bloc 0 jusqu'au dernier (soit toute la chaine).
 
 Puis on modifie le contrôleur pour récupérer des données :
 
@@ -1779,7 +1809,7 @@ Nous allons mettre en place l'exemple suivant :
 
 Tout d'abord, créons l'API. Ici, il s'agit juste de fournir un exemple simple pour illustrer une source de données pouvant impacter la blockchain. Elle est complètement indépendant et décorellée de ce que nous avons fait précédemment
 
-**_api.js :_**
+**api.js :**
 
 ```
 /**
@@ -1808,11 +1838,15 @@ app.get('/name', function(req, res) {
 // start server on port 3001
 app.listen(3001);
 ```
-Cette API, disponible sur le port 3001, va simplement exposer une route ```GET /name``` qui retourne une chaine de caractères composée de "Toto" concaténée à la date et heure du jour à la minute. Ce qui fait que le résultat changera chaque minute.
+Cette API, disponible sur le port 3001, va simplement exposer une route **GET /name** qui retourne une chaine de caractères composée de "Toto" concaténée à la date et heure du jour à la minute. Ce qui fait que le résultat changera chaque minute.
 
 Maintenant, créons l'oracle proprement dit :
 
-Faisons un petit ```npm instal request``` juste avant, afin de pouvoir exploiter le module ```request``` qui nous facilitera la vie avec les requêtes HTTP vers l'API.
+Faisons un petit 
+```
+npm instal request
+``` 
+juste avant, afin de pouvoir exploiter le module **request** qui nous facilitera la vie avec les requêtes HTTP vers l'API.
 
 **_oracle.js :_**
 
@@ -1858,25 +1892,31 @@ setInterval(readAPI, 1000 * 10);
 ```
 
 Etudions cet oracle :
-1. Il importe le module de services ```payablehello.js``` pour pouvoir utiliser les services qui accèdent au smart contract
-2. Il se connecte à la blockchain et initialise le contrat, de la même façon que le contrôleur ```app.js``` de notre projet.
+1. Il importe le module de services **payablehello.js** pour pouvoir utiliser les services qui accèdent au smart contract
+2. Il se connecte à la blockchain et initialise le contrat, de la même façon que le contrôleur **app.js** de notre projet.
 3. Il lance toutes les 10 secondes une méthode qui
 	1. Interroge l'API est récupère le nom
 	2. Vérifie si le nom a été modifié depuis le dernier appel
-	3. Si c'est le cas, appelle le service ```updateName``` en lui fournissant le nouveau nom, et un prix fixe défini à l'avance.
+	3. Si c'est le cas, appelle le service **updateName** en lui fournissant le nouveau nom, et un prix fixe défini à l'avance.
 	
-Précision : le compte par défaut, définit dans notre ```config.js``` sera utilisé par cet oracle. Il est possible de faire évoluer l'oracle pour gérer les comptes plus finement, mais ce n'est pas le sujet ici.
+Précision : le compte par défaut, définit dans notre **config.js** sera utilisé par cet oracle. Il est possible de faire évoluer l'oracle pour gérer les comptes plus finement, mais ce n'est pas le sujet ici.
 
 Pour tester, procédez en plusieurs étapes :
 
 1. Lancer l'application web
-```node app.js```
+```
+node app.js
+```
 
 2. Dans un autre terminal, lancez l'API de test
-```node api.js```
+```
+node api.js
+```
 
 3. Dans un nouveau termine, lancez l'oracle
-```node oracle.js```
+```
+node oracle.js
+```
 
 Dans les logs de l'API, vous devriez voir qu'un appel a lieu toutes les 10 secondes, mais que le nom ne change que toutes les minutes.
 Dans les logs de l'oracle, vous devriez voir qu'une transaction est émise toutes les minutes.
@@ -1891,7 +1931,7 @@ Et voilà, c'est un oracle !
 
 Au début de ce tutoriel, nous avons insisté sur l'immuabilité des smart contracts, donc de la nécessité de prendre grand soin de la qualité.
 
-Truffle permet d'écrire des tests unitaires, ils seront placés dans le répertoire ```test```.
+Truffle permet d'écrire des tests unitaires, ils seront placés dans le répertoire **test**.
 
 Pour la documentation complète, voir ici :
 https://truffleframework.com/docs/truffle/testing/testing-your-contracts
@@ -1905,11 +1945,11 @@ Ici, nous avons amené les tests assez tardivement, pour permettre de passer en 
 Les tests javascript de Truffle utilisent les frameworks [Mocha](https://mochajs.org/) et [Chai](https://www.chaijs.com/).
 Nous n'allons pas nous étendre sur la syntaxe de ces deux frameworks, leurs documentations respectives  
 
-Nous allons créer un fichier ```payablehello-test.js```.
+Nous allons créer un fichier **payablehello-test.js**.
 
 Voici un exemple de test qui valide que lors de l'initialisation du contrat, le nom est bien "nobody".
 
-**_payablehello-test.js :_**
+**payablehello-test.js :**
 
 ```
 const Hello = artifacts.require("PayableHello");
@@ -1927,10 +1967,10 @@ contract("PayableHello", async accounts => {
 
 ### 14.2 Tester en Solidity
 
-Idem que précédement, mais cette fois en Solidity. Nous allons créer un fichier ```TestPayableHello.sol```.
-Attention, les contrats de test doivent impérativement commencer par ```Test``` et il ne faut pas oublier de les ajouter au fichier de migration.
+Idem que précédement, mais cette fois en Solidity. Nous allons créer un fichier **TestPayableHello.sol**.
+Attention, les contrats de test doivent impérativement commencer par **Test** et il ne faut pas oublier de les ajouter au fichier de migration.
 
-**_TestPayableHello.sol :_**
+**TestPayableHello.sol :**
 
 ```
 pragma solidity ^0.5.0;
@@ -1952,7 +1992,7 @@ contract TestPayableHello {
 }
 ```
 
-**_3_payablehello_migrations.js :_**
+**3_payablehello_migrations.js :**
 
 ```
 const PayableHello = artifacts.require("PayableHello");
@@ -1969,7 +2009,9 @@ module.exports = function(deployer) {
 
 Exécutez la commande :
 
-```truffle test```
+```
+truffle test
+```
 
 Vous devriez obtenir un résultat de ce type :
 

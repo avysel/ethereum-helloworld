@@ -1,0 +1,1727 @@
+
+<!doctype html>
+
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+  <meta name="theme-color" content="#4F7DC9">
+  <meta charset="UTF-8">
+  <title>Développer avec Ethereum</title>
+  <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Source+Code+Pro:400|Roboto:400,300,400italic,500,700|Roboto+Mono">
+  <link rel="stylesheet" href="//fonts.googleapis.com/icon?family=Material+Icons">
+  <link rel="stylesheet" href="https://storage.googleapis.com/codelab-elements/codelab-elements.css">
+  <style>
+    .success {
+      color: #1e8e3e;
+    }
+    .error {
+      color: red;
+    }
+  </style>
+</head>
+<body>
+  <google-codelab-analytics gaid="UA-49880327-14"></google-codelab-analytics>
+  <google-codelab codelab-gaid="0"
+                  id="tuto-dapp-ethereum"
+                  title="Développer avec Ethereum"
+                  environment="web"
+                  feedback-link="http://nowhere">
+    
+      <google-codelab-step label="1. Introduction" duration="0">
+        <h2 is-upgraded>1.1. Smart contracts</h2>
+<p>Ethereum permet la création de <strong>smart contracts</strong>. Ce sont des programmes qui sont envoyés à tous les noeuds du réseau et dont on active des fonctionnalités au moyen de transactions.<br>Ils vont donc s&#39;exécuter sur tous les noeuds dès que ces derniers recevront la transaction correspondante.</p>
+<p>Les smart contracts sont écrits en <strong>Solidity</strong>, un langage créé pour Ethereum. Ils sont exécutés dans l&#39;<strong>EVM (Ethereum Virtual Machine)</strong>. C&#39;est une <strong>machine virtuelle à pile d&#39;exécution</strong> présente sur chaque noeud Ethereum. C&#39;est à dire que le programme est décomposé en une suite d&#39;instructions de base, placées sur une pile, et exécutées dans l&#39;ordre de dépilage.</p>
+<p>La documentation officielle du langage est disponible ici :<br>https://solidity.readthedocs.io/en/latest/</p>
+<p>Il est ensuite possible de connecter une application traditionnelle à un smart contract.</p>
+<h2 is-upgraded>1.2. Mise en garde</h2>
+<p>Il faut garder à l&#39;esprit que l&#39;état de l&#39;environnement d&#39;exécution peut varier d&#39;un noeud à l&#39;autre. Par exemple, si un traitement nécessite l&#39;envoi de plusieurs transactions, l&#39;ordre de réception par chaque noeud du réseau sera aléatoire. La conception des smart contracts ne doit donc pas être dépendante de l&#39;environnement.</p>
+<p>Ensuite, comme tout élément stocké sur la blockchain, une fois validés, ils sont immuables. C&#39;est à dire qu&#39;il est impossible de mettre à jour ou supprimer un smart contract. D&#39;où l&#39;importance de mettre l&#39;accent sur la qualité lors des développement.</p>
+<p>Une mise à jour de smart contract équivaut au déploiement d&#39;un nouveau smart contract. L&#39;ancien restera toujours présent, avec ses données. Il pourra cependant être désactivé, mais ne sera jamais complètement supprimé.</p>
+<h2 is-upgraded>1.3. DApp ?</h2>
+<p>Une DApp, ou <strong>Decentralized Application</strong>, application décentralisée, est une application déployée sur un réseau de façon uniforme et partagée, qui ne possède aucun élément central.</p>
+<p>Une application reposant uniquement sur des smart contracts déployés sur une blockchain est donc une DApp. La coupler à une application NodeJS ou autre, déployée sur un serveur, hors de la blockchain, revient à créer un Single Point Of Failure. De ce fait, il ne s&#39;agit plus réellement d&#39;une DApp.</p>
+<h2 is-upgraded>1.4. Vous avez dit asynchrone ?</h2>
+<p>Un des concepts important du développement d&#39;application connectée à une blockchain est l&#39;asynchronicité.<br>En effet, l&#39;envoi de données à une blockchain se fait au moyen de transactions, diffusées au reste du réseau. Ces transactions, en plus d&#39;entrainer des coûts d&#39;utilisation, sont asynchrones.</p>
+<p>Lorsqu&#39;une transaction est envoyée, elle doit être validée par un des noeuds de la blockchain et intégré à un bloc, communiqué à l&#39;ensemble du réseau. Ce qui peut prendre un temps variable.<br>Dans certains cas, il faut également attendre une confirmation afin d&#39;être (presque) certain qu&#39;elle ne sera pas remise en question par une chaine plus longue qui ne la prendrait pas en compte.</p>
+<p>L&#39;obtention du résultat, ou le simple fait de considérer une modification comme effective, doit se faire dans ces conditions.</p>
+<p>Dans notre projet en Node.js, cette asynchronicité sera mise en place au moyen de promesses. Les mots clés <em>Promise</em>, <em>async</em>, <em>await</em> seront donc largement de la partie :).<br>Si vous n&#39;êtes pas familiers de ces concepts, <a href="https://javascript.info/async" target="_blank">un petit détour par ici</a> vous sera utile.</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="2. Le projet" duration="0">
+        <h2 is-upgraded>2.1. Description du projet</h2>
+<p>Dans ce projet, nous allons créer un HelloWorld.</p>
+<p>Dans un premier temps, il se composera d&#39;un simple smart contract, contenant une propriété, le nom de la personne à saluer, ainsi que deux méthodes permettant de mettre à jour ce nom et de le récupérer.<br>Ensuite, nous créerons une applications Node.js qui affichera ce nom et proposera un formulaire pour le mettre à jour. Ces deux éléments seront liés aux méthodes du smart contract.</p>
+<p>Dans un second temps, nous transformerons notre HelloWorld en service payant. La mise à jour du nom impliquera le paiement d&#39;un certain prix.<br>Le propriétaire du smart contract pourra alors récupérer quand il le souhaite l&#39;intégralité des sommes que les utilisateurs auront payées.</p>
+<p>Techniquement, nous aborderons la création, le test et le déploiement d&#39;un smart contract. Puis la connection d&#39;un application Node.js à un smart contract et l&#39;envoi de transactions à celui-ci.</p>
+<h2 is-upgraded>2.2. Environnement technique</h2>
+<p>L&#39;environnement d&#39;exécution de ce tutorial se fera sous Linux, mais il est possible de trouver l&#39;équivalent de chaque commande sous Windows ou Mac.</p>
+<p>Ce tutorial sera basé sur Node.js. Il s&#39;agit simplement de la technologie la plus répandue pour travailler avec les smart contracts, celle pour laquelle on trouve le plus d&#39;outils et de frameworks disponibles.<br>Mais il est possible de trouver également des frameworks Java, Python ... qui fonctionnent de la même façon.</p>
+<p>Nous allons dans un premier temps installer un certain nombre d&#39;outils :</p>
+<ul>
+<li>Node.js : car le projet sera développé en Node.js :)</li>
+<li>Ganache : une blockchain de test, qui s&#39;exécute en local et fournit une interface visuelle pour voir ce qu&#39;il s&#39;y passe.</li>
+</ul>
+<p>https://truffleframework.com/ganache</p>
+<ul>
+<li>Truffle : un outil permettant de compiler, tester et déployer des smart contracts sur une blockchain.</li>
+</ul>
+<p>https://truffleframework.com/truffle</p>
+<ul>
+<li>Web3.js : un framework javascript permettant d&#39;interagir avec une blockchain.</li>
+</ul>
+<p>https://web3js.readthedocs.io/en/1.0/index.html</p>
+<p>Web3.js existe en version 0.20.X, qui est la version stable actuelle, et en version 1.0.X qui est encore en beta.<br>La version 0.20 permet une utilisation directement intégrée à des pages web, dans un navigateur. Elle est plus simple d&#39;utilisation, mais sera prochainement dépréciée.<br>La version 1.0.X, bien que beta, a un bon niveau de stabilité et est bien plus complète. Cependant, elle impose un fonctionnement côté serveur, tel que Node.js.</p>
+<p>Nous allons utiliser la version 1.0 pour ce tutorial.</p>
+<pre><code>npm install ethereumjs-tx
+</code></pre>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="3. Initialisation du projet" duration="0">
+        <p>Dans un terminal, positionnez vous dans votre répertoire de travail, et lancez la commande suivante :</p>
+<pre><code> truffle init
+</code></pre>
+<p>Après une courte phase de téléchargement et d&#39;initialisation, nous voyons apparaitre 3 répertoires et 1 fichier :</p>
+<p><strong>_contracts</strong>_ : code des smart contracts</p>
+<p><strong>_migrations</strong>_ : scripts nécessaire à Truffle de effectuer les déploiements de contrats sur la blockchain.</p>
+<p><strong>_tests</strong>_ : scripts de tests unitaires des smart contracts</p>
+<p><strong>_truffle-config.js</strong>_ : fichier de configuration de Truffle</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="4. Premier smart contract" duration="0">
+        <p>Dans <em>contracts</em>, créer un fichier PayableHello.sol. Y saisir le code suivant :</p>
+<pre><code>pragma solidity ^0.5.0;
+
+contract PayableHello {
+
+    string private name;
+
+    constructor() public {
+        name = &#34;nobody&#34;;
+    }
+
+    function setName(string memory newName) public {
+        name = newName;
+    }
+
+    function getName() public view returns (string memory) {
+        return name;
+    }
+}
+
+</code></pre>
+<p>Etudions ce que nous venons d&#39;écrire.</p>
+<pre><code>pragma solidity ^0.5.0;
+</code></pre>
+<p>décrit la version du compilateur que nous utilisons. Solidity est encore un langage qui évolue beaucoup et pour lequel il risque d&#39;y avoir beaucoup d&#39;incompatibilités entre les versions tant qu&#39;il ne sera pas complètement stabilisé. Pouvoir choisir une version de compilateur permet donc de ne pas avoir à mettre à jour son code trop souvent. (Il est tout de même conseillé de le faire régulièrement pour bénéficier des améliorations de sécurité.)</p>
+<p>Ensuite nous déclarons le contrat en indiquant son nom et en lui créant un champ privé de type chaine de caractères.</p>
+<p>Ce contrat possède un constructeur, qui initialise son champ avec la valeur &#34;nobody&#34;, ainsi qu&#39;un getter et un setter pour modifier et accéder à ce champ.</p>
+<p>Notez l&#39;utilisation de certains mots clés :</p>
+<p><strong>memory</strong> : indique que la valeur de cette variable (<strong>newName</strong>) est stockée en mémoire uniquement et non dans la blockchain. Elle n&#39;occasionnera donc aucun coût de stockage, contrairement au champ <strong>name</strong>.</p>
+<p><strong>view</strong> : indique que cette fonction ne modifie pas l&#39;état de la blockchain car elle ne fait que retourner une valeur. Elle n&#39;occasionnera elle non plus aucun coût et peut donc être appelée gratuitement, contrairement à <strong>setName</strong>, dont l&#39;appel devra se faire via une transaction payante.</p>
+<p><strong>returns (string memory)</strong> : indique le type de retour de la fonction. Là encore, il faut préciser que la donnée retournée ne transitera que par la mémoire et non par le stockage sur la blockchain.</p>
+<p>Maintenant, tapez la commande suivante :</p>
+<pre><code>truffle compile
+</code></pre>
+<p>Si la compilation se termine avec succès, un répertoire <strong>build/contracts</strong> vient d&#39;être créé. Il contient les résultats de la compilation. C&#39;est dans ce répertoire que nous trouverons les <strong>ABI</strong> (Application Binary Interface). Il s&#39;agit des contrats de service, définis en json, que notre application aura besoin de connaitre pour pouvoir interagir avec le smart contract. Nous verrons cela par la suite.</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="5. Test du smart contract" duration="0">
+        <p>Avant de déployer notre smart contract, nous allons le tester en utilisant Remix. C&#39;est un IDE en ligne qui remplit à peu près le même rôle que Truffle. C&#39;est l&#39;occasion de tester un nouvel outil :).</p>
+<p>https://remix.ethereum.org</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="6. Déploiement du smart contract" duration="0">
+        <p>Tout d&#39;abord, lancez Ganache (ou tout autre client Ethereum).</p>
+<p>Nous allons modifier le fichier <strong>truffle-config.js</strong> pour indiquer à Truffle les paramètres de connexion :</p>
+<pre><code>module.exports = {
+  networks: {
+    ganache: {
+      host: &#34;127.0.0.1&#34;,
+      port: 7545,
+      network_id: &#34;*&#34; // Match any network id
+    }
+  }
+};
+</code></pre>
+<p>Nous indiquons qu&#39;il existe un réseau, que nous nommons <strong>ganache</strong>, et qui disponible sur 127.0.0.1:7545 (IP/Port par défaut de Ganache, adaptez au besoin).<br>Il est possible de définir plusieurs réseaux, et de préciser dans la ligne de commande lequel utiliser. Le premier sera utilisé par défaut si rien n&#39;est indiqué.</p>
+<p>Dans le répertoire <strong>migrations</strong> dupliquez le fichier <strong>1_initial_migration.js</strong> en le nommant <strong>2_hello_migration.js</strong>. Modifiez le contenu de ce nouveau fichier de cette façon :</p>
+<pre><code>const PayableHello = artifacts.require(&#34;PayableHello&#34;);
+
+module.exports = function(deployer) {
+  deployer.deploy(PayableHello);
+};
+</code></pre>
+<p>Le paramètre du <strong>require</strong> doit être le nom du contrat tel que défini dans le fichier <strong>PayableHello.sol</strong>.</p>
+<p>Maintenant, tapez la commande suivante :</p>
+<pre><code>truffle deploy
+</code></pre>
+<p>Vous devez obtenir le résultat suivant :</p>
+<p class="image-container"><img alt="Résultat du déploiement" src="img/475d4d277ecf7168.png"></p>
+<p>Vous obtenez différentes informations sur la transaction qui a déployé le contrat (numéro de transaction, coût ...).<br>Notez bien pour plus tard l&#39;information la plus importante, l&#39;adresse à laquelle le smart contract a été déployé (&#34;contract address&#34;).</p>
+<p><strong>Le contrat devra être redéployé à chaque modification.</strong></p>
+<p>Il n&#39;est pas nécessaire d&#39;effectuer un <strong>truffle compile</strong> à chaque fois, le <strong>truffle deploy</strong> le fera automatiquement si besoin.</p>
+<p><strong>A chaque déploiement, il ne faut pas oublier de modifier l&#39;adresse du contrat dans le fichier de configuration.</strong></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="7. Initialisation de l&#39;application web" duration="0">
+        <h2 is-upgraded>7.1 Création des fichiers</h2>
+<p>Nous allons initialiser une application web, basée sur Node.js, utilisant les framework Express pour MVC et Pug pour les templates HTML.<br>Dans un premier temps, nous allons créer une simple page d&#39;index qui affiche des informations sur le noeud de blockchain auquel nous sommes connectés.</p>
+<p>Nous allons créer plusieurs répertoires et fichiers :</p>
+<ul>
+<li><strong>src/</strong> : pour contenir les sources de notre application web</li>
+<li><strong>src/views</strong> : pour les templates des écrans</li>
+<li><strong>src/views/index.pug</strong> : le template de l&#39;index</li>
+<li><strong>src/app.js</strong> : le contrôleur de l&#39;application</li>
+<li><strong>src/payablehello.js</strong> : les services de connexion à la blockchain</li>
+<li><strong>src/config.js</strong> : la configuration de notre application</li>
+</ul>
+<p>Placez-vous dans le répertoire <strong>src</strong> et initialisez le projet Node.js avec la commande</p>
+<pre><code>npm init
+</code></pre>
+<p>Saisissez les quelques informations demandées pour initialiser le projet.</p>
+<p>Nous allons maintenant installer les packages nécessaires.</p>
+<p>Pug :</p>
+<pre><code>npm install pug
+</code></pre>
+<p>Express :</p>
+<pre><code>npm install express
+</code></pre>
+<p>Web3 :</p>
+<pre><code>npm install web3
+</code></pre>
+<p>1ère étape, se connecter à la blockchain au moyen de web3.</p>
+<p><strong>config.js :</strong></p>
+<pre><code>const config = {
+
+	// blockchain node IPC IP and port
+	nodeURL: &#34;http://127.0.0.1&#34;,
+	nodePort: 7545,
+
+	// default account address
+	account:&#34;0x1234567890abcdef......&#34;,
+
+	// ABI file of smart contract
+	abiFile:&#34;../build/contracts/PayableHello.json&#34;,
+	
+	// address of deployed contract on blockchain
+	payableHelloContractAddress:&#34;0x1234567890abcdef......&#34;	
+
+};
+
+module.exports = config;
+</code></pre>
+<p>Initialiser les valeurs</p>
+<ul>
+<li><strong>nodeURL</strong> et <strong>nodePort</strong> : éléments de connexion à Ganache</li>
+<li><strong>account</strong> : adresse Ethereum du premier compte disponible sur Ganache.</li>
+<li><strong>abiFile</strong> : chemin du fichier PayableHello.json dans le répertoire <strong>build</strong> généré par Truffle.</li>
+<li><strong>payableHelloContractAddress</strong> : adresse à laquelle le contrat a été déployé avec Truffle. (&#34;contract address&#34; dans le résultat de <code>truffle deploy</code>)</li>
+</ul>
+<h2 is-upgraded>7.2 Connection à la blockchain</h2>
+<p><strong>payablehello.js :</strong></p>
+<pre><code>var Web3 = require(&#34;web3&#34;);
+var fs = require(&#39;fs&#39;);
+var config = require(&#34;./config.js&#34;);
+
+var exports = module.exports = {};
+
+var payableHello = null; // contract methods
+var web3 = null;
+
+/*
+* Connect to blockchain
+*/
+exports.connection = function() {
+
+	const options = {
+		defaultAccount: config.account
+	}
+
+	web3 = new Web3(Web3.givenProvider || config.nodeURL+&#39;:&#39;+config.nodePort, null, options);
+	console.log(&#34;Connected to &#34;+config.nodeURL+&#39;:&#39;+config.nodePort);
+}
+
+/*
+* Get connection info
+*/
+exports.getNodeInfo = async function() {
+
+	var nodeInfo = {
+		web3Version:  web3.version
+	};
+
+	// get all blockchain info from current node
+	nodeInfo.blockNumber = await web3.eth.getBlockNumber();
+	nodeInfo.coinbase = await web3.eth.getCoinbase();
+	nodeInfo.node = await web3.eth.getNodeInfo();
+	nodeInfo.balance = web3.utils.fromWei(await web3.eth.getBalance(config.account), &#39;ether&#39;);
+	nodeInfo.contractBalance = web3.utils.fromWei(await web3.eth.getBalance(config.payableHelloContractAddress), &#39;ether&#39;);
+
+	return nodeInfo;
+
+}
+</code></pre>
+<h2 is-upgraded>7.3 Connection au contrat</h2>
+<p>Nous allons maintenant nous connecter au contrat :</p>
+<p><strong>payablehello.js :</strong></p>
+<pre><code>/*
+* Load contract&#39;s methods with ABI
+*/
+exports.initContracts = function() {
+
+	// read ABI from file
+	var parsed = JSON.parse(fs.readFileSync(config.abiFile));
+	var payableHelloWorldABI = parsed.abi;
+
+	// load contracts methods at contract address, using ABI
+	payableHello = new web3.eth.Contract(payableHelloWorldABI, config.payableHelloContractAddress);
+
+}
+</code></pre>
+<p>Cette fonction récupère l&#39;objet javascript ABI dans le fichier json et le passe en paramètre, avec l&#39;adresse du smart contract déployé, à la méthode <strong>web3.eth.Contract</strong>, qui va retourner un object javascript permettant d&#39;interagir avec le smart contract.</p>
+<p>L&#39;objet <strong>payableHello</strong> sera donc notre objet d&#39;accès au contrat.</p>
+<p>Nous pouvons initialiser notre template (on intègre Bootstrap pour faciliter la mise en forme) :</p>
+<p><strong>index.pug :</strong></p>
+<pre><code>doctype html
+html(lang=&#39;fr&#39;)
+	head
+		meta(charset=&#39;utf-8&#39;)
+		title Ethereum Hello world
+		script(type=&#39;text/javascript&#39;, src=&#39;https://code.jquery.com/jquery-3.3.1.slim.min.js&#39;)
+		script(type=&#39;text/javascript&#39;, src=&#39;https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js&#39;)
+		script(type=&#39;text/javascript&#39;, src=&#39;https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js&#39;)
+		link(rel=&#39;stylesheet&#39; href=&#39;https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css&#39;)
+	body
+	.container-fluid
+		.row
+			.col-md-6
+				div.card
+					h3.card-header Blockchain info
+					div.card-body
+						#info
+							br
+							div
+								b Web3 version :&amp;nbsp;
+								span#web3-version #{nodeInfo.web3Version}
+							div
+								b Node :&amp;nbsp;
+								span#node #{nodeInfo.node}
+							div
+								b Last block :&amp;nbsp;
+								span#block-number #{nodeInfo.blockNumber}
+							div
+								b Coinbase :&amp;nbsp;
+								span#coinbase #{nodeInfo.coinbase}
+							div
+								b Balance :&amp;nbsp;
+								span#balance #{nodeInfo.balance}
+							div
+								b Contract balance :&amp;nbsp;
+								span#contract-balance #{nodeInfo.contractBalance}
+</code></pre>
+<p>Et pour lier tout ça, notre contrôleur, <strong>app.js :</strong></p>
+<pre><code>var http = require(&#39;http&#39;);
+var express = require(&#39;express&#39;);
+var bodyParser = require(&#39;body-parser&#39;);
+var stringify = require(&#39;json-stringify-safe&#39;);
+var config = require(&#34;./config.js&#34;);
+var payableHello = require(&#39;./payablehello&#39;); // app services
+
+var app = express();
+app.set(&#39;view engine&#39;, &#39;pug&#39;);
+app.use(bodyParser.urlencoded({ extended: false }))
+
+
+// object containing data to display on index page
+var displayData = {};
+displayData.nodeInfo = null;
+displayData.name = null;
+displayData.txStatus = null;
+displayData.blockNumber = null;
+displayData.withdrawStatus = null;
+displayData.nameHistory = null;
+displayData.paymentHistory = null;
+displayData.withdrawHistory = null;
+displayData.errorMessage = null;
+displayData.accounts = config.accounts;
+
+
+/*
+* 
+*/
+async function renderIndex(res) {
+
+	try {
+		// get blockchain node&#39;s information
+		displayData.nodeInfo = await payableHello.getNodeInfo();
+	}
+	catch(error) {
+		console.error(error);
+	}
+
+	res.render(&#39;index&#39;, displayData);
+}
+
+/*
+* Display home page
+*/
+app.get(&#39;/&#39;, async function(req, res) {
+	renderIndex(res);
+});
+
+
+// init blockchain connection
+payableHello.connection();
+payableHello.initContracts();
+
+// start server
+app.listen(3000);
+
+</code></pre>
+<p>On définit une route GET &#34;/&#34;, qui affichera l&#39;index, puis on appelle les méthodes définies précédemment pour se connecter à la blockchain et au contrat. Enfin, on lance l&#39;application sur le port 3000 de localhost.</p>
+<p>Nous avons maintenant tout ce qu&#39;il faut pour lancer la première version de notre application, qui va :</p>
+<ul>
+<li>se connecter à la blockchain</li>
+<li>se connecter au smart contract</li>
+<li>afficher un certain nombre d&#39;informations concernant le noeud de blockchain utilisé</li>
+</ul>
+<p>Pour lancer l&#39;application :</p>
+<pre><code>node app.js
+</code></pre>
+<p>Dans le navigateur <strong>http://localhost:3000</strong></p>
+<p class="image-container"><img alt="Premier affichage" src="img/43269784cb40e169.png"></p>
+<p>Dans la partie &#34;Blockchain info&#34;, nous pouvons voir que la valeur de la balance du compte utilisé, qui était à 100 ETH lors du lancement de Ganache, a été diminuée en fonction du coût des transactions qui ont permis de déployer les contrats.</p>
+<h2 is-upgraded>7.4 Lecture d&#39;une donnée</h2>
+<p>Nous allons maintenant enrichir tout ça en récupérant le nom de la personne à saluer et en l&#39;affichant à l&#39;écran.</p>
+<p><strong>payablehello.js :</strong></p>
+<pre><code>/**
+* Read the name from smart contract
+*/
+exports.readName = async function() {
+	return payableHello.methods.getName().call({from: config.account});
+}
+</code></pre>
+<p>On utilise l&#39;objet <strong>payableHello</strong> défini précédement pour accéder aux méthodes du smart contact (<strong>payableHello.methods</strong>) et plus précisément à <strong>getName()</strong>.<br>On termine l&#39;instruction avec <strong>call()</strong>, qui prend en paramètre les éléments pour effectuer une transaction. Ici, nous appelons une méthode qui est définie comme <strong>view</strong> dans le contrat, donc qui n&#39;engendre pas de coût. Le seul paramètre que nous allons passer est l&#39;adresse du compte qui va émettre cette transaction.</p>
+<p><strong>app.js :</strong></p>
+<p>On modifie la fonction renderIndex :</p>
+<pre><code>async function renderIndex(res) {
+
+	try {
+		displayData.nodeInfo = await payableHello.getNodeInfo();
+		displayData.name = await payableHello.readName();
+	}
+	catch(error) {
+		console.error(error);
+	}
+
+	res.render(&#39;index&#39;, displayData);
+}
+</code></pre>
+<p>On y ajoute l&#39;appel à notre fonction <strong>readName()</strong>, pour initialiser la donnée à afficher.</p>
+<p><strong>index.pug</strong>:</p>
+<p>On rajoute à la fin de notre template quelques lignes pour afficher le nom.</p>
+<pre><code>doctype html
+html(lang=&#39;fr&#39;)
+	head
+		meta(charset=&#39;utf-8&#39;)
+		title Ethereum Hello world
+		script(type=&#39;text/javascript&#39;, src=&#39;https://code.jquery.com/jquery-3.3.1.slim.min.js&#39;)
+		script(type=&#39;text/javascript&#39;, src=&#39;https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js&#39;)
+		script(type=&#39;text/javascript&#39;, src=&#39;https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js&#39;)
+		link(rel=&#39;stylesheet&#39; href=&#39;https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css&#39;)
+	body
+	.container-fluid
+		.row
+			.col-md-6
+				div.card
+					h3.card-header Blockchain info
+					div.card-body
+						#info
+							br
+							div
+								b Web3 version :&amp;nbsp;
+								span#web3-version #{nodeInfo.web3Version}
+							div
+								b Node :&amp;nbsp;
+								span#node #{nodeInfo.node}
+							div
+								b Last block :&amp;nbsp;
+								span#block-number #{nodeInfo.blockNumber}
+							div
+								b Coinbase :&amp;nbsp;
+								span#coinbase #{nodeInfo.coinbase}
+							div
+								b Balance :&amp;nbsp;
+								span#balance #{nodeInfo.balance}
+							div
+								b Contract balance :&amp;nbsp;
+								span#contract-balance #{nodeInfo.contractBalance}
+			.col-md-6
+				div.card
+					h5.card-header Hello who ?
+					div.card-body
+						h2 Hello #{name}
+</code></pre>
+<p>Dans le navigateur :</p>
+<p class="image-container"><img alt="Bonjour qui ?" src="img/2c3e92e7ba1445b9.png"></p>
+<p>Le nom s&#39;affiche. Du moins, la valeur par défaut définie dans le constructeur.</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="8. Modification de la valeur" duration="0">
+        <p>Nous allons maintenant pouvoir chercher à modifier le nom.</p>
+<p><strong>payablehello.js :</strong></p>
+<p>Commençons par créer le service</p>
+<pre><code>/*
+* Call change name function and wait for event
+* newName : the new name to set
+*/
+exports.updateName = async function(newName) {
+
+	// object containing return values
+	var result = new Object();
+
+	// estimate gas cost
+	var gasAmount = await payableHello.methods.setName(newName).estimateGas({from: config.account, gas: 5000000});
+	
+	result.gas = gasAmount;
+
+	var promiseSetName = new Promise( function (resolve, reject){
+
+		// send a transaction to setName
+		payableHello.methods.setName(newName).send({from: config.account, gas: gasAmount})
+		.on(&#39;transactionHash&#39;, (hash) =&gt; {
+				// when tx hash is known
+			   result.txHash = hash;
+		   })
+		   .on(&#39;receipt&#39;, (receipt) =&gt; {
+		   		// when receipt is created
+			   console.log(&#34;receipt&#34;);
+		   })
+		   .on(&#39;confirmation&#39;, (confirmationNumber, receipt) =&gt; {
+		   		// when tx is confirmed
+			   result.blockNumber = receipt.blockNumber;
+			   resolve(result);
+		   })
+		   .on(&#39;error&#39;,(error) =&gt; {
+				reject(error);
+		   });
+	}); // end of promiseSetName, result to return
+
+	return promiseSetName;
+}
+</code></pre>
+<p>On créer une méthode <em>updateName</em> qui prend en paramètre le nouveau nom. Ensuite, le traitement va s&#39;effectuer en plusieurs étapes :</p>
+<ol type="1">
+<li>Nous allons appeler une méthode du smart contract qui modifie la blockchain, cette transaction va donc entrainer un coût d&#39;utilisation. Ce coût s&#39;exprime en <em>gaz</em>, le carburant d&#39;Ethereum.<br>Dans un premier temps, il faut estimer la quantité de gaz nécessaire au moyen de <strong>estimateGas()</strong>.</li>
+<li>Puis nous pouvons appeler la méthode <strong>setName()</strong> en lui indiquant d&#39;utiliser cette quantité de gaz. Il est possible de passer directement une grande quantité de gaz, mais au risque de la voir entièrement consommée si la transaction d&#39;avère trop grosse, et donc qu&#39;elle nous coûte très cher. A l&#39;inverse, si la quantité de gaz fournie est trop faible, le gaz sera consommé, mais la transaction ne sera pas validée.<br>Le traitement d&#39;une transaction étant asynchrone, nous récupérons une Promise, que nous allons retourner.</li>
+<li>Ensuite, il faut attendre que la transaction soit prise en compte. Pour celà, nous allons utiliser plusieurs événements, qui se produisent à différents moment de la vie de la transaction :</li>
+<li><strong>transactionHash</strong> : quand la transaction obtient un hash et est envoyée au réseau.</li>
+<li><strong>receipt</strong> : quand le reçu de transaction est créé, on y trouve la majeur partie des informations concernant cette transaction.</li>
+<li><strong>confirmtion</strong> : quand la transaction est confirmée (c&#39;est à dire quand un certain nombre de blocs ont été minés à la suite de celui qui la contient, ce nombre peut être déterminé dans les options de connexion à la blockchain).</li>
+<li><strong>error</strong> : en cas d&#39;erreur</li>
+</ol>
+<p><strong>index.pug :</strong></p>
+<p>Puis modifions notre template :</p>
+<pre><code>doctype html
+html(lang=&#39;fr&#39;)
+	head
+		meta(charset=&#39;utf-8&#39;)
+		title Ethereum Hello world
+		script(type=&#39;text/javascript&#39;, src=&#39;https://code.jquery.com/jquery-3.3.1.slim.min.js&#39;)
+		script(type=&#39;text/javascript&#39;, src=&#39;https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js&#39;)
+		script(type=&#39;text/javascript&#39;, src=&#39;https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js&#39;)
+		link(rel=&#39;stylesheet&#39; href=&#39;https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css&#39;)
+	body
+	.container-fluid
+		.row
+			.col-md-6
+				div.card
+					h3.card-header Blockchain info
+					div.card-body
+						#info
+							br
+							div
+								b Web3 version :&amp;nbsp;
+								span#web3-version #{nodeInfo.web3Version}
+							div
+								b Node :&amp;nbsp;
+								span#node #{nodeInfo.node}
+							div
+								b Last block :&amp;nbsp;
+								span#block-number #{nodeInfo.blockNumber}
+							div
+								b Coinbase :&amp;nbsp;
+								span#coinbase #{nodeInfo.coinbase}
+							div
+								b Balance :&amp;nbsp;
+								span#balance #{nodeInfo.balance}
+							div
+								b Contract balance :&amp;nbsp;
+								span#contract-balance #{nodeInfo.contractBalance}
+			.col-md-6
+				div.card
+					h5.card-header Hello who ?
+					div.card-body
+						h2 Hello #{name}
+		.row
+			.col-md-6
+				div.card
+					h3.card-header Change name
+					div.card-body
+						#form
+							form(method=&#39;post&#39;, action=&#39;/name&#39;)
+								.form-group
+									label(for=&#39;newName&#39;) Name :
+									input#newName(type=&#39;text&#39;, name=&#39;newName&#39;).form-control
+								div
+									input(type=&#39;submit&#39;, value=&#39;Send&#39;).btn.btn-primary
+			.col-md-6
+				div.card
+					h3.card-header Status
+					div.card-body
+						div#status Transaction : #{txStatus}
+						div#blockNumber Block : #{blockNumber}
+						div#errorMessage #{errorMessage}
+</code></pre>
+<p>On y ajoute un formulaire pour saisir le nouveau nom, ainsi qu&#39;un bloc qui va afficher le résultat de la modification.</p>
+<p><strong>app.js :</strong></p>
+<p>Le formulaire effectue un POST sur <strong>/name</strong>. Nous allons donc aussi modifier le contrôleur pour créer une route qui appelle le service créé précédemment.</p>
+<pre><code>/**
+* Update name
+*/
+app.post(&#39;/name&#39;, function(req, res) {
+
+	// execute the selected promise
+	try {
+		payableHello.updateName(req.body.newName)
+		.then(
+			(result) =&gt; {
+				displayData.txStatus = result.txHash;
+				displayData.blockNumber = result.blockNumber;
+				displayData.errorMessage = result.errorMessage;
+				res.redirect(&#34;/&#34;);
+			},
+			(error) =&gt; {
+            	displayData.errorMessage = error;
+				res.redirect(&#34;/&#34;);
+			}
+		);
+	}
+	catch(error){
+		displayData.errorMessage = error;
+		res.redirect(&#34;/&#34;);
+	}
+});
+</code></pre>
+<p>Nous pouvons afficher le résultat dans le navigateur :</p>
+<p class="image-container"><img alt="On peut changer de nom" src="img/57690351e3db6d56.png"></p>
+<p>Entrez le nom de votre choix, et cliquez sur &#34;Send&#34;.</p>
+<p class="image-container"><img alt="On peut changer de nom" src="img/860e89bc68c58ed3.png"></p>
+<p>Dans le bloc &#34;Status&#34;, nous récupérons le numéro de la transaction qui a modifié le nom et le numéro du bloc dans lequel elle a été validée.</p>
+<p>Il est possible de récupérer en grand nombre d&#39;informations sur la transaction. Pour celà, vous pouvez inspecter l&#39;objet <strong>receipt</strong> obtenu lors de l&#39;envoi de la transaction.</p>
+<p>On peut également aller tester le smart contract avec Remix. On constatera que la valeur du nom est bien celle que nous avons envoyée.<br>On peut aussi consulter la liste des transactions dans Ganache pour retrouver celle que nous avons envoyée.</p>
+<p>Dans la partie &#34;Blockchain info&#34;, nous pouvons aussi voir que la valeur de la balance du compte utilisé diminue en fonction du coût de la transaction.</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="9. Rendre la modification payante" duration="0">
+        <p>Prochaine étape, nous allons maintenant rendre la modification du nom payante. Pour celà, nous allons mettre en place un certain nombre de conditions :</p>
+<ul>
+<li>La modification du nom coûte 2 ETH, mais il est possible de payer plus.</li>
+<li>Il ne doit pas être possible d&#39;envoyer d&#39;Ethers au smart contract sans modifier le nom.</li>
+</ul>
+<p><strong>PayableHello.sol :</strong></p>
+<p>Tout d&#39;abord, on modifie le contrat :</p>
+<pre><code>pragma solidity ^0.5.0;
+
+contract PayableHello {
+
+    string private name;
+
+    constructor() public {
+        name = &#34;nobody&#34;;
+    }
+
+    function setName(string memory newName) public payable {
+		require(msg.value &gt;= 2 ether, &#34;Pay 2 ETH or more&#34;);
+        name = newName;
+    }
+
+    function getName() public view returns (string memory) {
+        return name;
+    }
+    
+    function() external payable {
+        revert();
+    }
+        
+}
+</code></pre>
+<p>On ajoute une condition dans la méthode <strong>setName</strong>, afin d&#39;indiquer que son exécution requiert au minimum un envoi de 2 ETH dans la transaction.<br>Via la fonction <strong>require()</strong>, nous indiquons la condition à respecter et le message à retourner en cas de non respect.<br>Nous introduisons ici la variable globale <strong>msg</strong>, qui contient les données relative à la transaction courante. On peut y touver l&#39;adresse de l&#39;émetteur (<strong>sender</strong>), le nombre d&#39;Ethers envoyés (<strong>value</strong>) ...</p>
+<p>Notez également l&#39;ajout du mot clé <strong>payable</strong> dans la définition de la méthode. Il indique qu&#39;elle pourra être appelée par des transactions qui envoient des Ethers.<br>Envoyer des Ethers à une méthode qui n&#39;est pas <strong>payable</strong> échouera.</p>
+<p>Nous avons aussi ajouté ce que l&#39;on appelle la fonction de fallback :</p>
+<pre><code>    function() external payable {
+        revert();
+    }
+</code></pre>
+<p>Cette fonction, sans nom, est automatiquement appelée lorsque le contrat reçoit une transaction avec des Ethers, sans appel de méthode spécifiquement.<br>Ici, nous exécutons simplement <strong>revert()</strong> pour indiquer que la transaction doit être annulée si nous sommes dans ce cas.</p>
+<p>Cette fonction fallback est définie elle aussi comme <strong>payable</strong>, mais également comme <strong>external</strong>, c&#39;est à dire qu&#39;elle ne peut être appelée que depuis l&#39;extérieur, et non par des méthodes du contrat.</p>
+<p><strong>payablehello.js:</strong></p>
+<p>Modifions le service afin de prendre en compte cette valeur :</p>
+<pre><code>/*
+* Call change name function and wait for event
+* newName : the new name to set
+* price : the number of ethers we pay to change the name
+*/
+exports.updateName = async function(newName, price) {
+
+	// object containing return values
+	var result = new Object();
+
+	// estimate gas cost
+	var gasAmount = await payableHello.methods.setName(newName).estimateGas({from: config.account, gas: 5000000, value: web3.utils.toWei(price, &#34;ether&#34;)});
+	result.gas = gasAmount;
+
+	var promiseSetName = new Promise( function (resolve, reject){
+
+		// send a transaction to setName
+		payableHello.methods.setName(newName).send({from: config.account, gas: gasAmount, value: web3.utils.toWei(price, &#34;ether&#34;)})
+		.on(&#39;transactionHash&#39;, (hash) =&gt; {
+				// when tx hash is known
+			   result.txHash = hash;
+		   })
+		   .on(&#39;receipt&#39;, (receipt) =&gt; {
+		   		// when receipt is created
+			   console.log(&#34;receipt&#34;);
+		   })
+		   .on(&#39;confirmation&#39;, (confirmationNumber, receipt) =&gt; {
+		   		// when tx is confirmed
+			   result.blockNumber = receipt.blockNumber;
+			   resolve(result);
+		   })
+		   .on(&#39;error&#39;,(error) =&gt; {
+				reject(error);
+		   });
+	}); // end of promiseSetName, result to return
+
+	return promiseSetName;
+}
+
+</code></pre>
+<p>On ajoute un paramètre <strong>price</strong> à la méthode <strong>updateName</strong>.<br>On utilise ce paramètre pour alimenter un nouveau paramètres <strong>value</strong> lors des appels à <strong>estimateGas</strong> et <strong>setName</strong>.<br>Lors de ces appels, il faut passer une valeur en Wei, or nous l&#39;avons en Ethers. Il faut donc la convertir grâce à <strong>web3.utils.toWei(price, &#34;ether&#34;)</strong> qui prend en premier paramètre une valeur et en second paramètre l&#39;unité de cette valeur.</p>
+<p><strong>index.pug :</strong></p>
+<p>Nous ajoutons maintenant au template un champ dans le formulaire de modification de nom, afin que l&#39;utilisateur saisisse le prix qu&#39;il souhaite payer.</p>
+<pre><code>doctype html
+html(lang=&#39;fr&#39;)
+	head
+		meta(charset=&#39;utf-8&#39;)
+		title Ethereum Hello world
+		script(type=&#39;text/javascript&#39;, src=&#39;https://code.jquery.com/jquery-3.3.1.slim.min.js&#39;)
+		script(type=&#39;text/javascript&#39;, src=&#39;https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js&#39;)
+		script(type=&#39;text/javascript&#39;, src=&#39;https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js&#39;)
+		link(rel=&#39;stylesheet&#39; href=&#39;https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css&#39;)
+	body
+	.container-fluid
+		.row
+			.col-md-6
+				div.card
+					h3.card-header Blockchain info
+					div.card-body
+						#info
+							br
+							div
+								b Web3 version :&amp;nbsp;
+								span#web3-version #{nodeInfo.web3Version}
+							div
+								b Node :&amp;nbsp;
+								span#node #{nodeInfo.node}
+							div
+								b Last block :&amp;nbsp;
+								span#block-number #{nodeInfo.blockNumber}
+							div
+								b Coinbase :&amp;nbsp;
+								span#coinbase #{nodeInfo.coinbase}
+							div
+								b Balance :&amp;nbsp;
+								span#balance #{nodeInfo.balance}
+							div
+								b Contract balance :&amp;nbsp;
+								span#contract-balance #{nodeInfo.contractBalance}
+			.col-md-6
+				div.card
+					h5.card-header Hello who ?
+					div.card-body
+						h2 Hello #{name}
+		.row
+			.col-md-6
+				div.card
+					h3.card-header Change name
+					div.card-body
+						#form
+							form(method=&#39;post&#39;, action=&#39;/name&#39;)
+								.form-group
+									label(for=&#39;newName&#39;) Name :
+									input#newName(type=&#39;text&#39;, name=&#39;newName&#39;).form-control
+								.form-group
+									label(for=&#39;price&#39;) Price (Eth) :
+									input#price(type=&#39;text&#39;, name=&#39;price&#39;).form-control
+								div
+									input(type=&#39;submit&#39;, value=&#39;Send&#39;).btn.btn-primary
+			.col-md-6
+				div.card
+					h3.card-header Status
+					div.card-body
+						div#status Transaction : #{txStatus}
+						div#blockNumber Block : #{blockNumber}
+						div#errorMessage #{errorMessage}
+
+
+</code></pre>
+<p><strong>app.js :</strong></p>
+<p>Il ne reste plus qu&#39;à modifier le contrôleur afin de prendre en compte ce nouvelle valeur transmise par le champ de formulaire.</p>
+<pre><code>/**
+   * Update name
+   */
+   app.post(&#39;/name&#39;, function(req, res) {
+   
+   	// execute the selected promise
+   	try {
+   		payableHello.updateName(req.body.newName, req.body.price)
+   		.then(
+   			(result) =&gt; {
+   				displayData.txStatus = result.txHash;
+   				displayData.blockNumber = result.blockNumber;
+   				displayData.errorMessage = result.errorMessage;
+   				res.redirect(&#34;/&#34;);
+   			},
+   			(error) =&gt; {
+               	displayData.errorMessage = error;
+   				res.redirect(&#34;/&#34;);
+   			}
+   		);
+   	}
+   	catch(error){
+   		displayData.errorMessage = error;
+   		res.redirect(&#34;/&#34;);
+   	}
+   });
+</code></pre>
+<p>On récupère la valeur du champ <strong>price</strong> de la requête pour le transmettre en paramètre à <strong>updateName</strong>.</p>
+<p>Nous pouvons maintenant tester :</p>
+<p class="image-container"><img alt="On peut changer de nom en payant" src="img/68ef84e08c9ac528.png"></p>
+<p>Tapez un nom, entrez une valeur supérieure ou égale à 2 dans le champ &#34;price&#34;, et validez.<br>On peut constater que la balance du compte a été réduite du nombre d&#39;Ether donné, plus un peu de gaz, et que la balance du contrat a, quant à elle, augmenté de cette même somme.<br>Celà signifie que pour le moment, c&#39;est bien le smart contract qui possède les Ethers que nous lui avons envoyés.</p>
+<p>Nous pouvons aussi essayer de changer de nom en en payant qu&#39;un seul Ether :</p>
+<p class="image-container"><img alt="On doit payer la somme minimum" src="img/b2c442be70df94e3.png"></p>
+<p>Nous obtenons une erreur, qui contient le message que nous avons passé en paramètre de <em>require()</em> dans le cas où la condition ne serait pas remplie.<br>Les balances du compte et du contrat n&#39;ont pas bougés, donc les Ethers n&#39;ont pas été transférés et le nom n&#39;a pas changé, preuve que la transaction n&#39;a pas été acceptée.<br>Cependant, la balance du compte a quand même perdu quelques Wei. En effet, même si une transaction est rejetée, le gas consommé pour la prendre en compte est bel et consommé pour de bon.</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="10. Administrer le contrat" duration="0">
+        <p>Bien, maintenant que nous savons que le contrat possède des Ethers, il serait bien de pouvoir les récupérer, et si possible, uniquement par son propriétaire.</p>
+<p>Nous allons donc modifier le contrat pour :</p>
+<ul>
+<li>pouvoir récupérer les Ethers et les envoyer à une adresse</li>
+<li>faire en sorte que les Ethers ne puissent être envoyés qu&#39;au propriétaire du contrat.</li>
+</ul>
+<p><strong>PayableHello.sol :</strong></p>
+<pre><code>pragma solidity ^0.5.0;
+
+contract owned {
+	address payable owner;
+
+	// Contract constructor: set owner
+	constructor() public {
+		owner = msg.sender;
+	}
+
+	// Access control modifier
+	modifier onlyOwner {
+	    require(msg.sender == owner, &#34;Only the contract owner can call this function&#34;);
+	    _;
+	}
+
+	// Contract destructor
+	function destroy() public onlyOwner {
+		selfdestruct(owner);
+	}
+
+}
+
+contract PayableHello is owned {
+
+    string private name;
+
+    constructor() public {
+        name = &#34;nobody&#34;;
+    }
+
+    function setName(string memory newName) public payable {
+    	require(msg.value &gt;= 2 ether, &#34;Pay 2 ETH or more&#34;);
+        name = newName;
+    }
+
+    function getName() public view returns (string memory) {
+        return name;
+    }
+
+    function withdraw() public onlyOwner {
+    	uint balance = address(this).balance;
+		msg.sender.transfer(balance);
+    }
+
+    function() external payable {
+        revert();
+    }
+
+}
+</code></pre>
+<p>Nous allons introduire deux nouvelles notions : l&#39;héritage et les modificateurs.</p>
+<p>Nous créons un nouveau contrat <strong>owned</strong> composé de :</p>
+<ul>
+<li>un champ privé <strong>owner</strong> qui contiendra l&#39;adresse du propriétaire de ce contrat (notez que ce champ est <strong>payable</strong>)</li>
+<li>un constructeur, qui initialise <strong>owner</strong> avec l&#39;adresse qui a émit la transaction de création du contrat</li>
+<li>une méthode de type <strong>modifier</strong> appelée <strong>onlyOwner</strong>. Il s&#39;agit de définir un comportement, afin de créer un sorte de &#34;mot-clé&#34; que l&#39;on réutilisera sur d&#39;autres méthodes, pour lesquelles ce comportement s&#39;appliquera.<br>Ici, ce modificateur comporte une condition qui impose que l&#39;utilisateur qui l&#39;appelle soit le propriétaire du contrat, donc que son adresse soit celle qui a créé le contrat.<br>Ensuite, on trouve <strong>_;</strong> qui signifie tout simplement &#34;Exécuter ici le code défini dans la méthode qui utilise ce modificateur&#34;.<br>En gros, toute fonction qui se verra appliquer le modificateur <strong>onlyOwner</strong> exécutera la condition de propriété, puis exécutera ensuite son code propre.</li>
+<li>une méthode <strong>destroy</strong>, à laquelle le modificateur <strong>onlyOnwer</strong> est appliquée, qui exécute <strong>selfdestruct</strong>. Cette méthode désactive le contrat et transfère sa balance à l&#39;adresse qui l&#39;appelle. Vous comprenez pourquoi il faut restreindre son accès au propriétaire, sinon n&#39;importe qui pourrait tout casser et prendre l&#39;argent.<br>A noter qu&#39;un contrat qui a subit un <strong>selfdesctuct</strong> est désactivé, mais pas supprimé. Il ne peut plus exécuter ses méthodes, par contre, il sera toujours possible de lui envoyer des Ethers, qui seront alors perdus car il sera impossible de les récupérer.</li>
+</ul>
+<p>Ensuite, nous modifions la définition du contrat PayableHello en <strong>PayableHello is owned</strong>. Cela signifie que <strong>PayableHello</strong> hérite de toutes les propriétés de <strong>owned</strong>.<br>L&#39;adresse de son propriétaire est donc enregistrée, il pourra être désactivé par lui uniquement. Le modificateur <strong>onlyOwner</strong> pourra aussi être appliqué à n&#39;importe laquelle de ses méthodes.</p>
+<p>D&#39;ailleurs, nous ajoutons aussi une méthode <strong>withdraw</strong> qui utilise ce modificateur. Elle récupère l&#39;adresse de l&#39;émetteur de la transaction via <strong>msg.sender</strong> et lui envoie la balance via <strong>transfert</strong>.</p>
+<p>Une fois le contrat modifié, nous allons créer un service pour permettre au propriétaire de récupérer ses Ethers :</p>
+<p><strong>payablehello.js :</strong></p>
+<pre><code>/**
+* Retreive contract balance. Only works for contract owner
+* withdrawAccount : the address to send ethers to
+*/
+exports.withdraw = async function(withdrawAccount) {
+
+	var result = new Object();
+
+	// estimate gas cost
+	var gasAmount = await payableHello.methods.withdraw().estimateGas({from: withdrawAccount, gas: 5000000});
+	result.gas = gasAmount;
+
+	var promiseWithdraw = new Promise( function (resolve, reject){
+
+		// send tx to withdraw function
+		payableHello.methods.withdraw().send({from: withdrawAccount, gas: gasAmount*2})
+		.on(&#39;transactionHash&#39;, (hash) =&gt; {
+			   result.txHash = hash;
+		   })
+		   .on(&#39;receipt&#39;, (receipt) =&gt; {
+			   console.log(&#34;receipt&#34;);
+		   })
+		   .on(&#39;confirmation&#39;, (confirmationNumber, receipt) =&gt; {
+			   result.blockNumber = receipt.blockNumber;
+			   resolve(result);
+		   })
+		   .on(&#39;error&#39;,(error) =&gt; {
+				result.errorMessage = error;
+				reject(result);
+		   });
+	});
+
+	return promiseWithdraw;
+}
+</code></pre>
+<p>Nous lui ajoutons une méthode <strong>withdraw</strong> qui prend en paramètre l&#39;adresse vers laquelle transférer la balance du contrat.<br>Sur le même modèle que pour modifier le nom, cette méthode va d&#39;abord estimer le gaz nécessaire pour appeler la méthode <strong>withdraw</strong> du contrat depuis l&#39;adresse passée en paramètre. Puis va effectivement réaliser l&#39;appel.<br>Comme il s&#39;agit également d&#39;un envoi de transaction, nous allons ici aussi exploiter les différents événements disponibles pour récupérer les informations inhérentes à cette transaction.</p>
+<p>Maintenant modifions la page pour ajouter cette fonctionnalité :</p>
+<p><strong>index.pug :</strong></p>
+<pre><code>doctype html
+html(lang=&#39;fr&#39;)
+	head
+		meta(charset=&#39;utf-8&#39;)
+		title Ethereum Hello world
+		script(type=&#39;text/javascript&#39;, src=&#39;https://code.jquery.com/jquery-3.3.1.slim.min.js&#39;)
+		script(type=&#39;text/javascript&#39;, src=&#39;https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js&#39;)
+		script(type=&#39;text/javascript&#39;, src=&#39;https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js&#39;)
+		link(rel=&#39;stylesheet&#39; href=&#39;https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css&#39;)
+	body
+	.container-fluid
+		.row
+			.col-md-6
+				div.card
+					h3.card-header Blockchain info
+					div.card-body
+						#info
+							br
+							div
+								b Web3 version :&amp;nbsp;
+								span#web3-version #{nodeInfo.web3Version}
+							div
+								b Node :&amp;nbsp;
+								span#node #{nodeInfo.node}
+							div
+								b Last block :&amp;nbsp;
+								span#block-number #{nodeInfo.blockNumber}
+							div
+								b Coinbase :&amp;nbsp;
+								span#coinbase #{nodeInfo.coinbase}
+							div
+								b Balance :&amp;nbsp;
+								span#balance #{nodeInfo.balance}
+							div
+								b Contract balance :&amp;nbsp;
+								span#contract-balance #{nodeInfo.contractBalance}
+							div
+								form(method=&#39;post&#39;, action=&#39;/withdraw&#39;)
+									div
+										input(type=&#39;submit&#39;, value=&#39;Withdraw&#39;).btn.btn-primary
+										span#withdraw-status
+										
+...
+</code></pre>
+<p>Dans le bloc &#34;Blockchain info&#34;, nous ajoutons un formulaire qui ne contient qu&#39;un seul bouton nommé <strong>&#34;Withdraw&#34;</strong>, qui valide le formulaire vers l&#39;URL <strong>POST /withdraw</strong>.<br>Nous allons donc maintenant modifier le contrôleur pour ajouter cette nouvelle route.</p>
+<p><strong>apps.js :</strong></p>
+<pre><code>/**
+* Withdraw contract balance
+*/
+app.post(&#39;/withdraw&#39;, function(req, res) {
+
+	try {
+		payableHello.withdraw(config.account)
+		.then(
+			(result) =&gt; {
+				displayData.txStatus = result.txHash;
+				displayData.blockNumber = result.blockNumber;
+				displayData.errorMessage = result.errorMessage;
+				res.redirect(&#34;/&#34;);
+			},
+			(error) =&gt; {
+				displayData.errorMessage = error;
+				res.redirect(&#34;/&#34;);
+			}
+		);
+	}
+	catch(error) {
+		displayData.errorMessage = error;
+		res.redirect(&#34;/&#34;);
+	}
+});
+</code></pre>
+<p>Nous appelons le service <strong>withdraw</strong>* avec comme paramètre l&#39;adresse par défaut de notre configuration, celle qui a bien servi à créer le contrat.</p>
+<p>On peut maintenant tester :</p>
+<p class="image-container"><img alt="Avant le retrait" src="img/cc0c2d0ca9d10e0c.png"></p>
+<p>Avant le retrait, le compte a une balance de 90 ETH environ, et le contrat, 7 ETH. Cliquez sur &#34;withdraw&#34;.</p>
+<p class="image-container"><img alt="Après le restrait" src="img/fefaaa3b05747ca5.png"></p>
+<p>Maintenant, la balance du contrat est revenue à 0, alors que le compte a récupéré 7 ETH supplémentaires.</p>
+<p>Ca a donc fonctionné, parce que le compte que nous avons utilisé est bien le propriétaire du contrat.</p>
+<p>Nous savons maintenant comment créer un service payant, et récupérer l&#39;argent qu&#39;il a généré.</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="11. Envoyer une transaction signée" duration="0">
+        <p>Pour le moment, il nous a été facile d&#39;envoyer des transactions en utilisant un compte par défaut, que nous avons renseigné dans la configuration du projet. Nous avons émis en son nom un certain nombre de transactions, qui lui ont coûté des Ethers. Et pourtant, à aucun moment, il ne nous a été demandé de justifier que ce compte nous appartenait, en saisissant un mot de passe ou en fournissant une clé privée par exemple.<br>Ca a été possible parce que ce compte est enregistré dans le noeud de blockchain que nous utilisons, et que par défaut dans Ganache, les comptes sont déverouillés, c&#39;est à dire, utilisables directement.</p>
+<p>Avec un vrai noeud Ethereum, il aurait fallu enregistrer notre compte puis le déverrouiller en fournissant sa clé privée dans un keystore.</p>
+<p>Maintenant, dans notre projet, nous allons élargir un peu les possibilités en termes d&#39;utilisation de comptes en donnant la possibilité de créer des transactions signées, c&#39;est-à-dire dont l&#39;utilisateur fournit son adresse et sa clé privée. Notre projet sera ainsi accessible à tout compte, qu&#39;il soit enregistré ou non dans notre noeud de Blockchain.</p>
+<p>Attention : dans ce qui va suivre, nous allons manipuler des clés privées, qui sont le point sensible en matière de sécurité sur la blockchain. Nous allons le faire de façon simple, pour en apréhender le fonctionnement, mais dans un réel projet de production, il faudra mettre en place les politiques de sécurité adaptées pour les manipuler (HMS, keystore ...).</p>
+<p>Voici ce que nous allons faire :</p>
+<ol type="1">
+<li>Ajouter des comptes et leurs clés privées dans la configuration (ce qui doit être bien plus sécurisé que ça dans la vraie vie)</li>
+<li>Ajouter à l&#39;écran un liste de choix du compte à utiliser</li>
+<li>Pour chaque appel au smart contract, forger une transaction en fonction du compte sélectionné.</li>
+</ol>
+<p>Pour créer d&#39;autres comptes, vous pouvez afficher la liste des comptes de Ganache, et prendre tous les autres comptes autres que le premier. Les clés privées peut être obtenus en cliquant sur l&#39;icône &#34;clé&#34;, sur la droite de l&#39;écran pour chaque compte.</p>
+<p><strong>config.js :</strong></p>
+<pre><code>const config = {
+
+	// blockchain node IPC IP and port
+	nodeURL: &#34;http://127.0.0.1&#34;,
+	nodePort: 7545,
+
+	// default account address
+	account:&#34;0xdB4524A58c78f0945338fe7fF7c3E5988d413032&#34;,
+
+	// ABI file of smart contract
+	abiFile:&#34;../build/contracts/PayableHello.json&#34;,
+
+	// address of deployed contract on blockchain
+	payableHelloContractAddress:&#34;0x31314b12bBC4b9F21B08565EEB5840aF6A1F8dfD&#34;,
+
+	// all available accounts with their private key (except for first account, that is the default account)
+	accounts: [
+		{
+			address: &#34;0xdB4524A58c78f0945338fe7fF7c3E5988d413032&#34;,
+			pk: null
+		},
+		{
+			address: &#34;0x4a4817F49F7f31a2c639C5C723D4BAA194AD0f77&#34;,
+        	pk: &#34;12cc2f60b68a8fefb85e93fed0a2ae4680a465f714e4ea42f4a73cf27f317257&#34;
+		},
+		{
+			address: &#34;0xD04EabD4Ba1d8C655B3f95A24e89CaBbfFe0af33&#34;,
+        	pk: &#34;4b535457d08e576c956d693ef8f17cf07bfd364ed0de401c942537da92254a1f&#34;
+		}
+	]
+
+};
+
+module.exports = config;
+</code></pre>
+<p><strong>app.js :</strong></p>
+<p>On rajoute dans le contrôleur, à l&#39;initialisation des données d&#39;affichage, la liste des comptes.</p>
+<pre><code>displayData.accounts = config.accounts;
+</code></pre>
+<p><strong>index.pug :</strong></p>
+<p>Et on modifie l&#39;index pour afficher la liste des ces comptes au niveau du bouton de retrait de l&#39;argent du contrat et de modification du nom.</p>
+<pre><code>doctype html
+html(lang=&#39;fr&#39;)
+	head
+		meta(charset=&#39;utf-8&#39;)
+		title Ethereum Hello world
+		script(type=&#39;text/javascript&#39;, src=&#39;https://code.jquery.com/jquery-3.3.1.slim.min.js&#39;)
+		script(type=&#39;text/javascript&#39;, src=&#39;https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js&#39;)
+		script(type=&#39;text/javascript&#39;, src=&#39;https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js&#39;)
+		link(rel=&#39;stylesheet&#39; href=&#39;https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css&#39;)
+	body
+	.container-fluid
+		.row
+			.col-md-6
+				div.card
+					h3.card-header Blockchain info
+					div.card-body
+						#info
+							br
+							div
+								b Web3 version :&amp;nbsp;
+								span#web3-version #{nodeInfo.web3Version}
+							div
+								b Node :&amp;nbsp;
+								span#node #{nodeInfo.node}
+							div
+								b Last block :&amp;nbsp;
+								span#block-number #{nodeInfo.blockNumber}
+							div
+								b Coinbase :&amp;nbsp;
+								span#coinbase #{nodeInfo.coinbase}
+							div
+								b Balance :&amp;nbsp;
+								span#balance #{nodeInfo.balance}
+							div
+								b Contract balance :&amp;nbsp;
+								span#contract-balance #{nodeInfo.contractBalance}
+							hr
+							div
+								form(method=&#39;post&#39;, action=&#39;/withdraw&#39;)
+									.form-group
+										label(for=&#39;withdrawAccount&#39;) Account :
+										select#withdrawAccount(name=&#39;withdrawAccount&#39;).form-control
+											each account in accounts
+												option(value=account.address) #{account.address}
+									div
+										input(type=&#39;submit&#39;, value=&#39;Withdraw&#39;).btn.btn-primary
+										span#withdraw-status
+			.col-md-6
+				div.card
+					h5.card-header Hello who ?
+					div.card-body
+						h2 Hello #{name}
+		.row
+			.col-md-6
+				div.card
+					h3.card-header Change name
+					div.card-body
+						#form
+							form(method=&#39;post&#39;, action=&#39;/name&#39;)
+								.form-group
+									label(for=&#39;newName&#39;) Name :
+									input#newName(type=&#39;text&#39;, name=&#39;newName&#39;).form-control
+								.form-group
+									label(for=&#39;price&#39;) Price (Eth) :
+									input#price(type=&#39;text&#39;, name=&#39;price&#39;).form-control
+								.form-group
+									label(for=&#39;account&#39;) Account :
+									select#account(name=&#39;account&#39;).form-control
+										each account in accounts
+											option(value=account.address) #{account.address}
+								div
+									input(type=&#39;submit&#39;, value=&#39;Send&#39;).btn.btn-primary
+			.col-md-6
+				div.card
+					h3.card-header Status
+					div.card-body
+						div#status Transaction : #{txStatus}
+						div#blockNumber Block : #{blockNumber}
+						div#errorMessage #{errorMessage}
+</code></pre>
+<p>Voici le résultat à l&#39;affichage :</p>
+<p class="image-container"><img alt="Affichage des comptes" src="img/26e6e58058b779fe.png"></p>
+<p>Maintenant, nous allons exploiter tout ça.</p>
+<p><strong>app.js :</strong></p>
+<p>Dans le contrôleur, nous allons prendre en compte ce nouveau champ de formulaire, dans <strong>POST /name</strong> et dans <strong>POST /withdraw</strong>.</p>
+<pre><code>/**
+* Update name
+*/
+app.post(&#39;/name&#39;, function(req, res) {
+
+	var promiseUpdateName;
+
+	if(req.body.account === config.account) {
+		// use default account activated on blockchain
+		promiseUpdateName = payableHello.updateName(req.body.newName, req.body.price);
+	}
+	else {
+		// use another account from default one, need to sign a raw transaction
+		promiseUpdateName = payableHello.sendRawTransaction(req.body.newName, req.body.price, req.body.account);
+	}
+
+	// execute the selected promise
+	try {
+		promiseUpdateName
+		.then(
+			(result) =&gt; {
+				displayData.txStatus = result.txHash;
+				displayData.blockNumber = result.blockNumber;
+				displayData.errorMessage = result.errorMessage;
+				res.redirect(&#34;/&#34;);
+			},
+			(error) =&gt; {
+            			displayData.errorMessage = error;
+				res.redirect(&#34;/&#34;);
+			}
+		);
+	}
+	catch(error){
+		displayData.errorMessage = error;
+		res.redirect(&#34;/&#34;);
+	}
+});
+
+
+/**
+* Withdraw contract balance
+*/
+app.post(&#39;/withdraw&#39;, function(req, res) {
+
+...
+		payableHello.withdraw(req.body.withdrawAccount)
+...
+});
+
+
+</code></pre>
+<p>Dans le <strong>POST /name</strong>, nous ajoutons une condition pour continuer à utiliser les méthodes définies précédemment si c&#39;est le compte par défaut qui a été sélectionné, ou un nouveau service <strong>sendRawTransaction</strong> pour envoyer une transaction signée si c&#39;est un autre compte.</p>
+<p>Maintenant, créons ce service <strong>sendRawTransaction</strong> :</p>
+<p><strong>payablehello.js :</strong></p>
+<pre><code>...
+var EthereumTx = require(&#34;ethereumjs-tx&#34;);
+...
+
+/**
+* Update name using smart contract, using account different from default one
+* newName : the new name to set
+* price : the number of ethers we pay to change the name
+* address : the address used to send tx
+*/
+exports.sendRawTransaction = async function(newName, price, address) {
+
+	var result = new Object();
+	var plainPrivateKey = null;
+
+	// get privake key from config according for sender address
+	config.accounts.forEach(function(element) {
+		if(element.address === address){
+			plainPrivateKey = element.pk;
+		}
+	});
+
+	// get tx count for address
+	var txCount = await web3.eth.getTransactionCount(address);
+
+	// create tx
+	var txParams = {
+		from: address,
+		nonce: web3.utils.toHex(txCount),
+		gasPrice: web3.utils.toHex(web3.utils.toWei(&#39;20&#39;, &#39;gwei&#39;)),
+		gasLimit: web3.utils.toHex(4000000),
+		to: config.payableHelloContractAddress,
+		value: web3.utils.toHex(web3.utils.toWei(price, &#34;ether&#34;)),
+		data: web3.utils.toHex(payableHello.methods.setName(newName).encodeABI())
+	}
+
+	// estimate tx gas cost
+	var gasAmount = await web3.eth.estimateGas(txParams);
+	result.gas = gasAmount;
+
+	// update gas limit
+	txParams.gasLimit = web3.utils.toHex(gasAmount);
+
+	// create result promise that will be resolved when tx is confirmed
+	var promiseSendRawTx = new Promise( function (resolve, reject){
+
+		// create raw tx
+		const tx = new EthereumTx(txParams);
+
+		// encode pk in hex
+		const privateKey = Buffer.from(plainPrivateKey, &#39;hex&#39;);
+
+		// sign tx with private key
+		tx.sign(privateKey)
+
+		// serialize tx
+		const serializedTx = tx.serialize();
+
+		// send raw tx
+		web3.eth.sendSignedTransaction(&#39;0x&#39; + serializedTx.toString(&#39;hex&#39;))
+		.on(&#39;transactionHash&#39;, (hash) =&gt; {
+			   result.txHash = hash;
+		   })
+		   .on(&#39;receipt&#39;, (receipt) =&gt; {
+			   console.log(&#34;receipt&#34;);
+		   })
+		   .on(&#39;confirmation&#39;, (confirmationNumber, receipt) =&gt; {
+			   result.blockNumber = receipt.blockNumber;
+			   resolve(result);
+		   })
+		   .on(&#39;error&#39;,(error) =&gt; {
+				reject(error);
+		   });
+
+
+	}); // end of promiseSendRawTx, to be returned
+
+	return promiseSendRawTx;
+}
+
+</code></pre>
+<p>Tout d&#39;abord, il faut importer <strong>EthereumTx</strong>, qui nous aidera à construire des transactions signées.</p>
+<p>Décortiquons ce que fait ce service :</p>
+<ol type="1">
+<li>Dans un premier temps, s&#39;il reçoit en paramètre une adresse différente du compte par défaut, il va récupérer sa clé privée dans la configuration. (Cette étape devrait être beaucoup plus sécurisée dans la vraie vie.)</li>
+<li>Ensuite, il récupère le nombre de transactions que ce compte a déjà effectué, au moyen de <strong>web3.eth.getTransactionCount(address)</strong>. Cette information sera à fournir en tant que nonce, pour éviter que la même transaction soit envoyée plusieurs fois.</li>
+<li>Puis il crée un transaction en renseignant tous les champs individuellement. Chaque valeur doit être fournie en hexadécimal, on peut utiliser <strong>web3.utils.toHex</strong> pour faciliter la conversion.</li>
+<li>On estime ensuite la quantité de gaz nécessaire, que l&#39;on vient mettre à jour dans la transaction précédemment créée.</li>
+<li>Et enfin, au moyen du module <strong>EthereumTx</strong>, on crée la transaction que l&#39;on vient signer avec la clé privée. La transaction sera ensuite sérialisée, puis envoyeé au moyen de *<em>web3.eth.sendSignedTransaction</em>, sans oublier de la préfixer par <strong>Ox</strong>.</li>
+</ol>
+<p>Maintenant, on peut tester toutes les opérations définies précédemment, en choisissant un compte de la liste.</p>
+<p>Il doit être possible pour n&#39;importe quel compte de modifier le nom. Vous devez voir dans les liste des comptes dans Ganache les balances des comptes correspondants se réduire.</p>
+<p>Par contre, si vous tenter de retirer les Ethers (Withdraw) avec un compte différent du compte par défaut, vous obtenez l&#39;erreur suivante :</p>
+<p class="image-container"><img alt="Seul l'administrateur peut retirer les Ether" src="img/cd051e9b87a5671f.png"></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="12. Les événements" duration="0">
+        <p>Nous allons maintenant aborder la notion d&#39;événements. En Solidity, il est possible de définir un événement, avec certains attributs. A certain endroit dans le code, nous pouvons émettre ces événements. Puis, une application peut écouter ces événement, elle sera ainsi notifiée à chaque fois que l&#39;un d&#39;entre eux se produit.</p>
+<p>Les versions de Web3.js antérieures à 1.0 n&#39;utilisaient pas les Promises. En conséquence, il fallait définir dans le smart contract un événement que l&#39;on émettait lorsque la méthode était appelée. L&#39;application écoutait cet événement, elle était ainsi prévenu quand la transaction était validée et que le code était exécuté, elle pouvait alors interroger la blockchain pour récupérer le reçu de transaction (receipt).</p>
+<p>A partir de Web3.js 1.0, les Promises rendent ce mécanisme moins utile, mais les événements conservent leur rôle d&#39;historisation et de notification des actions. Nous allons voir comment les exploiter.</p>
+<p>Nous allons afficher l&#39;historique des modifications du nom, en indiquant quel utilisateur l&#39;a demandée et combien il a payé.</p>
+<p>Tout d&#39;abord, modifions le contrat pour créer l&#39;événement.</p>
+<p><strong>PayableHello.sol :</strong></p>
+<pre><code>contract PayableHello is owned {
+
+    string private name;
+
+	event NameChanged(string newName, address userAddress, uint value);
+
+    constructor() public {
+        name = &#34;nobody&#34;;
+    }
+
+    function setName(string memory newName) public payable {
+    	require(msg.value &gt;= 2 ether, &#34;Pay 2 ETH or more&#34;);
+        name = newName;
+        emit NameChanged(newName, msg.sender, msg.value);
+    }
+
+    function getName() public view returns (string memory) {
+        return name;
+    }
+
+    function withdraw() public onlyOwner {
+    	uint balance = address(this).balance;
+		msg.sender.transfer(balance);
+    }
+
+    function() external payable {
+        revert();
+    }
+
+}
+</code></pre>
+<p>Tout tient en 2 instructions :</p>
+<p><strong>event NameChanged(string newName, address userAddress, uint value);</strong> : la définition de l&#39;événement, avec le mot clé <strong>event</strong>. Ensuite on le nomme et on indique une liste de paramètres qu&#39;il va prendre. Ici, le nouveau nom, l&#39;adresse de l&#39;utilisateur et le prix payé.</p>
+<p><strong>emit NameChanged(newName, msg.sender, msg.value);</strong> : la création de l&#39;événement, dans la méthode <strong>setName</strong>, avec le mot clé <strong>emit</strong>. Nous lui passons les valeurs attendues en paramètres.</p>
+<p>Ces événements ne servent pas à grand chose s&#39;ils ne sont pas exploités. Nous allons donc créer un service qui les récupère :</p>
+<p><strong>payablehello.js :</strong></p>
+<pre><code>/*
+* Get all NameChanged events data
+*/
+exports.getNameChangedHistory = async function() {
+	var eventsList = new Array();
+
+	return new Promise(function(resolve, reject) {
+
+		// get all emited events from first block to last block
+		payableHello.getPastEvents(&#34;NameChanged&#34;, { fromBlock: 0, toBlock: &#39;latest&#39; })
+			.then((events, error) =&gt; {
+				events.forEach(function(item, index, array) {
+					var valueInEth = web3.utils.fromWei(item.returnValues.value.toString(), &#39;ether&#39;);
+				  	eventsList.push({ block:item.blockNumber, name:item.returnValues.newName, userAddress:item.returnValues.userAddress, value:valueInEth});
+				});
+				resolve(eventsList);
+			});
+	});
+}
+</code></pre>
+<p>Nous récupérons les événements au moyen de  <strong>payableHello.getPastEvents(&#34;NameChanged&#34;, { fromBlock: 0, toBlock: ‘latest&#39; })</strong>. Il suffit d&#39;utiliser <strong>getPastEvents</strong> sur notre objet <strong>payableHello</strong>, et de lui passer en paramètre le nom du contrat concerné, ainsi quelques paramètres supplémentaires, par exemple ici nous indiquons que nous allons chercher du bloc 0 jusqu&#39;au dernier (soit toute la chaine).</p>
+<p>Puis on modifie le contrôleur pour récupérer des données :</p>
+<pre><code>async function renderIndex(res) {
+
+	try {
+		displayData.nodeInfo = await payableHello.getNodeInfo();
+		displayData.name = await payableHello.readName();
+		displayData.nameHistory = await payableHello.getNameChangedHistory();
+	}
+	catch(error) {
+		console.error(error);
+	}
+
+	res.render(&#39;index&#39;, displayData);
+}
+</code></pre>
+<p>Et enfin, on modifie le template pour les afficher (on ajoute un bloc à la fin) :</p>
+<pre><code>doctype html
+html(lang=&#39;fr&#39;)
+	head
+		meta(charset=&#39;utf-8&#39;)
+		title Ethereum Hello world
+		script(type=&#39;text/javascript&#39;, src=&#39;https://code.jquery.com/jquery-3.3.1.slim.min.js&#39;)
+		script(type=&#39;text/javascript&#39;, src=&#39;https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js&#39;)
+		script(type=&#39;text/javascript&#39;, src=&#39;https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js&#39;)
+		link(rel=&#39;stylesheet&#39; href=&#39;https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css&#39;)
+	body
+	.container-fluid
+		.row
+			.col-md-6
+				div.card
+					h3.card-header Blockchain info
+					div.card-body
+						#info
+							br
+							div
+								b Web3 version :&amp;nbsp;
+								span#web3-version #{nodeInfo.web3Version}
+							div
+								b Node :&amp;nbsp;
+								span#node #{nodeInfo.node}
+							div
+								b Last block :&amp;nbsp;
+								span#block-number #{nodeInfo.blockNumber}
+							div
+								b Coinbase :&amp;nbsp;
+								span#coinbase #{nodeInfo.coinbase}
+							div
+								b Balance :&amp;nbsp;
+								span#balance #{nodeInfo.balance}
+							div
+								b Contract balance :&amp;nbsp;
+								span#contract-balance #{nodeInfo.contractBalance}
+							hr
+							div
+								form(method=&#39;post&#39;, action=&#39;/withdraw&#39;)
+									.form-group
+										label(for=&#39;withdrawAccount&#39;) Account :
+										select#withdrawAccount(name=&#39;withdrawAccount&#39;).form-control
+											each account in accounts
+												option(value=account.address) #{account.address}
+									div
+										input(type=&#39;submit&#39;, value=&#39;Withdraw&#39;).btn.btn-primary
+										span#withdraw-status
+			.col-md-6
+				div.card
+					h5.card-header Hello who ?
+					div.card-body
+						h2 Hello #{name}
+		.row
+			.col-md-6
+				div.card
+					h3.card-header Change name
+					div.card-body
+						#form
+							form(method=&#39;post&#39;, action=&#39;/name&#39;)
+								.form-group
+									label(for=&#39;newName&#39;) Name :
+									input#newName(type=&#39;text&#39;, name=&#39;newName&#39;).form-control
+								.form-group
+									label(for=&#39;price&#39;) Price (Eth) :
+									input#price(type=&#39;text&#39;, name=&#39;price&#39;).form-control
+								.form-group
+									label(for=&#39;account&#39;) Account :
+									select#account(name=&#39;account&#39;).form-control
+										each account in accounts
+											option(value=account.address) #{account.address}
+								div
+									input(type=&#39;submit&#39;, value=&#39;Send&#39;).btn.btn-primary
+			.col-md-6
+				div.card
+					h3.card-header Status
+					div.card-body
+						div#status Transaction : #{txStatus}
+						div#blockNumber Block : #{blockNumber}
+						div#errorMessage #{errorMessage}
+
+		.row
+			.col-md-12
+				div.card
+					h3.card-header Names history
+					div.card-body
+						ul
+						each item in nameHistory
+							li= &#39;Block &#39;+item.block +&#39; -&gt; &#39;+item.name + &#39; (&#39;+item.userAddress+&#39;, &#39;+item.value+&#39;)&#39;
+</code></pre>
+<p>Maintenant, il suffit de redéployer le contrat, de faire quelques changements de nom, avec différents comptes, et nous voyons l&#39;historique des changements :</p>
+<p class="image-container"><img alt="Historique des changements de nom" src="img/bcfa27af595d7540.png"></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="13. Ajouter un oracle" duration="0">
+        <p>Pour l&#39;instant, nous avons vu comment développer une application décentralisée reposant uniquement sur un smart contract, comment coupler un smart contract sur une application &#34;traditionnelle&#34;. Maintenant, nous allons voir les oracles.<br>Un oracle est un terme qui désigne une façon pour une DApp (smart contract seulement) d&#39;interagir avec l&#39;extérieur.</p>
+<p>Cependant, derrière ce nom, aucun concept nouveau ni magique ne se cache. Il ne s&#39;agit ni plus ni moins d&#39;une application qui interroge régulièrement ou écoute une source de données, et envoie des transactions au smart contract dans certaines conditions.</p>
+<p>Nous allons mettre en place l&#39;exemple suivant :</p>
+<ul>
+<li>Une API génère un nouveau nom toutes les minutes</li>
+<li>Un oracle va mettre à jour le nom dans le contrat à chaque fois que le nom change dans l&#39;API</li>
+</ul>
+<p>Tout d&#39;abord, créons l&#39;API. Ici, il s&#39;agit juste de fournir un exemple simple pour illustrer une source de données pouvant impacter la blockchain. Elle est complètement indépendant et décorellée de ce que nous avons fait précédemment</p>
+<p><strong>api.js :</strong></p>
+<pre><code>/**
+* Simple API that can returns a new string every second
+*/
+
+var express = require(&#39;express&#39;);
+var stringify = require(&#39;json-stringify-safe&#39;);
+var config = require(&#34;../config.js&#34;);
+
+var app = express();
+
+app.get(&#39;/name&#39;, function(req, res) {
+	console.log(&#34;GET /name&#34;);
+	var responseBody = new Object();
+	var today = new Date();
+
+	// name is Toto-yyyymmddhhmm
+	responseBody.name = &#34;Toto-&#34;+today.getFullYear()+(today.getMonth()+1)+today.getDate()+today.getHours()+today.getMinutes()+today.getSeconds();
+	console.log(&#34;Response : &#34;+responseBody.name);
+	res.setHeader(&#39;Content-Type&#39;, &#39;application/json&#39;);
+    res.send(JSON.stringify(responseBody));
+
+});
+
+// start server on port 3001
+app.listen(3001);
+</code></pre>
+<p>Cette API, disponible sur le port 3001, va simplement exposer une route <strong>GET /name</strong> qui retourne une chaine de caractères composée de &#34;Toto&#34; concaténée à la date et heure du jour à la minute. Ce qui fait que le résultat changera chaque minute.</p>
+<p>Maintenant, créons l&#39;oracle proprement dit :</p>
+<p>Faisons un petit</p>
+<pre><code>npm instal request
+</code></pre>
+<p>juste avant, afin de pouvoir exploiter le module <strong>request</strong> qui nous facilitera la vie avec les requêtes HTTP vers l&#39;API.</p>
+<p><em>oracle.js :</em></p>
+<pre><code>/*
+* Ethereum oracle example
+* Reads an API every 10 seconds, get different value each time and use PayableHello to update name with this value
+*/
+
+var request = require(&#39;request&#39;);
+var config = require(&#34;../config.js&#34;);
+var payableHello = require(&#39;../payablehello&#39;); // app services
+
+
+async function readAPI() {
+
+	request({url: &#39;http://127.0.0.1:3001/name&#39;, json: true}, async function(err, res, json) {
+		 if (err) {
+			console.error(err);
+		}
+
+		var name = json.name;
+		var price = &#34;2&#34;;
+
+		await payableHello.updateName(name, price)
+		.then(
+			(result) =&gt; {
+				console.log(result);
+			},
+			(error) =&gt; {
+				console.error(error);
+			}
+		);
+    });
+
+}
+
+// init blockchain connection
+payableHello.connection();
+payableHello.initContracts();
+
+setInterval(readAPI, 1000 * 10);
+</code></pre>
+<p>Etudions cet oracle :</p>
+<ol type="1">
+<li>Il importe le module de services <strong>payablehello.js</strong> pour pouvoir utiliser les services qui accèdent au smart contract</li>
+<li>Il se connecte à la blockchain et initialise le contrat, de la même façon que le contrôleur <strong>app.js</strong> de notre projet.</li>
+<li>Il lance toutes les 10 secondes une méthode qui<br><br><ol type="1">
+<li>Interroge l&#39;API est récupère le nom</li>
+<li>Vérifie si le nom a été modifié depuis le dernier appel</li>
+<li>Si c&#39;est le cas, appelle le service <strong>updateName</strong> en lui fournissant le nouveau nom, et un prix fixe défini à l&#39;avance.<br><br></li>
+</ol>
+</li>
+</ol>
+<p>Précision : le compte par défaut, définit dans notre <strong>config.js</strong> sera utilisé par cet oracle. Il est possible de faire évoluer l&#39;oracle pour gérer les comptes plus finement, mais ce n&#39;est pas le sujet ici.</p>
+<p>Pour tester, procédez en plusieurs étapes :</p>
+<ol type="1">
+<li>Lancer l&#39;application web<pre><code>node app.js
+</code></pre>
+</li>
+<li>Dans un autre terminal, lancez l&#39;API de test<pre><code>node api.js
+</code></pre>
+</li>
+<li>Dans un nouveau termine, lancez l&#39;oracle<pre><code>node oracle.js
+</code></pre>
+</li>
+</ol>
+<p>Dans les logs de l&#39;API, vous devriez voir qu&#39;un appel a lieu toutes les 10 secondes, mais que le nom ne change que toutes les minutes.<br>Dans les logs de l&#39;oracle, vous devriez voir qu&#39;une transaction est émise toutes les minutes.<br>Sur l&#39;application web, si vous rafraichissez régulièrement, vous voyez le nom changer toutes les minutes, ainsi que l&#39;historique des changements de nom se remplir au fil du temps.</p>
+<p class="image-container"><img alt="L'oracle change le nom automatiquement" src="img/822af4bf1aceaf0d.png"></p>
+<p>Et voilà, c&#39;est un oracle !</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="14. Tests automatiques" duration="0">
+        <p>Au début de ce tutoriel, nous avons insisté sur l&#39;immuabilité des smart contracts, donc de la nécessité de prendre grand soin de la qualité.</p>
+<p>Truffle permet d&#39;écrire des tests unitaires, ils seront placés dans le répertoire <strong>test</strong>.</p>
+<p>Pour la documentation complète, voir ici :<br>https://truffleframework.com/docs/truffle/testing/testing-your-contracts</p>
+<p>Ces tests peuvent être écrits en Javascript ou Solidity.</p>
+<p>Ici, nous avons amené les tests assez tardivement, pour permettre de passer en revue au préalable un certain nombre de notions nécessaires. Par la suite, il sera plus approprié d&#39;effectuer ces tests avant le déploiement du contrat.</p>
+<h2 is-upgraded>14.1 Tester avec Javascript</h2>
+<p>Les tests javascript de Truffle utilisent les frameworks <a href="https://mochajs.org/" target="_blank">Mocha</a> et <a href="https://www.chaijs.com/" target="_blank">Chai</a>.<br>Nous n&#39;allons pas nous étendre sur la syntaxe de ces deux frameworks, leurs documentations respectives</p>
+<p>Nous allons créer un fichier <strong>payablehello-test.js</strong>.</p>
+<p>Voici un exemple de test qui valide que lors de l&#39;initialisation du contrat, le nom est bien &#34;nobody&#34;.</p>
+<p><strong>payablehello-test.js :</strong></p>
+<pre><code>const Hello = artifacts.require(&#34;PayableHello&#34;);
+
+contract(&#34;PayableHello&#34;, async accounts =&gt; {
+
+	it(&#34;should display &#39;nobody&#39; when no name set&#34;, async () =&gt; {
+		let hello = await Hello.deployed();
+		let name = await hello.getName.call();
+		assert.equal(name, &#34;nobody&#34;,&#34;name wasn&#39;t nobody&#34;);
+	});
+});
+
+</code></pre>
+<h2 is-upgraded>14.2 Tester en Solidity</h2>
+<p>Idem que précédement, mais cette fois en Solidity. Nous allons créer un fichier <strong>TestPayableHello.sol</strong>.<br>Attention, les contrats de test doivent impérativement commencer par <strong>Test</strong> et il ne faut pas oublier de les ajouter au fichier de migration.</p>
+<p><strong>TestPayableHello.sol :</strong></p>
+<pre><code>pragma solidity ^0.5.0;
+
+import &#34;truffle/Assert.sol&#34;;
+import &#34;truffle/DeployedAddresses.sol&#34;;
+import &#34;../contracts/PayableHello.sol&#34;;
+
+contract TestPayableHello {
+
+  function testInitialPayableHello() public {
+    PayableHello payableHello = PayableHello(DeployedAddresses.PayableHello());
+
+    string memory expected = &#34;nobody&#34;;
+
+    Assert.equal(payableHello.getName(), expected, &#34;name wasn&#39;t nobody&#34;);
+  }
+
+}
+</code></pre>
+<p><strong>3_payablehello_migrations.js :</strong></p>
+<pre><code>const PayableHello = artifacts.require(&#34;PayableHello&#34;);
+const TestPayableHello = artifacts.require(&#34;TestPayableHello&#34;);
+
+module.exports = function(deployer) {
+  	deployer.deploy(PayableHello);
+    deployer.deploy(TestPayableHello);
+};
+
+</code></pre>
+<h2 is-upgraded>14.3 Exécuter les tests</h2>
+<p>Exécutez la commande :</p>
+<pre><code>truffle test
+</code></pre>
+<p>Vous devriez obtenir un résultat de ce type :</p>
+<p class="image-container"><img alt="Résultat des tests" src="img/de45992e08f1a33b.png"></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="15. Debugger un contrat" duration="0">
+        
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="16. Focus sur l&#39;utilisation du gaz" duration="0">
+        
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="17. Sécurité" duration="0">
+        <p>Un point d&#39;attention particulier doit être apporté à la sécurité, notamment sur certains points :</p>
+<h2 is-upgraded>Clés privées</h2>
+<p>Les clés privés sont au coeur de la sécurité sur une blockchain. Elles permettent de signer les transactions, de revendiquer la possession d&#39;actifs ... Il faut les protéger, les garder dans le secret le plus absolu.<br>(De même pour la phrase seed).</p>
+<p>Dans notre projet, nous avons fait quelques tests avec des clés privées mises en clair dans un fichier de configurations. Dans un réel projet, les clés privées doivent être beaucoup mieux sécurisées. Personne d&#39;autre que leur propiétaire légitime ne doit pouvoir y accéder.</p>
+<h2 is-upgraded>Ré-entrée</h2>
+<p>Une des erreurs de programmation d&#39;un smart contract les plus dangereuses est de créer sans le savoir une &#34;faille de ré-entrée&#34;.</p>
+<p>Vous trouvez des explications et un exemple ici :</p>
+<p>https://github.com/avysel/ethereum-reentrancy</p>
+<h2 is-upgraded>Ownership des contrats</h2>
+<p>Nous avons mis en place dans ce projet une gestion de la propriété d&#39;un smart contrat, de prévoir des méthodes administration (désactivation, récupération de balance ...).<br>Il est très important que les besoins en administration soient bien identifiés en amont, puis développés et sécurisés.</p>
+<p>Il serait dommage de ne pas pouvoir récupérer les Ether que nous avons pu généré par notre travail, ou que quelqu&#39;un les récupère à notre place.</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="18 Exercices" duration="0">
+        <ul>
+<li>Ajouter un champ &#34;From&#34;, pour afficher &#34;Hello X, from Y&#34; !</li>
+<li>Limiter le prix du changement de nom à 5 ETH. Tous les ETH supplémentaires seront rendus à l&#39;émetteur.</li>
+<li>Créer un événement pour les withdraw, et les afficher à l&#39;écran</li>
+<li>Créer un test qui valide que le withdraw fonctionne (balance contrat = 0, balance admin += balance contrat - gaz)</li>
+</ul>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="19 Ressources" duration="0">
+        <p>Code source du projet : https://github.com/avysel/ethereum-helloworld</p>
+<p>Truffle : https://truffleframework.com/docs/truffle/overview</p>
+<p>Ganache : https://truffleframework.com/docs/ganache/overview</p>
+<p>Web3.js : https://web3js.readthedocs.io/en/1.0/</p>
+<p>Solidity : https://solidity.readthedocs.io/en/latest/</p>
+<p>Asynchronicité en javascript : https://javascript.info/async</p>
+
+
+      </google-codelab-step>
+    
+  </google-codelab>
+
+  <script src="https://storage.googleapis.com/codelab-elements/native-shim.js"></script>
+  <script src="https://storage.googleapis.com/codelab-elements/custom-elements.min.js"></script>
+  <script src="https://storage.googleapis.com/codelab-elements/prettify.js"></script>
+  <script src="https://storage.googleapis.com/codelab-elements/codelab-elements.js"></script>
+
+</body>
+</html>
