@@ -203,7 +203,7 @@ Si la compilation se termine avec succès, un répertoire **build/contracts** vi
 
 Avant de déployer notre smart contract, nous allons le tester en utilisant Remix.
 
-https://remix.ethereum.org
+[https://remix.ethereum.org](https://remix.ethereum.org)
 
 ![Test du smart contract](images/16_remix.png)
 
