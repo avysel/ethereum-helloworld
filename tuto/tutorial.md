@@ -127,23 +127,6 @@ Un outil permettant de compiler, tester et déployer des smart contracts sur une
 npm install truffle
 ```
 
-#### Web3.js
-Un framework javascript permettant d'interagir avec une blockchain.[https://web3js.readthedocs.io/en/1.0/index.html](https://web3js.readthedocs.io/en/1.0/index.html)
-```                
-npm install web3          
-```                
-
-Web3.js existe en version 0.20.X, qui est la version stable actuelle, et en version 1.0.X qui est encore en beta.
-La version 0.20 permet une utilisation directement intégrée à des pages web, dans un navigateur. Elle est plus simple d'utilisation, mais sera prochainement dépréciée.
-La version 1.0.X, bien que beta, a un bon niveau de stabilité et est bien plus complète. Cependant, elle impose un fonctionnement côté serveur, tel que Node.js.
-
-Nous allons utiliser la version 1.0 pour ce tutorial.
-
-#### EthereumJs-Tx
-Un module permettant de manipuler des transactions
-```
-npm install ethereumjs-tx
-```
 
 ## 3. Initialisation du projet<a name="3"></a>
 
@@ -284,9 +267,9 @@ Il n'est pas nécessaire d'effectuer un **truffle compile** à chaque fois, le *
 **A chaque déploiement, il ne faut pas oublier de modifier l'adresse du contrat dans le fichier de configuration.**
 
 <a name="7"></a>
-## 7. Initialisation de l'application web
+## 7. Application web
 
-### 7.1 Création des fichiers
+### 7.1. Création des fichiers
 
 Nous allons initialiser une application web, basée sur Node.js, utilisant les framework Express pour MVC et Pug pour les templates HTML.
 Dans un premier temps, nous allons créer une simple page d'index qui affiche des informations sur le noeud de blockchain auquel nous sommes connectés.
@@ -299,6 +282,8 @@ Nous allons créer plusieurs répertoires et fichiers :
 - **src/payablehello.js** : les services de connexion à la blockchain
 - **src/config.js** : la configuration de notre application
 
+### 7.2. Installation des modules
+
 Placez-vous dans le répertoire **src** et initialisez le projet Node.js avec la commande
 
 ```
@@ -309,20 +294,37 @@ Saisissez les quelques informations demandées pour initialiser le projet.
 
 Nous allons maintenant installer les packages nécessaires.
 
-Pug : 
+#### Web3.js
+Un framework javascript permettant d'interagir avec une blockchain.[https://web3js.readthedocs.io/en/1.0/index.html](https://web3js.readthedocs.io/en/1.0/index.html)
+```                
+npm install web3          
+```                
+
+Web3.js existe en version 0.20.X, qui est la version stable actuelle, et en version 1.0.X qui est encore en beta.
+La version 0.20 permet une utilisation directement intégrée à des pages web, dans un navigateur. Elle est plus simple d'utilisation, mais sera prochainement dépréciée.
+La version 1.0.X, bien que beta, a un bon niveau de stabilité et est bien plus complète. Cependant, elle impose un fonctionnement côté serveur, tel que Node.js.
+
+Nous allons utiliser la version 1.0 pour ce tutorial.
+
+#### EthereumJs-Tx
+Un module permettant de manipuler des transactions
+```
+npm install ethereumjs-tx
+```
+
+#### Pug
+Un moteur de templates Node.js pour nous aider à générer la page HTML de rendu
 ```
 npm install pug
 ```
 
-Express : 
+#### Express
+Un module MVC Node.js
 ```
 npm install express
 ```
 
-Web3 : 
-```
-npm install web3
-```
+### 7.3. Initialisation de l'application
 
 1ère étape, se connecter à la blockchain au moyen de web3.
 
@@ -404,7 +406,7 @@ exports.getNodeInfo = async function() {
 }
 ```
 
-### 7.3 Connection au contrat
+### 7.4 Connection au contrat
 
 Nous allons maintenant nous connecter au contrat :
 
@@ -553,7 +555,7 @@ Dans le navigateur **http://localhost:3000**
 
 Dans la partie "Blockchain info", nous pouvons voir que la valeur de la balance du compte utilisé, qui était à 100 ETH lors du lancement de Ganache, a été diminuée en fonction du coût des transactions qui ont permis de déployer les contrats.
 
-### 7.4 Lecture d'une donnée
+### 7.5 Lecture d'une donnée
 
 Nous allons maintenant enrichir tout ça en récupérant le nom de la personne à saluer et en l'affichant à l'écran.
 
