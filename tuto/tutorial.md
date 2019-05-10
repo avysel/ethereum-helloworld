@@ -50,7 +50,7 @@ Ils vont donc s'exécuter sur tous les noeuds dès que ces derniers recevront la
 Les smart contracts sont écrits en **Solidity**, un langage créé pour Ethereum. Ils sont exécutés dans l'**EVM (Ethereum Virtual Machine)**. C'est une **machine virtuelle à pile d'exécution** présente sur chaque noeud Ethereum. C'est à dire que le programme est décomposé en une suite d'instructions de base, placées sur une pile, et exécutées dans l'ordre de dépilage.
 
 La documentation officielle du langage est disponible ici : 
-https://solidity.readthedocs.io/en/latest/
+[https://solidity.readthedocs.io/en/latest/](https://solidity.readthedocs.io/en/latest/)
 
 Il est ensuite possible de connecter une application traditionnelle à un smart contract.
 
@@ -143,17 +143,17 @@ Dans un terminal, positionnez vous dans votre répertoire de travail, et lancez 
  
 Après une courte phase de téléchargement et d'initialisation, nous voyons apparaitre 3 répertoires et 1 fichier :
  
-**_contracts**_ : code des smart contracts
+**contracts** : code des smart contracts
 
-**_migrations**_ : scripts nécessaire à Truffle de effectuer les déploiements de contrats sur la blockchain.
+**migrations** : scripts nécessaire à Truffle de effectuer les déploiements de contrats sur la blockchain.
 
-**_tests**_ : scripts de tests unitaires des smart contracts
+**tests** : scripts de tests unitaires des smart contracts
 
-**_truffle-config.js**_ : fichier de configuration de Truffle
+**truffle-config.js** : fichier de configuration de Truffle
 
 ## 4. Premier smart contract<a name="4"></a>
 
-Dans **_contracts_**, créer un fichier PayableHello.sol. Y saisir le code suivant :
+Dans **contracts**, créer un fichier **PayableHello.sol**. Y saisir le code suivant :
 
 ```
 pragma solidity ^0.5.0;
@@ -2066,15 +2066,15 @@ Il serait dommage de ne pas pouvoir récupérer les Ether que nous avons pu gén
 <a name="19"></a>
 ## 19 Ressources
 
-Code source du projet : https://github.com/avysel/ethereum-helloworld
+Code source du projet : [https://github.com/avysel/ethereum-helloworld](https://github.com/avysel/ethereum-helloworld)
 
-Truffle : https://truffleframework.com/docs/truffle/overview
+Truffle : [https://truffleframework.com/docs/truffle/overview](https://truffleframework.com/docs/truffle/overview)
 
-Ganache : https://truffleframework.com/docs/ganache/overview
+Ganache : [https://truffleframework.com/docs/ganache/overview](https://truffleframework.com/docs/ganache/overview)
 
-Web3.js : https://web3js.readthedocs.io/en/1.0/
+Web3.js : [https://web3js.readthedocs.io/en/1.0/](https://web3js.readthedocs.io/en/1.0/)
 
-Solidity : https://solidity.readthedocs.io/en/latest/
+Solidity : [https://solidity.readthedocs.io/en/latest/](https://solidity.readthedocs.io/en/latest/)
 
-Asynchronicité en javascript : https://javascript.info/async
+Asynchronicité en javascript : [https://javascript.info/async](https://javascript.info/async)
 
