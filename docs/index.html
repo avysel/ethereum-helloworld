@@ -59,28 +59,27 @@
 <p>L&#39;environnement d&#39;exécution de ce tutorial se fera sous Linux, mais il est possible de trouver l&#39;équivalent de chaque commande sous Windows ou Mac.</p>
 <p>Ce tutorial sera basé sur Node.js. Il s&#39;agit simplement de la technologie la plus répandue pour travailler avec les smart contracts, celle pour laquelle on trouve le plus d&#39;outils et de frameworks disponibles.<br>Mais il est possible de trouver également des frameworks Java, Python ... qui fonctionnent de la même façon.</p>
 <p>Nous allons dans un premier temps installer un certain nombre d&#39;outils :</p>
-<ul>
-<li>Node.js : car le projet sera développé en Node.js :)<pre><code>sudo apt-get install nodejs
+<h3 is-upgraded>Node.js</h3>
+<p>Car le projet sera développé en Node.js :)</p>
+<pre><code>sudo apt-get install nodejs
 </code></pre>
-</li>
-<li>Ganache : une blockchain de test, qui s&#39;exécute en local et fournit une interface visuelle pour voir ce qu&#39;il s&#39;y passe.</li>
-</ul>
+<h3 is-upgraded>Ganache</h3>
+<p>Une blockchain de test, qui s&#39;exécute en local et fournit une interface visuelle pour voir ce qu&#39;il s&#39;y passe.</p>
 <p>Téléchargez le fichier disponible ici <a href="https://truffleframework.com/ganache" target="_blank">https://truffleframework.com/ganache</a></p>
-<ul>
-<li>Truffle : un outil permettant de compiler, tester et déployer des smart contracts sur une blockchain.<a href="https://truffleframework.com/truffle" target="_blank">https://truffleframework.com/truffle</a><pre><code>npm install truffle
+<h3 is-upgraded>Truffle</h3>
+<p>Un outil permettant de compiler, tester et déployer des smart contracts sur une blockchain.<a href="https://truffleframework.com/truffle" target="_blank">https://truffleframework.com/truffle</a></p>
+<pre><code>npm install truffle
 </code></pre>
-</li>
-<li>Web3.js : un framework javascript permettant d&#39;interagir avec une blockchain.<a href="https://web3js.readthedocs.io/en/1.0/index.html" target="_blank">https://web3js.readthedocs.io/en/1.0/index.html</a><pre><code>npm install web3          
+<h3 is-upgraded>Web3.js</h3>
+<p>Un framework javascript permettant d&#39;interagir avec une blockchain.<a href="https://web3js.readthedocs.io/en/1.0/index.html" target="_blank">https://web3js.readthedocs.io/en/1.0/index.html</a></p>
+<pre><code>npm install web3          
 </code></pre>
-</li>
-</ul>
 <p>Web3.js existe en version 0.20.X, qui est la version stable actuelle, et en version 1.0.X qui est encore en beta.<br>La version 0.20 permet une utilisation directement intégrée à des pages web, dans un navigateur. Elle est plus simple d&#39;utilisation, mais sera prochainement dépréciée.<br>La version 1.0.X, bien que beta, a un bon niveau de stabilité et est bien plus complète. Cependant, elle impose un fonctionnement côté serveur, tel que Node.js.</p>
 <p>Nous allons utiliser la version 1.0 pour ce tutorial.</p>
-<ul>
-<li>EthereumJs-Tx : un module permettant de manipuler des transactions<pre><code>npm install ethereumjs-tx
+<h3 is-upgraded>EthereumJs-Tx</h3>
+<p>Un module permettant de manipuler des transactions</p>
+<pre><code>npm install ethereumjs-tx
 </code></pre>
-</li>
-</ul>
 
 
       </google-codelab-step>
