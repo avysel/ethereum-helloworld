@@ -31,10 +31,9 @@ Mise à jour : 10/05/2019
 13. [Ajouter un oracle](#13)
 14. [Tests automatiques](#14)
 15. [Debugguer un contrat](#15)
-16. [Focus sur l'utilisation du gas](#16)
-17. [Sécurité](#17)
-18. [Exercices](#18)
-19. [Ressources](#19)
+16. [Sécurité](#16)
+17. [Exercices](#17)
+18. [Ressources](#18)
 
 ***
 
@@ -202,11 +201,11 @@ Si la compilation se termine avec succès, un répertoire **build/contracts** vi
 <a name="5"></a>
 ## 5. Test du smart contract
 
-Avant de déployer notre smart contract, nous allons le tester en utilisant Remix. C'est un IDE en ligne qui remplit à peu près le même rôle que Truffle. C'est l'occasion de tester un nouvel outil :).
+Avant de déployer notre smart contract, nous allons le tester en utilisant Remix.
 
 https://remix.ethereum.org
 
-
+![Test du smart contract](images/16_remix.png)
 
 
 <a name="6"></a>
@@ -2045,11 +2044,9 @@ D'autre commandes sont disponibles, voir l'exemple ci-dessous :
 
 ![Truffle debug](images/15_truffle_debug.png)
 
-<a name="16"></a>
-## 16. Focus sur l'utilisation du gaz
 
-<a name="17"></a>
-## 17. Sécurité
+<a name="16"></a>
+## 16. Sécurité
 
 Un point d'attention particulier doit être apporté à la sécurité, notamment sur certains points : 
 
@@ -2077,8 +2074,8 @@ Il est très important que les besoins en administration soient bien identifiés
 
 Il serait dommage de ne pas pouvoir récupérer les Ether que nous avons pu généré par notre travail, ou que quelqu'un les récupère à notre place.
 
-<a name="18"></a>
-## 18 Exercices
+<a name="17"></a>
+## 17 Exercices
 
 1) Ajouter un champ "From", pour afficher "Hello X, from Y" !
 
@@ -2236,8 +2233,8 @@ it("should withdraw contract balance", async () => {
 });
 ```
 
-<a name="19"></a>
-## 19 Ressources
+<a name="18"></a>
+## 18 Ressources
 
 Code source du projet : [https://github.com/avysel/ethereum-helloworld](https://github.com/avysel/ethereum-helloworld)
 
