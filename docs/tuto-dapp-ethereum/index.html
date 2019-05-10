@@ -31,7 +31,7 @@
         <h2 is-upgraded>1.1. Smart contracts</h2>
 <p>Ethereum permet la création de <strong>smart contracts</strong>. Ce sont des programmes qui sont envoyés à tous les noeuds du réseau et dont on active des fonctionnalités au moyen de transactions.<br>Ils vont donc s&#39;exécuter sur tous les noeuds dès que ces derniers recevront la transaction correspondante.</p>
 <p>Les smart contracts sont écrits en <strong>Solidity</strong>, un langage créé pour Ethereum. Ils sont exécutés dans l&#39;<strong>EVM (Ethereum Virtual Machine)</strong>. C&#39;est une <strong>machine virtuelle à pile d&#39;exécution</strong> présente sur chaque noeud Ethereum. C&#39;est à dire que le programme est décomposé en une suite d&#39;instructions de base, placées sur une pile, et exécutées dans l&#39;ordre de dépilage.</p>
-<p>La documentation officielle du langage est disponible ici :<br>https://solidity.readthedocs.io/en/latest/</p>
+<p>La documentation officielle du langage est disponible ici :<br><a href="https://solidity.readthedocs.io/en/latest/" target="_blank">https://solidity.readthedocs.io/en/latest/</a></p>
 <p>Il est ensuite possible de connecter une application traditionnelle à un smart contract.</p>
 <h2 is-upgraded>1.2. Mise en garde</h2>
 <p>Il faut garder à l&#39;esprit que l&#39;état de l&#39;environnement d&#39;exécution peut varier d&#39;un noeud à l&#39;autre. Par exemple, si un traitement nécessite l&#39;envoi de plusieurs transactions, l&#39;ordre de réception par chaque noeud du réseau sera aléatoire. La conception des smart contracts ne doit donc pas être dépendante de l&#39;environnement.</p>
@@ -85,16 +85,16 @@
 <pre><code> truffle init
 </code></pre>
 <p>Après une courte phase de téléchargement et d&#39;initialisation, nous voyons apparaitre 3 répertoires et 1 fichier :</p>
-<p><strong>_contracts</strong>_ : code des smart contracts</p>
-<p><strong>_migrations</strong>_ : scripts nécessaire à Truffle de effectuer les déploiements de contrats sur la blockchain.</p>
-<p><strong>_tests</strong>_ : scripts de tests unitaires des smart contracts</p>
-<p><strong>_truffle-config.js</strong>_ : fichier de configuration de Truffle</p>
+<p><strong>contracts</strong> : code des smart contracts</p>
+<p><strong>migrations</strong> : scripts nécessaire à Truffle de effectuer les déploiements de contrats sur la blockchain.</p>
+<p><strong>tests</strong> : scripts de tests unitaires des smart contracts</p>
+<p><strong>truffle-config.js</strong> : fichier de configuration de Truffle</p>
 
 
       </google-codelab-step>
     
       <google-codelab-step label="4. Premier smart contract" duration="0">
-        <p>Dans <em>contracts</em>, créer un fichier PayableHello.sol. Y saisir le code suivant :</p>
+        <p>Dans <strong>contracts</strong>, créer un fichier <strong>PayableHello.sol</strong>. Y saisir le code suivant :</p>
 <pre><code>pragma solidity ^0.5.0;
 
 contract PayableHello {
@@ -1706,12 +1706,12 @@ module.exports = function(deployer) {
       </google-codelab-step>
     
       <google-codelab-step label="19 Ressources" duration="0">
-        <p>Code source du projet : https://github.com/avysel/ethereum-helloworld</p>
-<p>Truffle : https://truffleframework.com/docs/truffle/overview</p>
-<p>Ganache : https://truffleframework.com/docs/ganache/overview</p>
-<p>Web3.js : https://web3js.readthedocs.io/en/1.0/</p>
-<p>Solidity : https://solidity.readthedocs.io/en/latest/</p>
-<p>Asynchronicité en javascript : https://javascript.info/async</p>
+        <p>Code source du projet : <a href="https://github.com/avysel/ethereum-helloworld" target="_blank">https://github.com/avysel/ethereum-helloworld</a></p>
+<p>Truffle : <a href="https://truffleframework.com/docs/truffle/overview" target="_blank">https://truffleframework.com/docs/truffle/overview</a></p>
+<p>Ganache : <a href="https://truffleframework.com/docs/ganache/overview" target="_blank">https://truffleframework.com/docs/ganache/overview</a></p>
+<p>Web3.js : <a href="https://web3js.readthedocs.io/en/1.0/" target="_blank">https://web3js.readthedocs.io/en/1.0/</a></p>
+<p>Solidity : <a href="https://solidity.readthedocs.io/en/latest/" target="_blank">https://solidity.readthedocs.io/en/latest/</a></p>
+<p>Asynchronicité en javascript : <a href="https://javascript.info/async" target="_blank">https://javascript.info/async</a></p>
 
 
       </google-codelab-step>
