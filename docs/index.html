@@ -70,16 +70,6 @@
 <p>Un outil permettant de compiler, tester et déployer des smart contracts sur une blockchain.<a href="https://truffleframework.com/truffle" target="_blank">https://truffleframework.com/truffle</a></p>
 <pre><code>npm install truffle
 </code></pre>
-<h3 is-upgraded>Web3.js</h3>
-<p>Un framework javascript permettant d&#39;interagir avec une blockchain.<a href="https://web3js.readthedocs.io/en/1.0/index.html" target="_blank">https://web3js.readthedocs.io/en/1.0/index.html</a></p>
-<pre><code>npm install web3          
-</code></pre>
-<p>Web3.js existe en version 0.20.X, qui est la version stable actuelle, et en version 1.0.X qui est encore en beta.<br>La version 0.20 permet une utilisation directement intégrée à des pages web, dans un navigateur. Elle est plus simple d&#39;utilisation, mais sera prochainement dépréciée.<br>La version 1.0.X, bien que beta, a un bon niveau de stabilité et est bien plus complète. Cependant, elle impose un fonctionnement côté serveur, tel que Node.js.</p>
-<p>Nous allons utiliser la version 1.0 pour ce tutorial.</p>
-<h3 is-upgraded>EthereumJs-Tx</h3>
-<p>Un module permettant de manipuler des transactions</p>
-<pre><code>npm install ethereumjs-tx
-</code></pre>
 
 
       </google-codelab-step>
@@ -179,8 +169,8 @@ module.exports = function(deployer) {
 
       </google-codelab-step>
     
-      <google-codelab-step label="7. Initialisation de l&#39;application web" duration="0">
-        <h2 is-upgraded>7.1 Création des fichiers</h2>
+      <google-codelab-step label="7. Application web" duration="0">
+        <h2 is-upgraded>7.1. Création des fichiers</h2>
 <p>Nous allons initialiser une application web, basée sur Node.js, utilisant les framework Express pour MVC et Pug pour les templates HTML.<br>Dans un premier temps, nous allons créer une simple page d&#39;index qui affiche des informations sur le noeud de blockchain auquel nous sommes connectés.</p>
 <p>Nous allons créer plusieurs répertoires et fichiers :</p>
 <ul>
@@ -191,20 +181,31 @@ module.exports = function(deployer) {
 <li><strong>src/payablehello.js</strong> : les services de connexion à la blockchain</li>
 <li><strong>src/config.js</strong> : la configuration de notre application</li>
 </ul>
+<h2 is-upgraded>7.2. Installation des modules</h2>
 <p>Placez-vous dans le répertoire <strong>src</strong> et initialisez le projet Node.js avec la commande</p>
 <pre><code>npm init
 </code></pre>
 <p>Saisissez les quelques informations demandées pour initialiser le projet.</p>
 <p>Nous allons maintenant installer les packages nécessaires.</p>
-<p>Pug :</p>
+<h3 is-upgraded>Web3.js</h3>
+<p>Un framework javascript permettant d&#39;interagir avec une blockchain.<a href="https://web3js.readthedocs.io/en/1.0/index.html" target="_blank">https://web3js.readthedocs.io/en/1.0/index.html</a></p>
+<pre><code>npm install web3          
+</code></pre>
+<p>Web3.js existe en version 0.20.X, qui est la version stable actuelle, et en version 1.0.X qui est encore en beta.<br>La version 0.20 permet une utilisation directement intégrée à des pages web, dans un navigateur. Elle est plus simple d&#39;utilisation, mais sera prochainement dépréciée.<br>La version 1.0.X, bien que beta, a un bon niveau de stabilité et est bien plus complète. Cependant, elle impose un fonctionnement côté serveur, tel que Node.js.</p>
+<p>Nous allons utiliser la version 1.0 pour ce tutorial.</p>
+<h3 is-upgraded>EthereumJs-Tx</h3>
+<p>Un module permettant de manipuler des transactions</p>
+<pre><code>npm install ethereumjs-tx
+</code></pre>
+<h3 is-upgraded>Pug</h3>
+<p>Un moteur de templates Node.js pour nous aider à générer la page HTML de rendu</p>
 <pre><code>npm install pug
 </code></pre>
-<p>Express :</p>
+<h3 is-upgraded>Express</h3>
+<p>Un module MVC Node.js</p>
 <pre><code>npm install express
 </code></pre>
-<p>Web3 :</p>
-<pre><code>npm install web3
-</code></pre>
+<h2 is-upgraded>7.3. Initialisation de l&#39;application</h2>
 <p>1ère étape, se connecter à la blockchain au moyen de web3.</p>
 <p><strong>config.js :</strong></p>
 <pre><code>const config = {
@@ -231,7 +232,7 @@ module.exports = config;
 <li><strong>nodeURL</strong> et <strong>nodePort</strong> : éléments de connexion à Ganache</li>
 <li><strong>account</strong> : adresse Ethereum du premier compte disponible sur Ganache.</li>
 <li><strong>abiFile</strong> : chemin du fichier PayableHello.json dans le répertoire <strong>build</strong> généré par Truffle.</li>
-<li><strong>payableHelloContractAddress</strong> : adresse à laquelle le contrat a été déployé avec Truffle. (&#34;contract address&#34; dans le résultat de <code>truffle deploy</code>)</li>
+<li><strong>payableHelloContractAddress</strong> : adresse à laquelle le contrat a été déployé avec Truffle. (&#34;contract address&#34; dans le résultat de <strong>truffle deploy</strong>)</li>
 </ul>
 <h2 is-upgraded>7.2 Connection à la blockchain</h2>
 <p><strong>payablehello.js :</strong></p>
@@ -277,7 +278,7 @@ exports.getNodeInfo = async function() {
 
 }
 </code></pre>
-<h2 is-upgraded>7.3 Connection au contrat</h2>
+<h2 is-upgraded>7.4 Connection au contrat</h2>
 <p>Nous allons maintenant nous connecter au contrat :</p>
 <p><strong>payablehello.js :</strong></p>
 <pre><code>/*
@@ -407,7 +408,7 @@ app.listen(3000);
 <p>Dans le navigateur <strong>http://localhost:3000</strong></p>
 <p class="image-container"><img alt="Premier affichage" src="img/43269784cb40e169.png"></p>
 <p>Dans la partie &#34;Blockchain info&#34;, nous pouvons voir que la valeur de la balance du compte utilisé, qui était à 100 ETH lors du lancement de Ganache, a été diminuée en fonction du coût des transactions qui ont permis de déployer les contrats.</p>
-<h2 is-upgraded>7.4 Lecture d&#39;une donnée</h2>
+<h2 is-upgraded>7.5 Lecture d&#39;une donnée</h2>
 <p>Nous allons maintenant enrichir tout ça en récupérant le nom de la personne à saluer et en l&#39;affichant à l&#39;écran.</p>
 <p><strong>payablehello.js :</strong></p>
 <pre><code>/**
@@ -1537,7 +1538,7 @@ app.listen(3001);
 <pre><code>npm install request
 </code></pre>
 <p>juste avant, afin de pouvoir exploiter le module <strong>request</strong> qui nous facilitera la vie avec les requêtes HTTP vers l&#39;API.</p>
-<p><em>oracle.js :</em></p>
+<p><strong>oracle.js :</strong></p>
 <pre><code>/*
 * Ethereum oracle example
 * Reads an API every 10 seconds, get different value each time and use PayableHello to update name with this value
@@ -1653,6 +1654,7 @@ contract TestPayableHello {
 }
 </code></pre>
 <p><strong>3_payablehello_migrations.js :</strong></p>
+<p>A revoir ?</p>
 <pre><code>const PayableHello = artifacts.require(&#34;PayableHello&#34;);
 const TestPayableHello = artifacts.require(&#34;TestPayableHello&#34;);
 

@@ -150,7 +150,7 @@ Après une courte phase de téléchargement et d'initialisation, nous voyons app
 
 Dans **contracts**, créer un fichier **PayableHello.sol**. Y saisir le code suivant :
 
-```
+```javascript
 pragma solidity ^0.5.0;
 
 contract PayableHello {
@@ -219,7 +219,7 @@ Tout d'abord, lancez Ganache (ou tout autre client Ethereum).
 
 Nous allons modifier le fichier **truffle-config.js** pour indiquer à Truffle les paramètres de connexion :
 
-```
+```javascript
 module.exports = {
   networks: {
     ganache: {
@@ -355,7 +355,7 @@ Initialiser les valeurs
 - **nodeURL** et **nodePort** : éléments de connexion à Ganache
 - **account** : adresse Ethereum du premier compte disponible sur Ganache.
 - **abiFile** : chemin du fichier PayableHello.json dans le répertoire **build** généré par Truffle.
-- **payableHelloContractAddress** : adresse à laquelle le contrat a été déployé avec Truffle. ("contract address" dans le résultat de ```truffle deploy```)
+- **payableHelloContractAddress** : adresse à laquelle le contrat a été déployé avec Truffle. ("contract address" dans le résultat de **truffle deploy**)
 
 
 ### 7.2 Connection à la blockchain
