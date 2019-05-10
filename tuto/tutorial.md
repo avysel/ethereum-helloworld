@@ -4,9 +4,8 @@ id: tuto-dapp-ethereum
 categories: ethereum
 environments: linux
 status: draft
-feedback link: http://nowhere
-analytics account: 0
-4/RgElMUq5TMSAgndOnxoY5oTQYXW8Rfl89ZQoWyOc4164d-eLyRQB4EQ
+feedback link: https://github.com/avysel/ethereum-helloworld
+
 
 # Développer avec Ethereum
 
@@ -111,17 +110,24 @@ Nous allons dans un premier temps installer un certain nombre d'outils :
 
 - Node.js : car le projet sera développé en Node.js :)
 
+```
+sudo apt-get install nodejs
+```
+
 - Ganache : une blockchain de test, qui s'exécute en local et fournit une interface visuelle pour voir ce qu'il s'y passe.
 
-https://truffleframework.com/ganache
+Téléchargez le fichier disponible ici [https://truffleframework.com/ganache](https://truffleframework.com/ganache)
 
-- Truffle : un outil permettant de compiler, tester et déployer des smart contracts sur une blockchain.
+- Truffle : un outil permettant de compiler, tester et déployer des smart contracts sur une blockchain.[https://truffleframework.com/truffle](https://truffleframework.com/truffle)
 
-https://truffleframework.com/truffle
+```  
+npm install truffle
+```
 
-- Web3.js : un framework javascript permettant d'interagir avec une blockchain.
-
-https://web3js.readthedocs.io/en/1.0/index.html
+- Web3.js : un framework javascript permettant d'interagir avec une blockchain.[https://web3js.readthedocs.io/en/1.0/index.html](https://web3js.readthedocs.io/en/1.0/index.html)
+```                
+npm install web3          
+```                
 
 Web3.js existe en version 0.20.X, qui est la version stable actuelle, et en version 1.0.X qui est encore en beta.
 La version 0.20 permet une utilisation directement intégrée à des pages web, dans un navigateur. Elle est plus simple d'utilisation, mais sera prochainement dépréciée.
@@ -129,6 +135,7 @@ La version 1.0.X, bien que beta, a un bon niveau de stabilité et est bien plus 
 
 Nous allons utiliser la version 1.0 pour ce tutorial.
 
+- EthereumJs-Tx : un module permettant de manipuler des transactions
 ```
 npm install ethereumjs-tx
 ```
