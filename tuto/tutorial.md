@@ -11,36 +11,37 @@ analytics account: 0
 
 Dans ce tutoriel, nous allons voir comment développer une application couplée à la blockchain Ethereum.
 
-Mise à jour : 06/05/2019
+Mise à jour : 10/05/2019
 
 ***
 
 **Sommaire**
-1. Introduction
-2. Le projet
-3. [Initialisation du projet](#1)
-4. [Premier smart contract](#2)
-5. [Test du smart contract](#3)
-6. [Déploiement du smart contract](#4)
-7. [Initialisation de l'application web](#5)
-8. [Modification de la valeur](#6)
-9. [Rendre la modification payante](#7)
-10. [Administrer le contract](#8)
-11. [Envoyer une transaction signée](#9)
-12. [Les événements](#10)
-13. [Ajouter un oracle](#11)
-14. [Tests automatiques](#12)
-15. [Debugguer un contrat](#13)
-16. [Focus sur l'utilisation du gas](#14)
-17. [Sécurité](#15)
-18. [Exercices](#16)
-19. [Ressources](#17)
+1. [Introduction](#1)
+2. [Le projet](#2)
+3. [Initialisation du projet](#3)
+4. [Premier smart contract](#4)
+5. [Test du smart contract](#5)
+6. [Déploiement du smart contract](#6)
+7. [Initialisation de l'application web](#7)
+8. [Modification de la valeur](#8)
+9. [Rendre la modification payante](#9)
+10. [Administrer le contract](#10)
+11. [Envoyer une transaction signée](#11)
+12. [Les événements](#12)
+13. [Ajouter un oracle](#13)
+14. [Tests automatiques](#14)
+15. [Debugguer un contrat](#15)
+16. [Focus sur l'utilisation du gas](#16)
+17. [Sécurité](#17)
+18. [Exercices](#18)
+19. [Ressources](#19)
 
 ***
 
+<a name="1"></a>
 ## 1. Introduction
 
-### Smart contracts
+### 1.1. Smart contracts
 Ethereum permet la création de **smart contracts**. Ce sont des programmes qui sont envoyés à tous les noeuds du réseau et dont on active des fonctionnalités au moyen de transactions.
 Ils vont donc s'exécuter sur tous les noeuds dès que ces derniers recevront la transaction correspondante.
 
@@ -51,7 +52,7 @@ https://solidity.readthedocs.io/en/latest/
 
 Il est ensuite possible de connecter une application traditionnelle à un smart contract.
 
-### Mise en garde
+### 1.2. Mise en garde
 
 Il faut garder à l'esprit que l'état de l'environnement d'exécution peut varier d'un noeud à l'autre. Par exemple, si un traitement nécessite l'envoi de plusieurs transactions, l'ordre de réception par chaque noeud du réseau sera aléatoire. La conception des smart contracts ne doit donc pas être dépendante de l'environnement.
 
@@ -59,14 +60,14 @@ Ensuite, comme tout élément stocké sur la blockchain, une fois validés, ils 
 
 Une mise à jour de smart contract équivaut au déploiement d'un nouveau smart contract. L'ancien restera toujours présent, avec ses données. Il pourra cependant être désactivé, mais ne sera jamais complètement supprimé.
 
-### DApp ?
+### 1.3. DApp ?
 
 Une DApp, ou **Decentralized Application**, application décentralisée, est une application déployée sur un réseau de façon uniforme et partagée, qui ne possède aucun élément central.
 
 Une application reposant uniquement sur des smart contracts déployés sur une blockchain est donc une DApp. La coupler à une application NodeJS ou autre, déployée sur un serveur, hors de la blockchain, revient à créer un Single Point Of Failure. De ce fait, il ne s'agit plus réellement d'une DApp.
 
 
-### Vous avez dit asynchrone ?
+### 1.4. Vous avez dit asynchrone ?
 
 Un des concepts important du développement d'application connectée à une blockchain est l'asynchronicité.
 En effet, l'envoi de données à une blockchain se fait au moyen de transactions, diffusées au reste du réseau. Ces transactions, en plus d'entrainer des coûts d'utilisation, sont asynchrones.
@@ -79,10 +80,10 @@ L'obtention du résultat, ou le simple fait de considérer une modification comm
 Dans notre projet en Node.js, cette asynchronicité sera mise en place au moyen de promesses. Les mots clés _Promise_, _async_, _await_ seront donc largement de la partie :).
 Si vous n'êtes pas familiers de ces concepts, [un petit détour par ici](https://javascript.info/async) vous sera utile.
 
-
+<a name="2"></a>
 ## 2. Le projet
 
-### Description du projet
+### 2.1. Description du projet
 
 Dans ce projet, nous allons créer un HelloWorld.
 
@@ -95,7 +96,7 @@ Le propriétaire du smart contract pourra alors récupérer quand il le souhaite
 Techniquement, nous aborderons la création, le test et le déploiement d'un smart contract. Puis la connection d'un application Node.js à un smart contract et l'envoi de transactions à celui-ci.
 
 
-### Environnement technique
+### 2.2. Environnement technique
 
 L'environnement d'exécution de ce tutorial se fera sous Linux, mais il est possible de trouver l'équivalent de chaque commande sous Windows ou Mac.
 
