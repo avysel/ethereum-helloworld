@@ -1,4 +1,13 @@
-# Comment développer une application Ethereum ?
+author: Alexandre Vanryssel
+summary: Développer avec Ethereum
+id: tuto-dapp-ethereum
+categories: ethereum
+environments: linux
+status: draft
+feedback link: http://nowhere
+analytics account: 0
+
+# Développer avec Ethereum
 
 Dans ce tutoriel, nous allons voir comment développer une application couplée à la blockchain Ethereum.
 
@@ -18,7 +27,7 @@ Il est ensuite possible de connecter une application traditionnelle à un smart 
 
 ## Mise en garde
 
-Il faut garder à l'esprit que l'état de l'environnement d'exécution peut varier d'un noeud à l'autre. Par exemple, selon qu'un autre transaction ait déjà été reçu ou pas encore par tel ou tel noeud. La conception des smart contracts ne doit donc pas être dépendante de l'environnement.
+Il faut garder à l'esprit que l'état de l'environnement d'exécution peut varier d'un noeud à l'autre. Par exemple, si un traitement nécessite l'envoi de plusieurs transactions, l'ordre de réception par chaque noeud du réseau sera aléatoire. La conception des smart contracts ne doit donc pas être dépendante de l'environnement.
 
 Ensuite, comme tout élément stocké sur la blockchain, une fois validés, ils sont immuables. C'est à dire qu'il est impossible de mettre à jour ou supprimer un smart contract. D'où l'importance de mettre l'accent sur la qualité lors des développement.
 
@@ -34,9 +43,9 @@ Une application reposant uniquement sur des smart contracts déployés sur une b
 ## Vous avez dit asynchrone ?
 
 Un des concepts important du développement d'application connectée à une blockchain est l'asynchronicité.
-En effet, l'envoi de données à une blockchain se fait au moyen de transactions. Ces transactions, en plus d'entrainer des coûts d'utilisation, sont asynchrones.
+En effet, l'envoi de données à une blockchain se fait au moyen de transactions, diffusées au reste du réseau. Ces transactions, en plus d'entrainer des coûts d'utilisation, sont asynchrones.
 
-Lorsqu'une transaction est envoyée, elle doit être validée par un des noeuds de la blockchain, ce qui peut prendre un temps variable.
+Lorsqu'une transaction est envoyée, elle doit être validée par un des noeuds de la blockchain et intégré à un bloc, communiqué à l'ensemble du réseau. Ce qui peut prendre un temps variable.
 Dans certains cas, il faut également attendre une confirmation afin d'être (presque) certain qu'elle ne sera pas remise en question par une chaine plus longue qui ne la prendrait pas en compte.
 
 L'obtention du résultat, ou le simple fait de considérer une modification comme effective, doit se faire dans ces conditions.
@@ -47,12 +56,12 @@ Si vous n'êtes pas familiers de ces concepts, [un petit détour par ici](https:
 
 ## Description du projet
 
-Dans ce projet, nous allons créer un simple HelloWorld.
+Dans ce projet, nous allons créer un HelloWorld.
 
-Dans un premier temps, il se composera d'un simple smart contract, contenant une propriété, le nom de la personne à saluer, aisni que deux fonctions permettant de mettre à jour ce nom et de le récupérer.
-Ensuite, nous créerons une applications Node.js qui affichera ce nom et proposera un formulaire pour le mettre à jour. Ces deux éléments seront liés aux fonctions du smart contract.
+Dans un premier temps, il se composera d'un simple smart contract, contenant une propriété, le nom de la personne à saluer, ainsi que deux méthodes permettant de mettre à jour ce nom et de le récupérer.
+Ensuite, nous créerons une applications Node.js qui affichera ce nom et proposera un formulaire pour le mettre à jour. Ces deux éléments seront liés aux méthodes du smart contract.
 
-Dans un seconds temps, nous transformerons notre HelloWorld en service payant. La mise à jour du nom impliquera le paiement d'un certain tarif.
+Dans un second temps, nous transformerons notre HelloWorld en service payant. La mise à jour du nom impliquera le paiement d'un certain prix.
 Le propriétaire du smart contract pourra alors récupérer quand il le souhaite l'intégralité des sommes que les utilisateurs auront payées.
 
 Techniquement, nous aborderons la création, le test et le déploiement d'un smart contract. Puis la connection d'un application Node.js à un smart contract et l'envoi de transactions à celui-ci.
@@ -127,23 +136,22 @@ Après une courte phase de téléchargement et d'initialisation, nous voyons app
  
 ```contracts``` : code des smart contracts
 
-```migrations``` : scripts permettant à Truffle de gérer les déploiements
+```migrations``` : scripts nécessaire à Truffle de effectuer les déploiements de contrats sur la blockchain.
 
 ```tests``` : scripts de tests unitaires des smart contracts
 
 ```truffle-config.js``` : fichier de configuration de Truffle
 
-Dans certains de ces répertoires, des fichiers ```*migration*``` on été créés. Ils sont nécessaires à Truffle pour les déploiements de contrats, il ne faut pas les supprimer.
 
 <a name="2"></a>
 ## 2. Premier smart contract
 
-Dans ```contracts```, créer un fichier Hello.sol. Y saisir le code suivant :
+Dans ```contracts```, créer un fichier PayableHello.sol. Y saisir le code suivant :
 
 ```
 pragma solidity ^0.5.0;
 
-contract Hello {
+contract PayableHello {
 
     string private name;
 
@@ -216,10 +224,10 @@ Il est possible de définir plusieurs réseaux, et de préciser dans la ligne de
 Dans le répertoire ```migrations``` dupliquez le fichier ```1_initial_migration.js``` en le nommant ```2_hello_migration.js```. Modifiez le contenu de ce nouveau fichier de cette façon :
 
 ```
-const Hello = artifacts.require("Hello");
+const PayableHello = artifacts.require("PayableHello");
 
 module.exports = function(deployer) {
-  deployer.deploy(Hello);
+  deployer.deploy(PayableHello);
 };
 ```
 
