@@ -2033,6 +2033,18 @@ Vous devriez obtenir un résultat de ce type :
 <a name="15"></a>
 ## 15. Debugger un contrat
 
+Truffle fourni un outil permettant de débuger une transaction envoyée à un smart contract :
+
+```
+truffle debug <txHash>
+```
+
+Ensuite, pour dérouler très simplement la façon dont la transaction s'est exécutée, appuyer sur **Entrée** pour passer à l'instruction suivante ou sur **v** pour afficher l'état des variables.
+
+D'autre commandes sont disponibles, voir l'exemple ci-dessous :
+
+![Truffle debug](images/15_truffle_debug.png)
+
 <a name="16"></a>
 ## 16. Focus sur l'utilisation du gaz
 
@@ -2071,7 +2083,7 @@ Il serait dommage de ne pas pouvoir récupérer les Ether que nous avons pu gén
 1) Ajouter un champ "From", pour afficher "Hello X, from Y" !
 
 2) Limiter le prix du changement de nom à 5 ETH. Tous les ETH supplémentaires seront rendus à l'émetteur.
-```
+```javascript
 contract PayableHello is owned {
 
 	...
@@ -2202,7 +2214,7 @@ async function renderIndex(res) {
 
 4) Créer un test qui valide que le withdraw fonctionne (balance contrat = 0, balance admin += balance contrat - gaz)
 
-```
+```javascript
 it("should withdraw contract balance", async () => {
 	let hello = await Hello.deployed();
 	let initialContractBalance = await web3.eth.getBalance(hello.address);
