@@ -362,7 +362,7 @@ Initialiser les valeurs
 
 **payablehello.js :**
 
-```
+```javascript
 var Web3 = require("web3");
 var fs = require('fs');
 var config = require("./config.js");
@@ -412,7 +412,7 @@ Nous allons maintenant nous connecter au contrat :
 
 **payablehello.js :**
 
-```
+```javascript
 /*
 * Load contract's methods with ABI
 */
@@ -435,7 +435,7 @@ L'objet **payableHello** sera donc notre objet d'accès au contrat.
 Nous pouvons initialiser notre template (on intègre Bootstrap pour faciliter la mise en forme) :
 
 **index.pug :**
-```
+```html
 doctype html
 html(lang='fr')
 	head
@@ -476,7 +476,7 @@ html(lang='fr')
 
 Et pour lier tout ça, notre contrôleur, **app.js :**
 
-```
+```javascript
 var http = require('http');
 var express = require('express');
 var bodyParser = require('body-parser');
@@ -561,7 +561,7 @@ Nous allons maintenant enrichir tout ça en récupérant le nom de la personne �
 
 **payablehello.js :**
 
-```
+```javascript
 /**
 * Read the name from smart contract
 */
@@ -576,7 +576,7 @@ On termine l'instruction avec **call()**, qui prend en paramètre les éléments
 
 On modifie la fonction renderIndex :
 
-```
+```javascript
 async function renderIndex(res) {
 
 	try {
@@ -657,7 +657,7 @@ Nous allons maintenant pouvoir chercher à modifier le nom.
 
 Commençons par créer le service
 
-```
+```javascript
 /*
 * Call change name function and wait for event
 * newName : the new name to set
@@ -716,7 +716,7 @@ Le traitement d'une transaction étant asynchrone, nous récupérons une Promise
 
 Puis modifions notre template : 
 
-```
+```html
 doctype html
 html(lang='fr')
 	head
@@ -786,7 +786,7 @@ On y ajoute un formulaire pour saisir le nouveau nom, ainsi qu'un bloc qui va af
 
 Le formulaire effectue un POST sur **/name**. Nous allons donc aussi modifier le contrôleur pour créer une route qui appelle le service créé précédemment.
 
-```
+```javascript
 /**
 * Update name
 */
@@ -843,7 +843,7 @@ Prochaine étape, nous allons maintenant rendre la modification du nom payante. 
 
 Tout d'abord, on modifie le contrat : 
 
-```
+```javascript
 pragma solidity ^0.5.0;
 
 contract PayableHello {
@@ -945,7 +945,7 @@ Lors de ces appels, il faut passer une valeur en Wei, or nous l'avons en Ethers.
 
 Nous ajoutons maintenant au template un champ dans le formulaire de modification de nom, afin que l'utilisateur saisisse le prix qu'il souhaite payer.
 
-```
+```html
 doctype html
 html(lang='fr')
 	head
@@ -1017,7 +1017,7 @@ html(lang='fr')
 
 Il ne reste plus qu'à modifier le contrôleur afin de prendre en compte ce nouvelle valeur transmise par le champ de formulaire.
 
-```
+```javascript
 /**
    * Update name
    */
@@ -1076,7 +1076,7 @@ Nous allons donc modifier le contrat pour :
 
 **PayableHello.sol :**
 
-```
+```javascript
 pragma solidity ^0.5.0;
 
 contract owned {
@@ -1149,7 +1149,7 @@ D'ailleurs, nous ajoutons aussi une méthode **withdraw** qui utilise ce modific
 Une fois le contrat modifié, nous allons créer un service pour permettre au propriétaire de récupérer ses Ethers :
 
 **payablehello.js :**
-```
+```javascript
 /**
 * Retreive contract balance. Only works for contract owner
 * withdrawAccount : the address to send ethers to
@@ -1195,7 +1195,7 @@ Maintenant modifions la page pour ajouter cette fonctionnalité :
 
 **index.pug :**
 
-```
+```html
 doctype html
 html(lang='fr')
 	head
@@ -1246,7 +1246,7 @@ Nous allons donc maintenant modifier le contrôleur pour ajouter cette nouvelle 
 
 **apps.js :**
 
-```
+```javascript
 /**
 * Withdraw contract balance
 */
@@ -1310,7 +1310,7 @@ Voici ce que nous allons faire :
 Pour créer d'autres comptes, vous pouvez afficher la liste des comptes de Ganache, et prendre tous les autres comptes autres que le premier. Les clés privées peut être obtenus en cliquant sur l'icône "clé", sur la droite de l'écran pour chaque compte.
 
 **config.js :**
-```
+```javascript
 const config = {
 
 	// blockchain node IPC IP and port
@@ -1350,7 +1350,7 @@ module.exports = config;
 **app.js :**
 
 On rajoute dans le contrôleur, à l'initialisation des données d'affichage, la liste des comptes.
-```
+```javascript
 displayData.accounts = config.accounts;
 ```
 
@@ -1358,7 +1358,7 @@ displayData.accounts = config.accounts;
 
 Et on modifie l'index pour afficher la liste des ces comptes au niveau du bouton de retrait de l'argent du contrat et de modification du nom.
 
-```
+```html
 doctype html
 html(lang='fr')
 	head
@@ -1450,7 +1450,7 @@ Maintenant, nous allons exploiter tout ça.
 
 Dans le contrôleur, nous allons prendre en compte ce nouveau champ de formulaire, dans **POST /name** et dans **POST /withdraw**.
 
-```
+```javascript
 /**
 * Update name
 */
@@ -1509,7 +1509,7 @@ Maintenant, créons ce service **sendRawTransaction** :
 
 **payablehello.js :**
 
-```
+```javascript
 ...
 var EthereumTx = require("ethereumjs-tx");
 ...
@@ -1625,7 +1625,7 @@ Tout d'abord, modifions le contrat pour créer l'événement.
 
 **PayableHello.sol :**
 
-```
+```javascript
 contract PayableHello is owned {
 
     string private name;
@@ -1669,7 +1669,7 @@ Ces événements ne servent pas à grand chose s'ils ne sont pas exploités. Nou
 
 **payablehello.js :**
 
-```
+```javascript
 /*
 * Get all NameChanged events data
 */
@@ -1825,7 +1825,7 @@ Tout d'abord, créons l'API. Ici, il s'agit juste de fournir un exemple simple p
 
 **api.js :**
 
-```
+```javascript
 /**
 * Simple API that provides a new string every minute
 */
@@ -1862,9 +1862,9 @@ npm install request
 ``` 
 juste avant, afin de pouvoir exploiter le module **request** qui nous facilitera la vie avec les requêtes HTTP vers l'API.
 
-**_oracle.js :_**
+**oracle.js :**
 
-```
+```javascript
 /*
 * Ethereum oracle example
 * Reads an API every 10 seconds, get different value each time and use PayableHello to update name with this value
@@ -1965,7 +1965,7 @@ Voici un exemple de test qui valide que lors de l'initialisation du contrat, le 
 
 **payablehello-test.js :**
 
-```
+```javascript
 const Hello = artifacts.require("PayableHello");
 
 contract("PayableHello", async accounts => {
@@ -1986,7 +1986,7 @@ Attention, les contrats de test doivent impérativement commencer par **Test** e
 
 **TestPayableHello.sol :**
 
-```
+```javascript
 pragma solidity ^0.5.0;
 
 import "truffle/Assert.sol";
@@ -2008,7 +2008,9 @@ contract TestPayableHello {
 
 **3_payablehello_migrations.js :**
 
-```
+A revoir ?
+
+```javascript
 const PayableHello = artifacts.require("PayableHello");
 const TestPayableHello = artifacts.require("TestPayableHello");
 
