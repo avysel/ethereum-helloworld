@@ -29,6 +29,7 @@ async function renderIndex(res) {
 		displayData.nodeInfo = await payableHello.getNodeInfo();
 		displayData.name = await payableHello.readName();
 		displayData.nameHistory = await payableHello.getNameChangedHistory();
+		displayData.withdrawHistory = await payableHello.getWithdrawHistory();
 	}
 	catch(error) {
 		console.error(error);

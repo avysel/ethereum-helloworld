@@ -292,7 +292,8 @@ exports.getWithdrawHistory = function() {
 		payableHello.getPastEvents("Withdraw", { fromBlock: 0, toBlock: 'latest' })
 			.then((events, error) => {
 				events.forEach(function(item, index, array) {
-				  eventsList.push({ ownerAddress:item.returnValues.ownerAddress, balance:item.returnValues.balance});
+					var valueInEth = web3.utils.fromWei(item.returnValues.balance.toString(), 'ether');
+					eventsList.push({ ownerAddress:item.returnValues.ownerAddress, balance:valueInEth});
 				});
 				resolve(eventsList);
 			});

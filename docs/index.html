@@ -110,9 +110,7 @@ contract PayableHello {
 
 </code></pre>
 <p>Etudions ce que nous venons d&#39;écrire.</p>
-<pre><code>pragma solidity ^0.5.0;
-</code></pre>
-<p>décrit la version du compilateur que nous utilisons. Solidity est encore un langage qui évolue beaucoup et pour lequel il risque d&#39;y avoir beaucoup d&#39;incompatibilités entre les versions tant qu&#39;il ne sera pas complètement stabilisé. Pouvoir choisir une version de compilateur permet donc de ne pas avoir à mettre à jour son code trop souvent. (Il est tout de même conseillé de le faire régulièrement pour bénéficier des améliorations de sécurité.)</p>
+<p><strong>pragma solidity ^0.5.0;</strong> : décrit la version du compilateur que nous utilisons. Solidity est encore un langage qui évolue beaucoup et pour lequel il risque d&#39;y avoir beaucoup d&#39;incompatibilités entre les versions tant qu&#39;il ne sera pas complètement stabilisé. Pouvoir choisir une version de compilateur permet donc de ne pas avoir à mettre à jour son code trop souvent. (Il est tout de même conseillé de le faire régulièrement pour bénéficier des améliorations de sécurité.)</p>
 <p>Ensuite nous déclarons le contrat en indiquant son nom et en lui créant un champ privé de type chaine de caractères.</p>
 <p>Ce contrat possède un constructeur, qui initialise son champ avec la valeur &#34;nobody&#34;, ainsi qu&#39;un getter et un setter pour modifier et accéder à ce champ.</p>
 <p>Notez l&#39;utilisation de certains mots clés :</p>
@@ -1701,8 +1699,8 @@ module.exports = function(deployer) {
       </google-codelab-step>
     
       <google-codelab-step label="18 Exercices" duration="0">
-        <h2 is-upgraded>Ajouter un champ &#34;From&#34;, pour afficher &#34;Hello X, from Y&#34; !</h2>
-<h2 is-upgraded>Limiter le prix du changement de nom à 5 ETH. Tous les ETH supplémentaires seront rendus à l&#39;émetteur.</h2>
+        <p>1) Ajouter un champ &#34;From&#34;, pour afficher &#34;Hello X, from Y&#34; !</p>
+<p>2) Limiter le prix du changement de nom à 5 ETH. Tous les ETH supplémentaires seront rendus à l&#39;émetteur.</p>
 <pre><code>contract PayableHello is owned {
 
 	...
@@ -1724,8 +1722,99 @@ module.exports = function(deployer) {
 
 }
 </code></pre>
-<h2 is-upgraded>Créer un événement pour les withdraw, et les afficher à l&#39;écran</h2>
-<h2 is-upgraded>Créer un test qui valide que le withdraw fonctionne (balance contrat = 0, balance admin += balance contrat - gaz)</h2>
+<p>3) Créer un événement pour les withdraw, et les afficher à l&#39;écran</p>
+<p><strong>PayableHello.sol</strong></p>
+<pre><code>contract PayableHello is owned {
+
+    string private name;
+
+	event NameChanged(string newName, address userAddress, uint value);
+	event Withdraw(address ownerAddress, uint balance);
+
+    constructor() public {
+        name = &#34;nobody&#34;;
+    }
+
+    function setName(string memory newName) public payable {
+    	require(msg.value &gt;= 2 ether, &#34;Pay 2 ETH or more&#34;);
+        name = newName;
+        emit NameChanged(newName, msg.sender, msg.value);
+    }
+
+    function getName() public view returns (string memory) {
+        return name;
+    }
+
+    function withdraw() public onlyOwner {
+    	uint balance = address(this).balance;
+		msg.sender.transfer(balance);
+		emit Withdraw(msg.sender, balance);
+    }
+
+    function() external payable {
+        revert();
+    }
+
+}
+</code></pre>
+<p><strong>payablehelo.js</strong></p>
+<pre><code>/*
+* Get all Withdraw events data
+*/
+exports.getWithdrawHistory = function() {
+	var eventsList = new Array();
+
+	return new Promise(function(resolve, reject) {
+
+		// get all emited events from first block to last block
+		payableHello.getPastEvents(&#34;Withdraw&#34;, { fromBlock: 0, toBlock: &#39;latest&#39; })
+			.then((events, error) =&gt; {
+				events.forEach(function(item, index, array) {
+					var valueInEth = web3.utils.fromWei(item.returnValues.balance.toString(), &#39;ether&#39;);
+					eventsList.push({ ownerAddress:item.returnValues.ownerAddress, balance:valueInEth});
+				});
+				resolve(eventsList);
+			});
+	});
+}
+</code></pre>
+<p><strong>app.js</strong></p>
+<pre><code>async function renderIndex(res) {
+
+	try {
+		displayData.nodeInfo = await payableHello.getNodeInfo();
+		displayData.name = await payableHello.readName();
+		displayData.nameHistory = await payableHello.getNameChangedHistory();
+		displayData.withdrawHistory = await payableHello.getWithdrawHistory();
+	}
+	catch(error) {
+		console.error(error);
+	}
+
+	res.render(&#39;index&#39;, displayData);
+}
+</code></pre>
+<p><strong>index.pug</strong></p>
+<pre><code>		...
+		
+		.row
+			.col-md-6
+				div.card
+					h3.card-header Names history
+					div.card-body
+						ul
+						each item in nameHistory
+							li= &#39;Block &#39;+item.block +&#39; -&gt; &#39;+item.name + &#39; (&#39;+item.userAddress+&#39;, &#39;+item.value+&#39;)&#39;
+			.col-md-6
+				div.card
+					h3.card-header Withdraws history
+					div.card-body
+						ul
+						each item in withdrawHistory
+							li= &#39;Transfer &#39;+item.balance +&#39; to &#39;+item.ownerAddress
+
+</code></pre>
+<p>4) Créer un test qui valide que le withdraw fonctionne (balance contrat = 0, balance admin += balance contrat - gaz)</p>
 <pre><code>it(&#34;should withdraw contract balance&#34;, async () =&gt; {
 	let hello = await Hello.deployed();
 	let initialContractBalance = await web3.eth.getBalance(hello.address);

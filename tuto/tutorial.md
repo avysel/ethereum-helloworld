@@ -174,10 +174,7 @@ contract PayableHello {
 
 Etudions ce que nous venons d'écrire.
 
-```
-pragma solidity ^0.5.0;
-``` 
-décrit la version du compilateur que nous utilisons. Solidity est encore un langage qui évolue beaucoup et pour lequel il risque d'y avoir beaucoup d'incompatibilités entre les versions tant qu'il ne sera pas complètement stabilisé. Pouvoir choisir une version de compilateur permet donc de ne pas avoir à mettre à jour son code trop souvent. (Il est tout de même conseillé de le faire régulièrement pour bénéficier des améliorations de sécurité.)
+**pragma solidity ^0.5.0;** : décrit la version du compilateur que nous utilisons. Solidity est encore un langage qui évolue beaucoup et pour lequel il risque d'y avoir beaucoup d'incompatibilités entre les versions tant qu'il ne sera pas complètement stabilisé. Pouvoir choisir une version de compilateur permet donc de ne pas avoir à mettre à jour son code trop souvent. (Il est tout de même conseillé de le faire régulièrement pour bénéficier des améliorations de sécurité.)
 
 Ensuite nous déclarons le contrat en indiquant son nom et en lui créant un champ privé de type chaine de caractères.
 
@@ -2071,10 +2068,9 @@ Il serait dommage de ne pas pouvoir récupérer les Ether que nous avons pu gén
 <a name="18"></a>
 ## 18 Exercices
 
+1) Ajouter un champ "From", pour afficher "Hello X, from Y" !
 
-### Ajouter un champ "From", pour afficher "Hello X, from Y" !
-
-### Limiter le prix du changement de nom à 5 ETH. Tous les ETH supplémentaires seront rendus à l'émetteur.
+2) Limiter le prix du changement de nom à 5 ETH. Tous les ETH supplémentaires seront rendus à l'émetteur.
 ```
 contract PayableHello is owned {
 
@@ -2098,9 +2094,113 @@ contract PayableHello is owned {
 }
 ```
 
-### Créer un événement pour les withdraw, et les afficher à l'écran
+3) Créer un événement pour les withdraw, et les afficher à l'écran
 
-### Créer un test qui valide que le withdraw fonctionne (balance contrat = 0, balance admin += balance contrat - gaz)
+**PayableHello.sol**
+
+```javascript
+contract PayableHello is owned {
+
+    string private name;
+
+	event NameChanged(string newName, address userAddress, uint value);
+	event Withdraw(address ownerAddress, uint balance);
+
+    constructor() public {
+        name = "nobody";
+    }
+
+    function setName(string memory newName) public payable {
+    	require(msg.value >= 2 ether, "Pay 2 ETH or more");
+        name = newName;
+        emit NameChanged(newName, msg.sender, msg.value);
+    }
+
+    function getName() public view returns (string memory) {
+        return name;
+    }
+
+    function withdraw() public onlyOwner {
+    	uint balance = address(this).balance;
+		msg.sender.transfer(balance);
+		emit Withdraw(msg.sender, balance);
+    }
+
+    function() external payable {
+        revert();
+    }
+
+}
+```
+
+**payablehelo.js**
+
+```javascript
+/*
+* Get all Withdraw events data
+*/
+exports.getWithdrawHistory = function() {
+	var eventsList = new Array();
+
+	return new Promise(function(resolve, reject) {
+
+		// get all emited events from first block to last block
+		payableHello.getPastEvents("Withdraw", { fromBlock: 0, toBlock: 'latest' })
+			.then((events, error) => {
+				events.forEach(function(item, index, array) {
+					var valueInEth = web3.utils.fromWei(item.returnValues.balance.toString(), 'ether');
+					eventsList.push({ ownerAddress:item.returnValues.ownerAddress, balance:valueInEth});
+				});
+				resolve(eventsList);
+			});
+	});
+}
+```
+
+**app.js**
+
+```javascript
+async function renderIndex(res) {
+
+	try {
+		displayData.nodeInfo = await payableHello.getNodeInfo();
+		displayData.name = await payableHello.readName();
+		displayData.nameHistory = await payableHello.getNameChangedHistory();
+		displayData.withdrawHistory = await payableHello.getWithdrawHistory();
+	}
+	catch(error) {
+		console.error(error);
+	}
+
+	res.render('index', displayData);
+}
+```
+
+**index.pug**
+
+```html
+
+		...
+		
+		.row
+			.col-md-6
+				div.card
+					h3.card-header Names history
+					div.card-body
+						ul
+						each item in nameHistory
+							li= 'Block '+item.block +' -> '+item.name + ' ('+item.userAddress+', '+item.value+')'
+			.col-md-6
+				div.card
+					h3.card-header Withdraws history
+					div.card-body
+						ul
+						each item in withdrawHistory
+							li= 'Transfer '+item.balance +' to '+item.ownerAddress
+
+```
+
+4) Créer un test qui valide que le withdraw fonctionne (balance contrat = 0, balance admin += balance contrat - gaz)
 
 ```
 it("should withdraw contract balance", async () => {

@@ -79,10 +79,17 @@ html(lang='fr')
 						div#errorMessage #{errorMessage}
 
 		.row
-			.col-md-12
+			.col-md-6
 				div.card
 					h3.card-header Names history
 					div.card-body
 						ul
 						each item in nameHistory
 							li= 'Block '+item.block +' -> '+item.name + ' ('+item.userAddress+', '+item.value+')'
+			.col-md-6
+				div.card
+					h3.card-header Withdraws history
+					div.card-body
+						ul
+						each item in withdrawHistory
+							li= 'Transfer '+item.balance +' to '+item.ownerAddress
