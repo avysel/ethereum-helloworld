@@ -1,5 +1,5 @@
 /**
-* Simple API that can returns a new string every second
+* Simple API that provides a new string every minute
 */
 
 var express = require('express');

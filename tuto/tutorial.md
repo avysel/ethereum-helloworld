@@ -1808,7 +1808,7 @@ Maintenant, il suffit de redéployer le contrat, de faire quelques changements d
 Pour l'instant, nous avons vu comment développer une application décentralisée reposant uniquement sur un smart contract, comment coupler un smart contract sur une application "traditionnelle". Maintenant, nous allons voir les oracles.
 Un oracle est un terme qui désigne une façon pour une DApp (smart contract seulement) d'interagir avec l'extérieur.
 
-Cependant, derrière ce nom, aucun concept nouveau ni magique ne se cache. Il ne s'agit ni plus ni moins d'une application qui interroge régulièrement ou écoute une source de données, et envoie des transactions au smart contract dans certaines conditions.
+Cependant, derrière ce nom, aucun concept nouveau ni magique ne se cache. Il ne s'agit ni plus ni moins que d'une application qui interroge régulièrement ou écoute une source de données, et envoie des transactions au smart contract dans certaines conditions.
 
 Nous allons mettre en place l'exemple suivant :
 - Une API génère un nouveau nom toutes les minutes
@@ -1820,7 +1820,7 @@ Tout d'abord, créons l'API. Ici, il s'agit juste de fournir un exemple simple p
 
 ```
 /**
-* Simple API that can returns a new string every second
+* Simple API that provides a new string every minute
 */
 
 var express = require('express');
@@ -1851,7 +1851,7 @@ Maintenant, créons l'oracle proprement dit :
 
 Faisons un petit 
 ```
-npm instal request
+npm install request
 ``` 
 juste avant, afin de pouvoir exploiter le module **request** qui nous facilitera la vie avec les requêtes HTTP vers l'API.
 
@@ -1920,7 +1920,7 @@ node app.js
 node api.js
 ```
 
-3. Dans un nouveau termine, lancez l'oracle
+3. Dans un nouveau terminal, lancez l'oracle
 ```
 node oracle.js
 ```
@@ -2047,7 +2047,7 @@ Dans notre projet, nous avons fait quelques tests avec des clés privées mises 
 
 Une des erreurs de programmation d'un smart contract les plus dangereuses est de créer sans le savoir une "faille de ré-entrée".
 
-Vous trouvez des explications et un exemple ici :
+Vous trouverez des explications et un exemple ici :
 
 https://github.com/avysel/ethereum-reentrancy
 
@@ -2062,13 +2062,58 @@ Il serait dommage de ne pas pouvoir récupérer les Ether que nous avons pu gén
 <a name="18"></a>
 ## 18 Exercices
 
-- Ajouter un champ "From", pour afficher "Hello X, from Y" !
 
-- Limiter le prix du changement de nom à 5 ETH. Tous les ETH supplémentaires seront rendus à l'émetteur.
+### Ajouter un champ "From", pour afficher "Hello X, from Y" !
 
-- Créer un événement pour les withdraw, et les afficher à l'écran
+### Limiter le prix du changement de nom à 5 ETH. Tous les ETH supplémentaires seront rendus à l'émetteur.
+```
+contract PayableHello is owned {
 
-- Créer un test qui valide que le withdraw fonctionne (balance contrat = 0, balance admin += balance contrat - gaz)
+	...
+
+    function setName(string memory newName) public payable {
+    	require(msg.value >= 2 ether, "Pay 2 ETH or more");
+    	uint256 purchaseExcess = 0;
+    	
+    	if(msg.value > 5 ether) {
+    		purchaseExcess = (msg.value - 5 ether);
+    		msg.sender.transfer(purchaseExcess);
+    	}
+    	
+        name = newName;
+        emit NameChanged(newName, msg.sender, (msg.value-purchaseExcess));
+    }
+
+	...
+
+}
+```
+
+### Créer un événement pour les withdraw, et les afficher à l'écran
+
+### Créer un test qui valide que le withdraw fonctionne (balance contrat = 0, balance admin += balance contrat - gaz)
+
+```
+it("should withdraw contract balance", async () => {
+	let hello = await Hello.deployed();
+	let initialContractBalance = await web3.eth.getBalance(hello.address);
+	let initialUserBalance = await web3.eth.getBalance(accounts[0]);
+
+	let gas = await hello.withdraw.estimateGas({ from: accounts[0], gas: 4000000 }	);
+	let receipt = await hello.withdraw.sendTransaction( { from: accounts[0], gas: gas*2 });
+
+	let gasUsed = receipt.receipt.gasUsed;
+	let tx = await web3.eth.getTransaction(receipt.tx);
+	let gasPrice = tx.gasPrice;
+	let txPrice = (gasPrice * gasUsed);
+
+	let finalContractBalance = await web3.eth.getBalance(hello.address);
+	let finalUserBalance = await web3.eth.getBalance(accounts[0]);
+
+	assert.equal(finalContractBalance, 0,"contract balance is not 0");
+	assert.equal(t(finalUserBalance), t(parseInt(initialContractBalance,10) + parseInt(initialUserBalance,10) - parseInt(txPrice,10)) ,"user balance is not initial balance + contract balance - tx price");
+});
+```
 
 <a name="19"></a>
 ## 19 Ressources

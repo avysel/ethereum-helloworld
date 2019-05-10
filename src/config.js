@@ -12,7 +12,7 @@ const config = {
 	abiFile:"../build/contracts/PayableHello.json",
 
 	// address of deployed contract on blockchain
-	payableHelloContractAddress:"0x54d63D7116965745c5262cC66193Fe99a0b26645",
+	payableHelloContractAddress:"0x563bf33faCd7504D9d290deF3ab80De5D21d183C",
 
 	accounts: [
 		{

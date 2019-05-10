@@ -89,23 +89,23 @@ exports.updateName = async function(newName, price) {
 		payableHello.methods.setName(newName).send({from: config.account, gas: gasAmount, value: web3.utils.toWei(price, "ether")})
 		.on('transactionHash', (hash) => {
 				// when tx hash is known
-			   console.log("tx hash : "+hash);
+			   //console.log("tx hash : "+hash);
 			   result.txHash = hash;
 		   })
 		   .on('receipt', (receipt) => {
 		   		// when receipt is created
-			   console.log("receipt");
+			   //console.log("receipt");
 		   })
 		   .on('confirmation', (confirmationNumber, receipt) => {
 		   		// when tx is confirmed
-			   console.log("confirmation");
-			   console.log(receipt);
+			   //console.log("confirmation");
+			   //console.log(receipt);
 			   result.blockNumber = receipt.blockNumber;
 			   resolve(result);
 		   })
 		   .on('error',(error) => {
-				console.error("promiseSetName on error");
-				console.error(error);
+				//console.error("promiseSetName on error");
+				//console.error(error);
 				reject(error);
 		   });
 	}); // end of promiseSetName, result to return
@@ -174,20 +174,20 @@ exports.sendRawTransaction = async function(newName, price, address) {
 		// send raw tx
 		web3.eth.sendSignedTransaction('0x' + serializedTx.toString('hex'))
 		.on('transactionHash', (hash) => {
-			   console.log("tx hash : "+hash);
+			  // console.log("tx hash : "+hash);
 			   result.txHash = hash;
 		   })
 		   .on('receipt', (receipt) => {
-			   console.log("receipt");
+			   //console.log("receipt");
 		   })
 		   .on('confirmation', (confirmationNumber, receipt) => {
-			   console.log("confirmation");
-			   console.log(receipt);
+			   //console.log("confirmation");
+			   //console.log(receipt);
 			   result.blockNumber = receipt.blockNumber;
 			   resolve(result);
 		   })
 		   .on('error',(error) => {
-				console.error("promiseSendRawTx on error : ");
+				//console.error("promiseSendRawTx on error : ");
 				console.error(error);
 				reject(error);
 		   });
@@ -217,20 +217,20 @@ exports.withdraw = async function(withdrawAccount) {
 		// send tx to withdraw function
 		payableHello.methods.withdraw().send({from: withdrawAccount, gas: gasAmount*2})
 		.on('transactionHash', (hash) => {
-			   console.log("tx hash : "+hash);
+			   //console.log("tx hash : "+hash);
 			   result.txHash = hash;
 		   })
 		   .on('receipt', (receipt) => {
-			   console.log("receipt");
+			   //console.log("receipt");
 		   })
 		   .on('confirmation', (confirmationNumber, receipt) => {
-			   console.log("confirmation");
+			   //console.log("confirmation");
 			  // console.log(stringify(receipt));
 			   result.blockNumber = receipt.blockNumber;
 			   resolve(result);
 		   })
 		   .on('error',(error) => {
-				console.error(error);
+				//console.error(error);
 				result.errorMessage = error;
 				reject(result);
 		   });
