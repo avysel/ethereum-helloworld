@@ -58,7 +58,7 @@
         <h2 is-upgraded>2.1. Environnement</h2>
 <p>L&#39;environnement d&#39;exécution de ce tutorial se fera sous Linux, mais il est possible de trouver l&#39;équivalent de chaque commande sous Windows ou Mac.</p>
 <p>Ce tutorial sera basé sur Node.js. Il s&#39;agit simplement de la technologie la plus répandue pour travailler avec les smart contracts, celle pour laquelle on trouve le plus d&#39;outils et de frameworks disponibles.<br>Mais il est possible de trouver également des frameworks Java, Python ... qui fonctionnent de la même façon.</p>
-<p>Créez votre répartoire de travail, et positionnez vous dedans.</p>
+<p>Créez votre répertoire de travail, et positionnez vous dedans.</p>
 <p>Par exemple :</p>
 <pre><code>mkdir ethereum-helloworld
 
@@ -193,7 +193,13 @@ contract PayableHello {
       </google-codelab-step>
     
       <google-codelab-step label="6. Déploiement du smart contract" duration="0">
-        <p>Tout d&#39;abord, lancez Ganache (ou tout autre client Ethereum).</p>
+        <h2 is-upgraded>6.1. Lancement de Ganache</h2>
+<p>Tout d&#39;abord, lancez Ganache (ou tout autre client Ethereum).</p>
+<p>Vous obtenez une liste de comptes, initialisés avec 100 ETH chacun.</p>
+<p class="image-container"><img alt="Ganache" src="img/3f5af41b735be9d4.png"></p>
+<p>Dans son mode par défaut, Ganache ne mine de nouveaux blocs que lorsqu&#39;il y a des transactions. Dans ce cas, la validation d&#39;une transaction se fait instantanément. Il est aussi possible de miner automatiquement des blocs, parfois vides, à interval régulier.<br>C&#39;est ce que nous allons faire, pour nous rapprocher du comportement réel, avec un délai de validation de chaque transaction.</p>
+<p>Cliquez sur la roue crantée en haut à droite de l&#39;écran, puis sur &#34;Server&#34;. Décochez &#34;Automine&#34;, et indiquez &#34;10&#34; dans le champ qui apparait. Ainsi, pour la suite de notre exemple, pour chaque transaction, nous devrons attentre entre et 0 et 10 secondes qu&#39;elle soit validée.</p>
+<h2 is-upgraded>6.2. Connexion de Truffle à Ganache</h2>
 <p>Nous allons modifier le fichier <strong>truffle-config.js</strong> pour indiquer à Truffle les paramètres de connexion :</p>
 <pre><code>module.exports = {
   networks: {

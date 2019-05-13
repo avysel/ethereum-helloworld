@@ -108,7 +108,7 @@ L'environnement d'exécution de ce tutorial se fera sous Linux, mais il est poss
 Ce tutorial sera basé sur Node.js. Il s'agit simplement de la technologie la plus répandue pour travailler avec les smart contracts, celle pour laquelle on trouve le plus d'outils et de frameworks disponibles.
 Mais il est possible de trouver également des frameworks Java, Python ... qui fonctionnent de la même façon.
 
-Créez votre répartoire de travail, et positionnez vous dedans.
+Créez votre répertoire de travail, et positionnez vous dedans.
 
 Par exemple : 
 
@@ -316,7 +316,20 @@ Avant de déployer notre smart contract, nous allons le tester en utilisant Remi
 <a name="6"></a>
 ## 6. Déploiement du smart contract
 
+### 6.1. Lancement de Ganache
 Tout d'abord, lancez Ganache (ou tout autre client Ethereum).
+
+Vous obtenez une liste de comptes, initialisés avec 100 ETH chacun.
+
+![Ganache](images/18_ganache.png)
+
+Dans son mode par défaut, Ganache ne mine de nouveaux blocs que lorsqu'il y a des transactions. Dans ce cas, la validation d'une transaction se fait instantanément. Il est aussi possible de miner automatiquement des blocs, parfois vides, à interval régulier.
+C'est ce que nous allons faire, pour nous rapprocher du comportement réel, avec un délai de validation de chaque transaction.
+
+Cliquez sur la roue crantée en haut à droite de l'écran, puis sur "Server". Décochez "Automine", et indiquez "10" dans le champ qui apparait. Ainsi, pour la suite de notre exemple, pour chaque transaction, nous devrons attentre entre et 0 et 10 secondes qu'elle soit validée.
+
+
+### 6.2. Connexion de Truffle à Ganache
 
 Nous allons modifier le fichier **truffle-config.js** pour indiquer à Truffle les paramètres de connexion :
 
