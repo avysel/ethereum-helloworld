@@ -11,14 +11,14 @@ feedback link: https://github.com/avysel/ethereum-helloworld
 
 Dans ce tutoriel, nous allons voir comment développer une application connectée à la blockchain Ethereum.
 
-Mise à jour : 10/05/2019
+Mise à jour : 13/05/2019
 
 ***
 
 **Sommaire :**
 1. [Introduction](#1)
-2. [Le projet](#2)
-3. [Initialisation du projet](#3)
+2. [Installation de l'environnement technique](#2)
+3. [Etat des lieux](#3)
 4. [Premier smart contract](#4)
 5. [Test du smart contract](#5)
 6. [Déploiement du smart contract](#6)
@@ -41,7 +41,20 @@ Mise à jour : 10/05/2019
 
 ## 1. Introduction<a name="1"></a>
 
-### 1.1. Smart contracts
+### 1.1. Description du projet
+
+Dans ce projet, nous allons créer un HelloWorld.
+
+Dans un premier temps, il se composera d'un simple smart contract, contenant une propriété, le nom de la personne à saluer, ainsi que deux méthodes permettant de mettre à jour ce nom et de le récupérer.
+Ensuite, nous créerons une applications Node.js qui affichera ce nom et proposera un formulaire pour le mettre à jour. Ces deux éléments seront liés aux méthodes du smart contract.
+
+Dans un second temps, nous transformerons notre HelloWorld en service payant. La mise à jour du nom impliquera le paiement d'un certain prix.
+Le propriétaire du smart contract pourra alors récupérer quand il le souhaite l'intégralité des sommes que les utilisateurs auront payées.
+
+Techniquement, nous aborderons la création, le test et le déploiement d'un smart contract. Puis la connection d'un application Node.js à un smart contract et l'envoi de transactions à celui-ci.
+
+
+### 1.2. Smart contracts
 Ethereum permet la création de **smart contracts**. Ce sont des programmes qui sont envoyés à tous les noeuds du réseau et dont on active des fonctionnalités au moyen de transactions.
 Ils vont donc s'exécuter sur tous les noeuds dès que ces derniers recevront la transaction correspondante.
 
@@ -52,19 +65,12 @@ La documentation officielle du langage est disponible ici :
 
 Il est ensuite possible de connecter une application traditionnelle à un smart contract.
 
-### 1.2. Mise en garde
-
-Il faut garder à l'esprit que l'état de l'environnement d'exécution peut varier d'un noeud à l'autre. Par exemple, si un traitement nécessite l'envoi de plusieurs transactions, l'ordre de réception par chaque noeud du réseau sera aléatoire. La conception des smart contracts ne doit donc pas être dépendante de l'environnement.
-
-Ensuite, comme tout élément stocké sur la blockchain, une fois validés, ils sont immuables. C'est à dire qu'il est impossible de mettre à jour ou supprimer un smart contract. D'où l'importance de mettre l'accent sur la qualité lors des développement.
-
-Une mise à jour de smart contract équivaut au déploiement d'un nouveau smart contract. L'ancien restera toujours présent, avec ses données. Il pourra cependant être désactivé, mais ne sera jamais complètement supprimé.
 
 ### 1.3. DApp ?
 
 Une DApp, ou **Decentralized Application**, application décentralisée, est une application déployée sur un réseau de façon uniforme et partagée, qui ne possède aucun élément central.
 
-Une application reposant uniquement sur des smart contracts déployés sur une blockchain est donc une DApp. La coupler à une application NodeJS ou autre, déployée sur un serveur, hors de la blockchain, revient à créer un Single Point Of Failure. De ce fait, il ne s'agit plus réellement d'une DApp.
+Une application reposant uniquement sur des smart contracts déployés sur une blockchain est donc une DApp. La coupler à une application NodeJS ou autre, déployée sur un serveur, hors de la blockchain, revient à créer un élément centralisé, voire un SPOF (single point of failure). De ce fait, il ne s'agit plus réellement d'une DApp.
 
 
 ### 1.4. Vous avez dit asynchrone ?
@@ -81,31 +87,37 @@ Dans notre projet en Node.js, cette asynchronicité sera mise en place au moyen 
 Si vous n'êtes pas familiers de ces concepts, [un petit détour par ici](https://javascript.info/async) vous sera utile.
 
 
+### 1.5. Mise en garde
+
+Il faut garder à l'esprit que l'état de l'environnement d'exécution peut varier d'un noeud à l'autre. Par exemple, si un traitement nécessite l'envoi de plusieurs transactions, l'ordre de réception par chaque noeud du réseau sera aléatoire. La conception des smart contracts ne doit donc pas être dépendante de l'environnement.
+
+Ensuite, comme tout élément stocké sur la blockchain, une fois validés, ils sont immuables. C'est à dire qu'il est impossible de mettre à jour ou supprimer un smart contract. D'où l'importance de mettre l'accent sur la qualité lors des développement.
+
+Une mise à jour de smart contract équivaut au déploiement d'un nouveau smart contract. L'ancien restera toujours présent, avec ses données. Il pourra cependant être désactivé, mais ne sera jamais complètement supprimé.
 
 
 
-## 2. Le projet<a name="2"></a>
 
-### 2.1. Description du projet
+## 2. Installation de l'environnement technique<a name="2"></a>
 
-Dans ce projet, nous allons créer un HelloWorld.
 
-Dans un premier temps, il se composera d'un simple smart contract, contenant une propriété, le nom de la personne à saluer, ainsi que deux méthodes permettant de mettre à jour ce nom et de le récupérer.
-Ensuite, nous créerons une applications Node.js qui affichera ce nom et proposera un formulaire pour le mettre à jour. Ces deux éléments seront liés aux méthodes du smart contract.
-
-Dans un second temps, nous transformerons notre HelloWorld en service payant. La mise à jour du nom impliquera le paiement d'un certain prix.
-Le propriétaire du smart contract pourra alors récupérer quand il le souhaite l'intégralité des sommes que les utilisateurs auront payées.
-
-Techniquement, nous aborderons la création, le test et le déploiement d'un smart contract. Puis la connection d'un application Node.js à un smart contract et l'envoi de transactions à celui-ci.
-
-### 2.2. Environnement technique
+### 2.1. Environnement
 
 L'environnement d'exécution de ce tutorial se fera sous Linux, mais il est possible de trouver l'équivalent de chaque commande sous Windows ou Mac.
 
 Ce tutorial sera basé sur Node.js. Il s'agit simplement de la technologie la plus répandue pour travailler avec les smart contracts, celle pour laquelle on trouve le plus d'outils et de frameworks disponibles.
 Mais il est possible de trouver également des frameworks Java, Python ... qui fonctionnent de la même façon.
 
-Nous allons dans un premier temps installer un certain nombre d'outils :
+Créez votre répartoire de travail, et positionnez vous dedans.
+
+Par exemple : 
+
+```
+mkdir ethereum-helloworld
+
+cd ethereum-helloworld
+
+```
 
 #### Node.js
 Car le projet sera développé en Node.js :)
@@ -114,22 +126,25 @@ Car le projet sera développé en Node.js :)
 sudo apt-get install nodejs
 ```
 
-#### Ganache
-Une blockchain de test, qui s'exécute en local et fournit une interface visuelle pour voir ce qu'il s'y passe.
+### 2.2. Outils et frameworks blockchain
 
-Téléchargez le fichier disponible ici [https://truffleframework.com/ganache](https://truffleframework.com/ganache)
+#### Ganache
+Ganache simule une blockchain Ethereum de test, qui s'exécute en local et fournit une interface visuelle pour voir ce qu'il s'y passe.
+
+Téléchargez et exécutez le fichier disponible ici [https://truffleframework.com/ganache](https://truffleframework.com/ganache)
+
 
 #### Truffle
-Un outil permettant de compiler, tester et déployer des smart contracts sur une blockchain.[https://truffleframework.com/truffle](https://truffleframework.com/truffle)
+Un outil permettant de compiler, tester et déployer des smart contracts sur une blockchain.
 
 ```  
 npm install truffle
 ```
 
+[https://truffleframework.com/truffle](https://truffleframework.com/truffle)
 
-## 3. Initialisation du projet<a name="3"></a>
 
-Dans un terminal, positionnez vous dans votre répertoire de travail, et lancez la commande suivante :
+Une fois installé, nous devons l'initialiser :
 
  ```
  truffle init
@@ -144,6 +159,82 @@ Après une courte phase de téléchargement et d'initialisation, nous voyons app
 **tests** : scripts de tests unitaires des smart contracts
 
 **truffle-config.js** : fichier de configuration de Truffle
+
+
+#### Web3.js
+Un framework javascript permettant d'interagir avec une blockchain.
+```                
+npm install web3          
+```                
+
+Web3.js existe en version 0.20.X, qui est la version stable actuelle, et en version 1.0.X qui est encore en beta.
+La version 0.20 permet une utilisation directement intégrée à des pages web, dans un navigateur. Elle est plus simple d'utilisation, mais sera prochainement dépréciée.
+La version 1.0.X, bien que beta, a un bon niveau de stabilité et est bien plus complète. Cependant, elle impose un fonctionnement côté serveur, tel que Node.js.
+
+Nous allons utiliser la version 1.0 pour ce tutorial.
+
+[https://web3js.readthedocs.io/en/1.0/index.html](https://web3js.readthedocs.io/en/1.0/index.html)
+
+
+#### EthereumJs-Tx
+Un module permettant de manipuler des transactions
+```
+npm install ethereumjs-tx
+```
+[https://github.com/ethereumjs/ethereumjs-tx](https://github.com/ethereumjs/ethereumjs-tx)
+
+
+
+
+### 2.3. Application web
+
+
+#### Création des fichiers
+
+Nous allons initialiser une application web, basée sur Node.js, utilisant les framework Express pour MVC et Pug pour les templates HTML.
+Dans un premier temps, nous allons créer une simple page d'index qui affiche des informations sur le noeud de blockchain auquel nous sommes connectés.
+
+Nous allons créer plusieurs répertoires et fichiers :
+- **src/** : pour contenir les sources de notre application web
+- **src/views** : pour les templates des écrans
+- **src/views/index.pug** : le template de l'index
+- **src/app.js** : le contrôleur de l'application
+- **src/payablehello.js** : les services de connexion à la blockchain
+- **src/config.js** : la configuration de notre application
+
+#### Initialisation
+
+Placez-vous dans le répertoire **src** et initialisez le projet Node.js avec la commande
+
+```
+npm init
+```
+
+Saisissez les quelques informations demandées pour initialiser le projet.
+
+Nous allons maintenant installer quelques modules pour faciliter la  création de l'application.
+
+#### Pug
+Un moteur de templates Node.js pour nous aider à générer la page HTML de rendu
+```
+npm install pug
+```
+
+#### Express
+Un module MVC Node.js
+```
+npm install express
+```
+
+## 3. Etat des lieux
+
+Arrivés à ce point, vous devez avoir cette aborescence :
+
+
+Vous l'avez ?
+Alors allons-y !
+
+
 
 ## 4. Premier smart contract<a name="4"></a>
 
@@ -265,60 +356,7 @@ Il n'est pas nécessaire d'effectuer un **truffle compile** à chaque fois, le *
 <a name="7"></a>
 ## 7. Application web
 
-### 7.1. Création des fichiers
 
-Nous allons initialiser une application web, basée sur Node.js, utilisant les framework Express pour MVC et Pug pour les templates HTML.
-Dans un premier temps, nous allons créer une simple page d'index qui affiche des informations sur le noeud de blockchain auquel nous sommes connectés.
-
-Nous allons créer plusieurs répertoires et fichiers :
-- **src/** : pour contenir les sources de notre application web
-- **src/views** : pour les templates des écrans
-- **src/views/index.pug** : le template de l'index
-- **src/app.js** : le contrôleur de l'application
-- **src/payablehello.js** : les services de connexion à la blockchain
-- **src/config.js** : la configuration de notre application
-
-### 7.2. Installation des modules
-
-Placez-vous dans le répertoire **src** et initialisez le projet Node.js avec la commande
-
-```
-npm init
-```
-
-Saisissez les quelques informations demandées pour initialiser le projet.
-
-Nous allons maintenant installer les packages nécessaires.
-
-#### Web3.js
-Un framework javascript permettant d'interagir avec une blockchain.[https://web3js.readthedocs.io/en/1.0/index.html](https://web3js.readthedocs.io/en/1.0/index.html)
-```                
-npm install web3          
-```                
-
-Web3.js existe en version 0.20.X, qui est la version stable actuelle, et en version 1.0.X qui est encore en beta.
-La version 0.20 permet une utilisation directement intégrée à des pages web, dans un navigateur. Elle est plus simple d'utilisation, mais sera prochainement dépréciée.
-La version 1.0.X, bien que beta, a un bon niveau de stabilité et est bien plus complète. Cependant, elle impose un fonctionnement côté serveur, tel que Node.js.
-
-Nous allons utiliser la version 1.0 pour ce tutorial.
-
-#### EthereumJs-Tx
-Un module permettant de manipuler des transactions
-```
-npm install ethereumjs-tx
-```
-
-#### Pug
-Un moteur de templates Node.js pour nous aider à générer la page HTML de rendu
-```
-npm install pug
-```
-
-#### Express
-Un module MVC Node.js
-```
-npm install express
-```
 
 ### 7.3. Initialisation de l'application
 
@@ -496,7 +534,6 @@ displayData.nameHistory = null;
 displayData.paymentHistory = null;
 displayData.withdrawHistory = null;
 displayData.errorMessage = null;
-displayData.accounts = config.accounts;
 
 
 /*
@@ -705,7 +742,7 @@ Le traitement d'une transaction étant asynchrone, nous récupérons une Promise
 3. Ensuite, il faut attendre que la transaction soit prise en compte. Pour celà, nous allons utiliser plusieurs événements, qui se produisent à différents moment de la vie de la transaction :
 - **transactionHash** : quand la transaction obtient un hash et est envoyée au réseau.
 - **receipt** : quand le reçu de transaction est créé, on y trouve la majeur partie des informations concernant cette transaction.
-- **confirmtion** : quand la transaction est confirmée (c'est à dire quand un certain nombre de blocs ont été minés à la suite de celui qui la contient, ce nombre peut être déterminé dans les options de connexion à la blockchain).
+- **confirmation** : quand la transaction est confirmée (c'est à dire quand un certain nombre de blocs ont été minés à la suite de celui qui la contient, ce nombre peut être déterminé dans les options de connexion à la blockchain).
 - **error** : en cas d'erreur
 
 **index.pug :** 
