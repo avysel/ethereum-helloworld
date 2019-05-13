@@ -147,7 +147,7 @@ cd ethereum-helloworld
       </google-codelab-step>
     
       <google-codelab-step label="4. Premier smart contract" duration="0">
-        <p>Dans <strong>contracts</strong>, créer un fichier <strong>PayableHello.sol</strong>. Y saisir le code suivant :</p>
+        <p>Dans <strong>contracts</strong>, créez un fichier <strong>PayableHello.sol</strong>. Y saisir le code suivant :</p>
 <pre><code>pragma solidity ^0.5.0;
 
 contract PayableHello {
@@ -457,7 +457,7 @@ exports.readName = async function() {
 }
 </code></pre>
 <p>On y ajoute l&#39;appel à notre fonction <strong>readName()</strong>, pour initialiser la donnée à afficher.</p>
-<p><strong>index.pug</strong>:</p>
+<p><strong>index.pug :</strong></p>
 <p>On rajoute à la fin de notre template quelques lignes pour afficher le nom.</p>
 <pre><code>doctype html
 html(lang=&#39;fr&#39;)
@@ -532,16 +532,15 @@ exports.updateName = async function(newName) {
 		payableHello.methods.setName(newName).send({from: config.account, gas: gasAmount})
 		.on(&#39;transactionHash&#39;, (hash) =&gt; {
 				// when tx hash is known
-			   result.txHash = hash;
+				result.txHash = hash;
 		   })
 		   .on(&#39;receipt&#39;, (receipt) =&gt; {
-		   		// when receipt is created
-			   console.log(&#34;receipt&#34;);
+				// when receipt is created
 		   })
 		   .on(&#39;confirmation&#39;, (confirmationNumber, receipt) =&gt; {
-		   		// when tx is confirmed
-			   result.blockNumber = receipt.blockNumber;
-			   resolve(result);
+				// when tx is confirmed
+				result.blockNumber = receipt.blockNumber;
+				resolve(result);
 		   })
 		   .on(&#39;error&#39;,(error) =&gt; {
 				reject(error);
@@ -643,7 +642,7 @@ app.post(&#39;/name&#39;, function(req, res) {
 				res.redirect(&#34;/&#34;);
 			},
 			(error) =&gt; {
-            	displayData.errorMessage = error;
+				displayData.errorMessage = error;
 				res.redirect(&#34;/&#34;);
 			}
 		);
@@ -678,24 +677,24 @@ app.post(&#39;/name&#39;, function(req, res) {
 
 contract PayableHello {
 
-    string private name;
+	string private name;
 
-    constructor() public {
-        name = &#34;nobody&#34;;
-    }
+	constructor() public {
+		name = &#34;nobody&#34;;
+	}
 
-    function setName(string memory newName) public payable {
+	function setName(string memory newName) public payable {
 		require(msg.value &gt;= 2 ether, &#34;Pay 2 ETH or more&#34;);
-        name = newName;
-    }
+		name = newName;
+	}
 
-    function getName() public view returns (string memory) {
-        return name;
-    }
+	function getName() public view returns (string memory) {
+		return name;
+	}
     
-    function() external payable {
-        revert();
-    }
+	function() external payable {
+		revert();
+	}
         
 }
 </code></pre>
