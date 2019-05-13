@@ -126,7 +126,7 @@ Car le projet sera développé en Node.js :)
 sudo apt-get install nodejs
 ```
 
-### 2.2. Outils et frameworks blockchain
+### 2.2. Outils blockchain
 
 #### Ganache
 Ganache simule une blockchain Ethereum de test, qui s'exécute en local et fournit une interface visuelle pour voir ce qu'il s'y passe.
@@ -137,12 +137,13 @@ Téléchargez et exécutez le fichier disponible ici [https://truffleframework.c
 #### Truffle
 Un outil permettant de compiler, tester et déployer des smart contracts sur une blockchain.
 
+[https://truffleframework.com/truffle](https://truffleframework.com/truffle)
+
 ```  
 npm install truffle
 ```
 
-[https://truffleframework.com/truffle](https://truffleframework.com/truffle)
-
+(Un répertoire node_modules et un fichier package-lock.json ont été créés lors de l'installation, mais vous pouvez les supprimer, ils ne seront plus utiles)
 
 Une fois installé, nous devons l'initialiser :
 
@@ -159,31 +160,6 @@ Après une courte phase de téléchargement et d'initialisation, nous voyons app
 **tests** : scripts de tests unitaires des smart contracts
 
 **truffle-config.js** : fichier de configuration de Truffle
-
-
-#### Web3.js
-Un framework javascript permettant d'interagir avec une blockchain.
-```                
-npm install web3          
-```                
-
-Web3.js existe en version 0.20.X, qui est la version stable actuelle, et en version 1.0.X qui est encore en beta.
-La version 0.20 permet une utilisation directement intégrée à des pages web, dans un navigateur. Elle est plus simple d'utilisation, mais sera prochainement dépréciée.
-La version 1.0.X, bien que beta, a un bon niveau de stabilité et est bien plus complète. Cependant, elle impose un fonctionnement côté serveur, tel que Node.js.
-
-Nous allons utiliser la version 1.0 pour ce tutorial.
-
-[https://web3js.readthedocs.io/en/1.0/index.html](https://web3js.readthedocs.io/en/1.0/index.html)
-
-
-#### EthereumJs-Tx
-Un module permettant de manipuler des transactions
-```
-npm install ethereumjs-tx
-```
-[https://github.com/ethereumjs/ethereumjs-tx](https://github.com/ethereumjs/ethereumjs-tx)
-
-
 
 
 ### 2.3. Application web
@@ -212,7 +188,7 @@ npm init
 
 Saisissez les quelques informations demandées pour initialiser le projet.
 
-Nous allons maintenant installer quelques modules pour faciliter la  création de l'application.
+**Nous allons maintenant installer quelques modules pour faciliter la  création de l'application.**
 
 #### Pug
 Un moteur de templates Node.js pour nous aider à générer la page HTML de rendu
@@ -226,10 +202,48 @@ Un module MVC Node.js
 npm install express
 ```
 
+#### Body parser
+Pour nous aider à traiter les requêtes provenant du navigateur
+```
+npm install body-parser
+```
+
+#### fs
+Pour accèdes au systèle de fichiers (nous aurons besoin de lire des fichiers json).
+```
+npm install fs
+```
+
+**Maintenant, les frameworks permettant à l'application web d'interagir avec la blockchain :**
+
+#### Web3.js
+Un framework javascript permettant d'interagir avec une blockchain.
+```                
+npm install web3
+```                
+
+Web3.js existe en version 0.20.X, qui est la version stable actuelle, et en version 1.0.X qui est encore en beta.
+La version 0.20 permet une utilisation directement intégrée à des pages web, dans un navigateur. Elle est plus simple d'utilisation, mais sera prochainement dépréciée.
+La version 1.0.X, bien que beta, a un bon niveau de stabilité et est bien plus complète. Cependant, elle impose un fonctionnement côté serveur, tel que Node.js.
+
+Nous allons utiliser la version 1.0 pour ce tutorial.
+
+[https://web3js.readthedocs.io/en/1.0/index.html](https://web3js.readthedocs.io/en/1.0/index.html)
+
+
+#### EthereumJs-Tx
+Un module permettant de manipuler des transactions
+```
+npm install ethereumjs-tx
+```
+[https://github.com/ethereumjs/ethereumjs-tx](https://github.com/ethereumjs/ethereumjs-tx)
+
+
 ## 3. Etat des lieux
 
 Arrivés à ce point, vous devez avoir cette aborescence :
 
+![Arborescence](images/17_filesystem.png)
 
 Vous l'avez ?
 Alors allons-y !
