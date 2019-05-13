@@ -989,7 +989,7 @@ Lors de ces appels, il faut passer une valeur en Wei, or nous l'avons en Ethers.
 
 Nous ajoutons maintenant au template un champ dans le formulaire de modification de nom, afin que l'utilisateur saisisse le prix qu'il souhaite payer.
 
-```yaml
+```
 doctype html
 html(lang='fr')
 	head
