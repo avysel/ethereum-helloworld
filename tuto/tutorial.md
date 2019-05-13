@@ -940,7 +940,7 @@ Cette fonction fallback est définie elle aussi comme **payable**, mais égaleme
 
 Modifions le service afin de prendre en compte cette valeur :
 
-```
+```javascript
 /*
 * Call change name function and wait for event
 * newName : the new name to set
@@ -989,7 +989,7 @@ Lors de ces appels, il faut passer une valeur en Wei, or nous l'avons en Ethers.
 
 Nous ajoutons maintenant au template un champ dans le formulaire de modification de nom, afin que l'utilisateur saisisse le prix qu'il souhaite payer.
 
-```html
+```yaml
 doctype html
 html(lang='fr')
 	head
@@ -1133,8 +1133,8 @@ contract owned {
 
 	// Access control modifier
 	modifier onlyOwner {
-	    require(msg.sender == owner, "Only the contract owner can call this function");
-	    _;
+		require(msg.sender == owner, "Only the contract owner can call this function");
+		_;
 	}
 
 	// Contract destructor
@@ -1146,29 +1146,29 @@ contract owned {
 
 contract PayableHello is owned {
 
-    string private name;
+	string private name;
 
-    constructor() public {
-        name = "nobody";
-    }
+	constructor() public {
+		name = "nobody";
+	}
 
-    function setName(string memory newName) public payable {
+	function setName(string memory newName) public payable {
 		require(msg.value >= 2 ether, "Pay 2 ETH or more");
 		name = newName;
-    }
+	}
 
-    function getName() public view returns (string memory) {
-        return name;
-    }
+	function getName() public view returns (string memory) {
+	return name;
+	}
 
-    function withdraw() public onlyOwner {
+	function withdraw() public onlyOwner {
 		uint balance = address(this).balance;
 		msg.sender.transfer(balance);
-    }
+	}
 
-    function() external payable {
-        revert();
-    }
+	function() external payable {
+		revert();
+	}
 
 }
 ```

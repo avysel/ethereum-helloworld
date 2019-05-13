@@ -876,8 +876,8 @@ contract owned {
 
 	// Access control modifier
 	modifier onlyOwner {
-	    require(msg.sender == owner, &#34;Only the contract owner can call this function&#34;);
-	    _;
+		require(msg.sender == owner, &#34;Only the contract owner can call this function&#34;);
+		_;
 	}
 
 	// Contract destructor
@@ -889,29 +889,29 @@ contract owned {
 
 contract PayableHello is owned {
 
-    string private name;
+	string private name;
 
-    constructor() public {
-        name = &#34;nobody&#34;;
-    }
+	constructor() public {
+		name = &#34;nobody&#34;;
+	}
 
-    function setName(string memory newName) public payable {
+	function setName(string memory newName) public payable {
 		require(msg.value &gt;= 2 ether, &#34;Pay 2 ETH or more&#34;);
 		name = newName;
-    }
+	}
 
-    function getName() public view returns (string memory) {
-        return name;
-    }
+	function getName() public view returns (string memory) {
+	return name;
+	}
 
-    function withdraw() public onlyOwner {
+	function withdraw() public onlyOwner {
 		uint balance = address(this).balance;
 		msg.sender.transfer(balance);
-    }
+	}
 
-    function() external payable {
-        revert();
-    }
+	function() external payable {
+		revert();
+	}
 
 }
 </code></pre>
