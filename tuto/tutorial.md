@@ -239,7 +239,7 @@ npm install ethereumjs-tx
 [https://github.com/ethereumjs/ethereumjs-tx](https://github.com/ethereumjs/ethereumjs-tx)
 
 
-## 3. Etat des lieux
+## 3. Etat des lieux<a name="3"></a>
 
 Arrivés à ce point, vous devez avoir cette aborescence :
 
@@ -252,7 +252,7 @@ Alors allons-y !
 
 ## 4. Premier smart contract<a name="4"></a>
 
-Dans **contracts**, créer un fichier **PayableHello.sol**. Y saisir le code suivant :
+Dans **contracts**, créez un fichier **PayableHello.sol**. Y saisir le code suivant :
 
 ```javascript
 pragma solidity ^0.5.0;
@@ -640,7 +640,7 @@ async function renderIndex(res) {
 On y ajoute l'appel à notre fonction **readName()**, pour initialiser la donnée à afficher.
 
 
-**index.pug**:
+**index.pug :**
 
 On rajoute à la fin de notre template quelques lignes pour afficher le nom.
 
@@ -725,16 +725,15 @@ exports.updateName = async function(newName) {
 		payableHello.methods.setName(newName).send({from: config.account, gas: gasAmount})
 		.on('transactionHash', (hash) => {
 				// when tx hash is known
-			   result.txHash = hash;
+				result.txHash = hash;
 		   })
 		   .on('receipt', (receipt) => {
-		   		// when receipt is created
-			   console.log("receipt");
+				// when receipt is created
 		   })
 		   .on('confirmation', (confirmationNumber, receipt) => {
-		   		// when tx is confirmed
-			   result.blockNumber = receipt.blockNumber;
-			   resolve(result);
+				// when tx is confirmed
+				result.blockNumber = receipt.blockNumber;
+				resolve(result);
 		   })
 		   .on('error',(error) => {
 				reject(error);
@@ -850,7 +849,7 @@ app.post('/name', function(req, res) {
 				res.redirect("/");
 			},
 			(error) => {
-            	displayData.errorMessage = error;
+				displayData.errorMessage = error;
 				res.redirect("/");
 			}
 		);
@@ -903,7 +902,7 @@ contract PayableHello {
 
     function setName(string memory newName) public payable {
 		require(msg.value >= 2 ether, "Pay 2 ETH or more");
-        name = newName;
+		name = newName;
     }
 
     function getName() public view returns (string memory) {
