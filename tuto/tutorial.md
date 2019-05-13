@@ -724,20 +724,20 @@ exports.updateName = async function(newName) {
 		// send a transaction to setName
 		payableHello.methods.setName(newName).send({from: config.account, gas: gasAmount})
 		.on('transactionHash', (hash) => {
-				// when tx hash is known
-				result.txHash = hash;
-		   })
-		   .on('receipt', (receipt) => {
-				// when receipt is created
-		   })
-		   .on('confirmation', (confirmationNumber, receipt) => {
-				// when tx is confirmed
-				result.blockNumber = receipt.blockNumber;
-				resolve(result);
-		   })
-		   .on('error',(error) => {
-				reject(error);
-		   });
+			// when tx hash is known
+			result.txHash = hash;
+		})
+		.on('receipt', (receipt) => {
+			// when receipt is created
+		})
+		.on('confirmation', (confirmationNumber, receipt) => {
+			// when tx is confirmed
+			result.blockNumber = receipt.blockNumber;
+			resolve(result);
+		})
+		.on('error',(error) => {
+			reject(error);
+		});
 	}); // end of promiseSetName, result to return
 
 	return promiseSetName;
@@ -911,8 +911,7 @@ contract PayableHello {
     
 	function() external payable {
 		revert();
-	}
-        
+	}     
 }
 ```
 
@@ -961,23 +960,22 @@ exports.updateName = async function(newName, price) {
 		// send a transaction to setName
 		payableHello.methods.setName(newName).send({from: config.account, gas: gasAmount, value: web3.utils.toWei(price, "ether")})
 		.on('transactionHash', (hash) => {
-				// when tx hash is known
-			   result.txHash = hash;
-		   })
-		   .on('receipt', (receipt) => {
-		   		// when receipt is created
-			   console.log("receipt");
-		   })
-		   .on('confirmation', (confirmationNumber, receipt) => {
-		   		// when tx is confirmed
-			   result.blockNumber = receipt.blockNumber;
-			   resolve(result);
-		   })
-		   .on('error',(error) => {
-				reject(error);
-		   });
+			// when tx hash is known
+			result.txHash = hash;
+		})
+		.on('receipt', (receipt) => {
+			// when receipt is created
+		})
+		.on('confirmation', (confirmationNumber, receipt) => {
+			// when tx is confirmed
+			result.blockNumber = receipt.blockNumber;
+			resolve(result);
+		})
+		.on('error',(error) => {
+			reject(error);
+		});
 	}); // end of promiseSetName, result to return
-
+	
 	return promiseSetName;
 }
 
@@ -1080,8 +1078,8 @@ Il ne reste plus qu'à modifier le contrôleur afin de prendre en compte ce nouv
    				res.redirect("/");
    			},
    			(error) => {
-               	displayData.errorMessage = error;
-   				res.redirect("/");
+				displayData.errorMessage = error;
+				res.redirect("/");
    			}
    		);
    	}
@@ -1155,8 +1153,8 @@ contract PayableHello is owned {
     }
 
     function setName(string memory newName) public payable {
-    	require(msg.value >= 2 ether, "Pay 2 ETH or more");
-        name = newName;
+		require(msg.value >= 2 ether, "Pay 2 ETH or more");
+		name = newName;
     }
 
     function getName() public view returns (string memory) {
@@ -1164,7 +1162,7 @@ contract PayableHello is owned {
     }
 
     function withdraw() public onlyOwner {
-    	uint balance = address(this).balance;
+		uint balance = address(this).balance;
 		msg.sender.transfer(balance);
     }
 
@@ -1195,6 +1193,7 @@ D'ailleurs, nous ajoutons aussi une méthode **withdraw** qui utilise ce modific
 Une fois le contrat modifié, nous allons créer un service pour permettre au propriétaire de récupérer ses Ethers :
 
 **payablehello.js :**
+
 ```javascript
 /**
 * Retreive contract balance. Only works for contract owner
@@ -1213,19 +1212,19 @@ exports.withdraw = async function(withdrawAccount) {
 		// send tx to withdraw function
 		payableHello.methods.withdraw().send({from: withdrawAccount, gas: gasAmount*2})
 		.on('transactionHash', (hash) => {
-			   result.txHash = hash;
-		   })
-		   .on('receipt', (receipt) => {
-			   console.log("receipt");
-		   })
-		   .on('confirmation', (confirmationNumber, receipt) => {
-			   result.blockNumber = receipt.blockNumber;
-			   resolve(result);
-		   })
-		   .on('error',(error) => {
-				result.errorMessage = error;
-				reject(result);
-		   });
+			result.txHash = hash;
+		})
+		.on('receipt', (receipt) => {
+			console.log("receipt");
+		})
+		.on('confirmation', (confirmationNumber, receipt) => {
+			result.blockNumber = receipt.blockNumber;
+			resolve(result);
+		})
+		.on('error',(error) => {
+			result.errorMessage = error;
+			reject(result);
+		});
 	});
 
 	return promiseWithdraw;
@@ -1380,11 +1379,11 @@ const config = {
 		},
 		{
 			address: "0x4a4817F49F7f31a2c639C5C723D4BAA194AD0f77",
-        	pk: "12cc2f60b68a8fefb85e93fed0a2ae4680a465f714e4ea42f4a73cf27f317257"
+			pk: "12cc2f60b68a8fefb85e93fed0a2ae4680a465f714e4ea42f4a73cf27f317257"
 		},
 		{
 			address: "0xD04EabD4Ba1d8C655B3f95A24e89CaBbfFe0af33",
-        	pk: "4b535457d08e576c956d693ef8f17cf07bfd364ed0de401c942537da92254a1f"
+			pk: "4b535457d08e576c956d693ef8f17cf07bfd364ed0de401c942537da92254a1f"
 		}
 	]
 
@@ -1617,19 +1616,18 @@ exports.sendRawTransaction = async function(newName, price, address) {
 		// send raw tx
 		web3.eth.sendSignedTransaction('0x' + serializedTx.toString('hex'))
 		.on('transactionHash', (hash) => {
-			   result.txHash = hash;
-		   })
-		   .on('receipt', (receipt) => {
-			   console.log("receipt");
-		   })
-		   .on('confirmation', (confirmationNumber, receipt) => {
-			   result.blockNumber = receipt.blockNumber;
-			   resolve(result);
-		   })
-		   .on('error',(error) => {
-				reject(error);
-		   });
-
+			result.txHash = hash;
+		})
+		.on('receipt', (receipt) => {
+			console.log("receipt");
+		})
+		.on('confirmation', (confirmationNumber, receipt) => {
+			result.blockNumber = receipt.blockNumber;
+			resolve(result);
+		})
+		.on('error',(error) => {
+			reject(error);
+		});
 
 	}); // end of promiseSendRawTx, to be returned
 
@@ -1674,7 +1672,7 @@ Tout d'abord, modifions le contrat pour créer l'événement.
 ```javascript
 contract PayableHello is owned {
 
-    string private name;
+	string private name;
 
 	event NameChanged(string newName, address userAddress, uint value);
 
@@ -1693,7 +1691,7 @@ contract PayableHello is owned {
     }
 
     function withdraw() public onlyOwner {
-    	uint balance = address(this).balance;
+		uint balance = address(this).balance;
 		msg.sender.transfer(balance);
     }
 
@@ -1726,13 +1724,13 @@ exports.getNameChangedHistory = async function() {
 
 		// get all emited events from first block to last block
 		payableHello.getPastEvents("NameChanged", { fromBlock: 0, toBlock: 'latest' })
-			.then((events, error) => {
-				events.forEach(function(item, index, array) {
-					var valueInEth = web3.utils.fromWei(item.returnValues.value.toString(), 'ether');
-				  	eventsList.push({ block:item.blockNumber, name:item.returnValues.newName, userAddress:item.returnValues.userAddress, value:valueInEth});
-				});
-				resolve(eventsList);
+		.then((events, error) => {
+			events.forEach(function(item, index, array) {
+				var valueInEth = web3.utils.fromWei(item.returnValues.value.toString(), 'ether');
+				eventsList.push({ block:item.blockNumber, name:item.returnValues.newName, userAddress:item.returnValues.userAddress, value:valueInEth});
 			});
+			resolve(eventsList);
+		});
 	});
 }
 ```
@@ -1891,8 +1889,7 @@ app.get('/name', function(req, res) {
 	responseBody.name = "Toto-"+today.getFullYear()+(today.getMonth()+1)+today.getDate()+today.getHours()+today.getMinutes()+today.getSeconds();
 	console.log("Response : "+responseBody.name);
 	res.setHeader('Content-Type', 'application/json');
-    res.send(JSON.stringify(responseBody));
-
+	res.send(JSON.stringify(responseBody));
 });
 
 // start server on port 3001
@@ -1924,7 +1921,7 @@ var payableHello = require('../payablehello'); // app services
 async function readAPI() {
 
 	request({url: 'http://127.0.0.1:3001/name', json: true}, async function(err, res, json) {
-		 if (err) {
+		if (err) {
 			console.error(err);
 		}
 
@@ -1941,7 +1938,6 @@ async function readAPI() {
 			}
 		);
     });
-
 }
 
 // init blockchain connection
