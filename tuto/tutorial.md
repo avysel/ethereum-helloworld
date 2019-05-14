@@ -51,7 +51,7 @@ Ensuite, nous créerons une applications Node.js qui affichera ce nom et propose
 Dans un second temps, nous transformerons notre HelloWorld en service payant. La mise à jour du nom impliquera le paiement d'un certain prix.
 Le propriétaire du smart contract pourra alors récupérer quand il le souhaite l'intégralité des sommes que les utilisateurs auront payées.
 
-Techniquement, nous aborderons la création, le test et le déploiement d'un smart contract. Puis la connection d'un application Node.js à un smart contract et l'envoi de transactions à celui-ci.
+Techniquement, nous aborderons la création, le test et le déploiement d'un smart contract. Puis la connexion d'un application Node.js à un smart contract et l'envoi de transactions à celui-ci.
 
 
 ### 1.2. Smart contracts
@@ -66,14 +66,17 @@ La documentation officielle du langage est disponible ici :
 Il est ensuite possible de connecter une application traditionnelle à un smart contract.
 
 
-### 1.3. DApp ?
+### 1.3. DApp
 
 Une DApp, ou **Decentralized Application**, application décentralisée, est une application déployée sur un réseau de façon uniforme et partagée, qui ne possède aucun élément central.
 
-Une application reposant uniquement sur des smart contracts déployés sur une blockchain est donc une DApp. La coupler à une application NodeJS ou autre, déployée sur un serveur, hors de la blockchain, revient à créer un élément centralisé, voire un SPOF (single point of failure). De ce fait, il ne s'agit plus réellement d'une DApp.
+Une application reposant uniquement sur des smart contracts déployés sur une blockchain est donc une DApp.
+
+La coupler à une application NodeJS ou autre, déployée sur un serveur, hors de la blockchain, et nécessaire à son contionnement, revient à créer un élément centralisé, voire un SPOF (single point of failure). 
+De ce fait, il ne s'agit plus réellement d'une DApp.
 
 
-### 1.4. Vous avez dit asynchrone ?
+### 1.4. Asynchronicité
 
 Un des concepts important du développement d'application connectée à une blockchain est l'asynchronicité.
 En effet, l'envoi de données à une blockchain se fait au moyen de transactions, diffusées au reste du réseau. Ces transactions, en plus d'entrainer des coûts d'utilisation, sont asynchrones.
@@ -87,7 +90,7 @@ Dans notre projet en Node.js, cette asynchronicité sera mise en place au moyen 
 Si vous n'êtes pas familiers de ces concepts, [un petit détour par ici](https://javascript.info/async) vous sera utile.
 
 
-### 1.5. Mise en garde
+### 1.5. Point d'attention
 
 Il faut garder à l'esprit que l'état de l'environnement d'exécution peut varier d'un noeud à l'autre. Par exemple, si un traitement nécessite l'envoi de plusieurs transactions, l'ordre de réception par chaque noeud du réseau sera aléatoire. La conception des smart contracts ne doit donc pas être dépendante de l'environnement.
 
@@ -419,7 +422,7 @@ Initialiser les valeurs
 - **payableHelloContractAddress** : adresse à laquelle le contrat a été déployé avec Truffle. ("contract address" dans le résultat de **truffle deploy**)
 
 
-### 7.2 Connection à la blockchain
+### 7.2 Connexion à la blockchain
 
 **payablehello.js :**
 
@@ -438,11 +441,14 @@ var web3 = null;
 */
 exports.connection = function() {
 
+	// the blockchain coinbase is our default account
 	const options = {
 		defaultAccount: config.account
 	}
 
+	// get the current brower web3 provider is exists, else create a new one
 	web3 = new Web3(Web3.givenProvider || config.nodeURL+':'+config.nodePort, null, options);
+	
 	console.log("Connected to "+config.nodeURL+':'+config.nodePort);
 }
 
@@ -467,7 +473,10 @@ exports.getNodeInfo = async function() {
 }
 ```
 
-### 7.4 Connection au contrat
+L'objet **web3** sera notre point d'entrée à la blockchain. Nous l'initialisons soit à partir d'un éventuel objet déjà présent dans le navigateur, qui serait injecté par un wallet ou autre, soit à partir d'un nouvel objet, que nous créons en lui fournissant une liste d'options.
+Ici, nous ne précisons que la coinbase. Mais il est possible de définir d'autres options, telles que le nombre de blocs nécessaires pour qu'une transaction soit confirmée, par exemple. 
+
+### 7.4 Connexion au contrat
 
 Nous allons maintenant nous connecter au contrat :
 
@@ -489,7 +498,7 @@ exports.initContracts = function() {
 }
 ```
 
-Cette fonction récupère l'objet javascript ABI dans le fichier json et le passe en paramètre, avec l'adresse du smart contract déployé, à la méthode **web3.eth.Contract**, qui va retourner un object javascript permettant d'interagir avec le smart contract.
+Cette fonction récupère l'objet javascript ABI dans le fichier json construit par Truffle et le passe en paramètre, avec l'adresse du smart contract déployé, à la méthode **web3.eth.Contract**, qui va retourner un object javascript permettant d'interagir avec le smart contract.
 
 L'objet **payableHello** sera donc notre objet d'accès au contrat.
 
