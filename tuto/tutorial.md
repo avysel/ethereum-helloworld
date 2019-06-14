@@ -2021,7 +2021,7 @@ Ici, nous avons amené les tests assez tardivement, pour permettre de passer en 
 ### 14.1 Tester avec Javascript
 
 Les tests javascript de Truffle utilisent les frameworks [Mocha](https://mochajs.org/) et [Chai](https://www.chaijs.com/).
-Nous n'allons pas nous étendre sur la syntaxe de ces deux frameworks, leurs documentations respectives  
+Nous n'allons pas nous étendre sur la syntaxe de ces deux frameworks, leurs documentations respectives sont disponibles.
 
 Nous allons créer un fichier **payablehello-test.js**.
 
